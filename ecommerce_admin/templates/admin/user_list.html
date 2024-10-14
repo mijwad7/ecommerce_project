@@ -1,0 +1,27 @@
+{% extends './base.html' %}
+{% block content %}
+<h2>Users</h2>
+<a href="{% url 'create_user' %}" class="btn btn-success mb-2">Add User</a>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Blocked</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>{% if user.is_blocked %}Yes{% else %}No{% endif %}</td>
+            <td>
+                <a href="{% url 'edit_user' user.id %}" class="btn btn-warning btn-sm">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

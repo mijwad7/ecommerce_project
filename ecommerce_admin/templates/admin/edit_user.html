@@ -1,0 +1,21 @@
+{% extends './base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2>Edit User: {{ user.username }}</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" name="email" class="form-control" id="email" value="{{ user.email }}" required>
+            </div>
+            <div class="form-group form-check">
+                <input type="checkbox" name="is_blocked" class="form-check-input" id="is_blocked" {% if user.is_blocked %}checked{% endif %}>
+                <label class="form-check-label" for="is_blocked">Blocked</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'user_list' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
