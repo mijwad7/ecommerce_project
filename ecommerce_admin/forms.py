@@ -1,5 +1,5 @@
 from django import forms
-from ecommerce_app.models import UserProfile
+from ecommerce_app.models import UserProfile, Product, ProductImage
 
 class UserProfileForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
@@ -18,3 +18,19 @@ class UserProfileForm(forms.ModelForm):
 class LoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['name', 'description', 'stock', 'price', 'is_on_sale', 'is_featured', 'sale_price', 'category']
+
+    # def save(self, commit=True):
+    #     product = super().save(commit=commit)
+
+    #     # Save multiple images
+    #     if self.files.getlist('images'):
+    #         for image in self.files.getlist('images'):
+    #             ProductImage.objects.create(product=product, image=image)
+
+    #     return product
+

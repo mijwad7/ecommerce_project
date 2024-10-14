@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from ecommerce_app.models import UserProfile, Category
-from .forms import UserProfileForm, LoginForm
+from ecommerce_app.models import UserProfile, Category, Product, ProductImage
+from .forms import UserProfileForm, LoginForm, ProductForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
@@ -114,3 +114,84 @@ def delete_category(request, category_id):
         messages.success(request, "Category deleted successfully!")
         return redirect('categories_list')
     return render(request, 'admin/delete_category.html', {'category': category})
+
+@login_required
+@superuser_required
+def products_list(request):
+    products = Product.objects.all()
+    return render(request, 'admin/products_list.html', {'products': products})
+
+@login_required
+@superuser_required
+def add_product(request):
+    if request.method == 'POST':
+        product_form = ProductForm(request.POST, request.FILES)
+
+        if product_form.is_valid():
+            product = product_form.save()
+
+            # Collect the uploaded images
+            uploaded_images = request.FILES.getlist('images')
+
+            # Check if there are at least 3 images
+            if len(uploaded_images) < 3:
+                product.delete()  # Remove the product if not enough images
+                messages.error(request, 'You must upload at least 3 images.')
+                return render(request, 'admin/add_product.html', {'product_form': product_form})
+
+            # Save the images after validation
+            for image in uploaded_images:
+                ProductImage.objects.create(product=product, image=image)
+
+            messages.success(request, 'Product added successfully!')
+            return redirect('products_list')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        product_form = ProductForm()
+
+    return render(request, 'admin/add_product.html', {'product_form': product_form})
+
+
+
+@login_required
+@superuser_required
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    return render(request, 'admin/product_detail.html', {'product': product})
+
+@login_required
+@superuser_required
+def delete_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.method == "POST":
+        product.delete()
+        messages.success(request, "Product deleted successfully!")
+        return redirect('products_list')
+    return render(request, 'admin/delete_product.html', {'product': product})
+
+@login_required
+@superuser_required
+def edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.method == "POST":
+        product_form = ProductForm(request.POST, request.FILES, instance=product)
+
+        if product_form.is_valid():
+            product = product_form.save()
+            uploaded_images = request.FILES.getlist('images')
+
+            if uploaded_images:
+                for image in uploaded_images:
+                    ProductImage.objects.create(product=product, image=image)
+
+            messages.success(request, "Product updated successfully!")
+            return redirect('product_detail', product_id=product.id)
+
+        else:
+            messages.error(request, "Please correct the errors below.")
+
+    else:
+        product_form = ProductForm(instance=product)
+
+    return render(request, 'admin/edit_product.html', {'product_form': product_form, 'product': product})

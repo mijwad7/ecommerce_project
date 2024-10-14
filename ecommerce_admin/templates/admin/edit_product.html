@@ -1,0 +1,37 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<h2>Edit Product: {{ product.name }}</h2>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <h3>Product Details</h3>
+    {{ product_form.as_p }}  <!-- This renders all product-related fields -->
+
+    <h3>Product Images:</h3>
+    <p>Current Images:</p>
+    <div>
+        {% for image in product.images.all %}
+            <img src="{{ image.image.url }}" alt="Product Image" style="width:100px; height:auto;">
+        {% empty %}
+            <p>No images available for this product.</p>
+        {% endfor %}
+    </div>
+
+    <label for="images">Upload New Images (Optional):</label>
+    <input type="file" name="images" id="images" multiple>  <!-- Handle multiple images directly -->
+    
+    <button type="submit">Update Product</button>
+</form>
+
+{% if messages %}
+    <ul>
+    {% for message in messages %}
+        <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+<a href="{% url 'product_detail' product.id %}">Back to Product Details</a>
+{% endblock %}

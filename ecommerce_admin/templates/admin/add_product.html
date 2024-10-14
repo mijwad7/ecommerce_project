@@ -1,0 +1,27 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<h2>Add Product</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <h3>Product Details</h3>
+    {{ product_form.as_p }}
+
+    <h3>Product Images (minimum 3):</h3>
+    <label for="images">Upload Images:</label>
+    <input type="file" name="images" id="images" multiple required>
+    
+    <button type="submit">Add Product</button>
+</form>
+
+{% if messages %}
+    <ul>
+    {% for message in messages %}
+        <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+<a href="{% url 'products_list' %}">Back to Product List</a>
+{% endblock %}
