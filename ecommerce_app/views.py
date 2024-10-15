@@ -1,23 +1,61 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .models import Product, UserProfile
+from .models import Product, UserProfile, EmailOTPDevice
 from .forms import UserSignUpForm
-# Create your views here.
+from .otp_utils import send_otp_to_email
 
 def user_signup(request):
     if request.method == 'POST':
         form = UserSignUpForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Account created successfully!")
-            return redirect('app:user_login')
+            user = form.save(commit=False)
+            user.is_active = False  # Disable account until OTP is verified
+            user.save()
+            send_otp_to_email(user)  # Send OTP
+            request.session['user_id'] = user.id  # Store user ID in session
+            messages.success(request, 'Please check your email for an OTP.')
+            return redirect('app:verify_otp')
         else:
             messages.error(request, "Please correct the errors below.")
     else:
         form = UserSignUpForm()
 
     return render(request, 'app/signup.html', {'form': form})
+
+def verify_otp(request):
+    if request.method == 'POST':
+        if 'resend_otp' in request.POST:
+            user_id = request.session.get('user_id')
+            if not user_id:
+                messages.error(request, "Session expired. Please sign up again.")
+                return redirect('app:signup')
+            
+            user = get_object_or_404(UserProfile, id=user_id)
+            if send_otp_to_email(user, force_resend=True):
+                messages.success(request, 'A new OTP has been sent to your email.')
+            else:
+                messages.error(request, 'Could not resend OTP. Please try again.')
+            return redirect('app:verify_otp')
+
+        otp = request.POST.get('otp')
+        user_id = request.session.get('user_id')
+        if not user_id:
+            messages.error(request, "Session expired. Please sign up again.")
+            return redirect('app:signup')
+
+        user = get_object_or_404(UserProfile, id=user_id)
+        device = EmailOTPDevice.objects.filter(user=user).first()
+
+        if device and device.verify_otp(otp):
+            user.is_active = True
+            user.save()
+            messages.success(request, 'Your account has been verified!')
+            return redirect('app:user_login')
+        else:
+            messages.error(request, 'Invalid or expired OTP. Please try again.')
+
+    return render(request, 'app/verify_otp.html')
 
 
 

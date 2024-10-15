@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from PIL import Image as PilImage
+from django_otp.models import Device
+from django.contrib.auth.models import User
+import random
 import os
 from django.conf import settings
 
@@ -115,3 +118,37 @@ class ProductImage(models.Model):
 
         # Save the image back to the specified path
         img.save(self.image.path)
+
+
+
+
+from django.utils import timezone
+from datetime import timedelta
+
+class EmailOTPDevice(Device):
+    otp_code = models.CharField(max_length=6, blank=True, null=True)
+    otp_sent_at = models.DateTimeField(null=True, blank=True)  # Track when the OTP was sent
+
+    OTP_EXPIRY_MINUTES = 2  # OTP will expire after 5 minutes
+
+    def generate_otp(self):
+        """Generate a 6-digit OTP code and set the timestamp."""
+        self.otp_code = f"{random.randint(100000, 999999)}"
+        self.otp_sent_at = timezone.now()
+        self.save()
+        return self.otp_code
+
+    def verify_otp(self, otp):
+        """Verify the given OTP."""
+        # Check if OTP has expired
+        if self.otp_code and self.otp_sent_at and timezone.now() < self.otp_sent_at + timedelta(minutes=self.OTP_EXPIRY_MINUTES):
+            if self.otp_code == otp:
+                self.otp_code = None  # Clear OTP after successful verification
+                self.otp_sent_at = None
+                self.save()
+                return True
+        return False
+
+    def is_otp_expired(self):
+        """Check if the OTP has expired."""
+        return self.otp_sent_at is None or timezone.now() > self.otp_sent_at + timedelta(minutes=self.OTP_EXPIRY_MINUTES)

@@ -35,6 +35,9 @@ AUTH_USER_MODEL = 'ecommerce_app.UserProfile'
 LOGIN_URL = '/admin/login/'
 
 INSTALLED_APPS = [
+    'django_otp',
+    'django_otp.plugins.otp_static',    # Static OTPs
+    'django_otp.plugins.otp_totp', 
     'ecommerce_app',
     'ecommerce_admin',
     'django.contrib.admin',
@@ -54,6 +57,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'mijuzzuae@gmail.com'
+EMAIL_HOST_PASSWORD = 'jcsq fbiy pwno ldrz'
+
 
 ROOT_URLCONF = 'ecommerce_project.urls'
 
