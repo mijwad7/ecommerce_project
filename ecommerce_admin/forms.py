@@ -24,7 +24,7 @@ class LoginForm(forms.Form):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description', 'stock', 'price', 'is_on_sale', 'is_featured', 'sale_price', 'category']
+        fields = ['name', 'description', 'stock', 'price', 'is_on_sale', 'is_featured', 'sale_price', 'category', 'coupons']
 
     # def save(self, commit=True):
     #     product = super().save(commit=commit)

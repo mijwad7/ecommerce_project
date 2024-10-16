@@ -5,6 +5,7 @@ from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec
 from .forms import UserSignUpForm
 from .otp_utils import send_otp_to_email
 from django.db.models import Avg, Count
+from django.utils import timezone
 
 
 def user_signup(request):
@@ -105,6 +106,8 @@ def product_detail(request, product_id):
     )
 
     specs = ProductSpec.objects.filter(product=product)
+    coupons = product.coupons.filter(start_date__lte=timezone.now(), end_date__gte=timezone.now())
+
 
     return render(
         request,
@@ -115,5 +118,6 @@ def product_detail(request, product_id):
             "review_score": round(review_score, 1),
             "num_reviews": review_data["num_reviews"],
             "specs": specs,
+            "coupons": coupons
         },
     )
