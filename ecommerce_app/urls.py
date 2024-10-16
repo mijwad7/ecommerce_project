@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 app_name = 'app'
@@ -10,4 +10,5 @@ urlpatterns = [
     path('logout/', views.user_logout, name='user_logout'),
     path('products/', views.products, name='products'),
     path('verify-otp/', views.verify_otp, name='verify_otp'),
+    path('products/<int:product_id>/', views.product_detail, name='product_detail')
 ]

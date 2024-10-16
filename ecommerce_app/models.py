@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
+from django.utils import timezone
+from datetime import timedelta
 from PIL import Image as PilImage
 from django_otp.models import Device
 from django.contrib.auth.models import User
@@ -118,12 +120,6 @@ class ProductImage(models.Model):
 
         # Save the image back to the specified path
         img.save(self.image.path)
-
-
-
-
-from django.utils import timezone
-from datetime import timedelta
 
 class EmailOTPDevice(Device):
     otp_code = models.CharField(max_length=6, blank=True, null=True)

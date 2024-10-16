@@ -34,7 +34,14 @@ AUTH_USER_MODEL = 'ecommerce_app.UserProfile'
 
 LOGIN_URL = '/admin/login/'
 
+SITE_ID = 1
+
 INSTALLED_APPS = [
+    'django.contrib.sites',  # Required by Allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'django_otp',
     'django_otp.plugins.otp_static',    # Static OTPs
     'django_otp.plugins.otp_totp', 
@@ -56,7 +63,24 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',  # For normal authentication
+    'allauth.account.auth_backends.AuthenticationBackend',  # For Allauth
+)
+
+# Redirect URLs
+LOGIN_REDIRECT_URL = 'app:index'  # Where to redirect after login
+LOGOUT_REDIRECT_URL = 'app:user_login'  # Where to redirect after logout
+
+# Allauth settings
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_USERNAME_REQUIRED = True
+
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
