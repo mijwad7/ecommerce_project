@@ -1,5 +1,7 @@
 from django import forms
-from ecommerce_app.models import UserProfile, Product, ProductImage
+from ecommerce_app.models import UserProfile, Product, ProductImage, ProductSpec
+from django.forms import inlineformset_factory
+
 
 class UserProfileForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
@@ -34,3 +36,5 @@ class ProductForm(forms.ModelForm):
 
     #     return product
 
+
+ProductSpecFormSet = inlineformset_factory(Product, ProductSpec, fields=('key', 'value'), extra=5, can_delete=True)

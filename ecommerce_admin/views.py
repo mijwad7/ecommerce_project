@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from ecommerce_app.models import UserProfile, Category, Product, ProductImage
-from .forms import UserProfileForm, LoginForm, ProductForm
+from .forms import UserProfileForm, LoginForm, ProductForm, ProductSpecFormSet
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
@@ -126,8 +126,9 @@ def products_list(request):
 def add_product(request):
     if request.method == 'POST':
         product_form = ProductForm(request.POST, request.FILES)
+        formset = ProductSpecFormSet(request.POST, instance=product_form.instance)
 
-        if product_form.is_valid():
+        if product_form.is_valid() and formset.is_valid():
             product = product_form.save()
 
             # Collect the uploaded images
@@ -137,11 +138,14 @@ def add_product(request):
             if len(uploaded_images) < 3:
                 product.delete()  # Remove the product if not enough images
                 messages.error(request, 'You must upload at least 3 images.')
-                return render(request, 'admin/add_product.html', {'product_form': product_form})
+                return render(request, 'admin/add_product.html', {'product_form': product_form, 'formset': formset})
 
             # Save the images after validation
             for image in uploaded_images:
                 ProductImage.objects.create(product=product, image=image)
+
+            # Save the specifications
+            formset.save()
 
             messages.success(request, 'Product added successfully!')
             return redirect('products_list')
@@ -149,8 +153,10 @@ def add_product(request):
             messages.error(request, 'Please correct the errors below.')
     else:
         product_form = ProductForm()
+        formset = ProductSpecFormSet()
 
-    return render(request, 'admin/add_product.html', {'product_form': product_form})
+    return render(request, 'admin/add_product.html', {'product_form': product_form, 'formset': formset})
+
 
 
 

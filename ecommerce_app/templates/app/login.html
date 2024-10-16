@@ -1,6 +1,9 @@
 {% extends './base.html' %}
 {% load socialaccount %} 
 
+{% block title %}Login{% endblock %}
+
+
 {% block content %}
 <div class="container my-5">
     <h2>Login</h2>
@@ -19,8 +22,9 @@
     <div class="mt-4">
         <p>Or log in using:</p>
         <a href="{% provider_login_url 'google' %}" class="btn btn-warning">
-            <i class="fab fa-google"></i> Google
+            Google
         </a>
+        
     </div>
     
 </div>

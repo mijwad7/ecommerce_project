@@ -1,20 +1,162 @@
-{% extends "./base.html" %}
+{% extends "./base.html" %} {% block title %} {{ product.name }} {% endblock %}
+{% block style %}
+<style>
+  .main-image img {
+    width: 100%; /* Adjust the width as per your requirements */
+    height: auto;
+    max-height: 400px; /* Example maximum height */
+    object-fit: contain; /* Keep the image ratio */
+  }
 
-{% block content %}
-<h2>{{ product.name }}</h2>
-<p>Category: {{ product.category }}</p>
-<p>Description: {{ product.description }}</p>
-<p>Price: ${{ product.price }}</p>
-<p>In Stock: {{ product.stock }}</p>
+  .thumbnail {
+    cursor: pointer;
+    border: 2px solid transparent; /* Add some spacing between thumbnails */
+    transition: border-color 0.3s ease-in-out;
+  }
 
-<h3>Images:</h3>
-<div>
-    {% for image in product.images.all %}
-        <img src="{{ image.image.url }}" alt="Product Image" style="width:200px; height:200px;">
-    {% empty %}
-        <p>No images available.</p>
-    {% endfor %}
+  .thumbnail:hover {
+    border-color: #007bff; /* Highlight border on hover */
+  }
+  #mainProductImage {
+    width: 100%;
+    height: 40vh;
+  }
+  .breadcrumb {
+    background-color: white; /* Change this to your desired color */
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container mt-5">
+  <!-- Breadcrumbs -->
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{% url 'app:products' %}">Products</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        {{ product.name }}
+      </li>
+    </ol>
+  </nav>
+
+  <div class="row">
+    <!-- Product Images Section -->
+    <div class="col-md-6">
+      <div class="main-image mb-3">
+        <img
+          id="mainProductImage"
+          src="{{ product.images.first.image.url }}"
+          alt="Product Image"
+          class="img-fluid"
+        />
+      </div>
+      <div class="row">
+        {% for image in product.images.all %}
+        <div class="col-3">
+          <img
+            src="{{ image.image.url }}"
+            alt="Product Thumbnail"
+            class="img-fluid thumbnail"
+            onclick="changeMainImage('{{ image.image.url }}')"
+          />
+        </div>
+        {% empty %}
+        <p class="text-muted">No images available.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Product Details Section -->
+    <div class="col-md-6">
+      <h2>{{ product.name }}</h2>
+      <div class="mb-2">
+        <span class="h4">${{ product.price }}</span>
+        {% if product.is_on_sale %}
+        <span class="text-muted"> (Sale Price: ${{ product.sale_price }})</span>
+        {% endif %}
+        <span class="text-muted"
+          >{{ review_score }} Star Rating ({{ num_reviews }} User
+          feedback)</span
+        >
+      </div>
+
+      <!-- Stock Availability -->
+      {% if product.stock > 0 %}
+      <p class="text-success">In Stock: {{ product.stock }}</p>
+      {% else %}
+      <p class="text-danger">Sold Out / Unavailable</p>
+      {% endif %}
+
+      <!-- Display Coupons or Discounts -->
+      {% if discounts %}
+      <p>Discounts/Coupons Applied:</p>
+      <ul>
+        {% for discount in discounts %}
+        <li>{{ discount }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %} {% for spec in specs %}
+      <p><strong>{{ spec.key }}:</strong> {{ spec.value }}</p>
+      {% endfor %}
+
+      <p>{{ product.description }}</p>
+
+      <!-- Add to Cart & Buy Now Buttons -->
+      <div class="d-flex align-items-center mb-3">
+        <button class="btn btn-dark me-2">
+          Add to Cart - ${{ product.price }}
+        </button>
+        <button class="btn btn-dark">Buy Now - ${{ product.price }}</button>
+      </div>
+
+      <!-- Quantity Selector -->
+      <div class="d-flex align-items-center mb-3">
+        <label class="me-2">Quantity:</label>
+        <input type="number" value="1" min="1" class="form-control w-25" />
+      </div>
+
+      <!-- Compare Button -->
+      <button class="btn btn-outline-dark">Compare to another product</button>
+    </div>
+  </div>
 </div>
 
-<a href="{% url 'app:products' %}">Back to Product List</a>
+<!-- Reviews Section -->
+<div class="container mt-5">
+  <h3>Reviews:</h3>
+  {% if reviews %}
+  <ul class="list-group">
+    {% for review in reviews %}
+    <li class="list-group-item">
+      <strong>{{ review.user.username }}</strong> - {{ review.rating }} stars
+      <p>{{ review.comment }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-muted">No reviews yet.</p>
+  {% endif %}
+</div>
+
+<a href="{% url 'app:products' %}" class="btn btn-link mt-4"
+  >Back to Product List</a
+>
+
+
+
+{% endblock %} {% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zooming/2.1.1/zooming.min.js"></script>
+<script>
+  new Zooming({
+    preloadImage: true,
+    scaleBase: 1.5,
+    scaleExtra: 1.2,
+  }).listen("#mainProductImage");
+
+  function changeMainImage(imageUrl) {
+    const mainImage = document.getElementById("mainProductImage");
+    mainImage.src = imageUrl;
+  }
+</script>
+
 {% endblock %}

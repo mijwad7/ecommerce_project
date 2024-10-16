@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 from datetime import timedelta
 from PIL import Image as PilImage
@@ -9,6 +10,7 @@ from django.contrib.auth.models import User
 import random
 import os
 from django.conf import settings
+
 
 class UserProfile(AbstractUser):
     email = models.EmailField(unique=True, null=True, blank=True)
@@ -75,7 +77,9 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     is_on_sale = models.BooleanField(default=False)
     is_featured = models.BooleanField(default=False)
-    sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    sale_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     is_deleted = models.BooleanField(default=False)
 
@@ -83,7 +87,7 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     def delete(self, *args, **kwargs):
         self.is_deleted = True
         self.save()
@@ -91,11 +95,11 @@ class Product(models.Model):
     def restore(self, *args, **kwargs):
         self.is_deleted = False
         self.save()
-    
+
     def clean(self):
         if self.is_on_sale and self.sale_price >= self.price:
             raise ValidationError("Sale price must be less than the regular price.")
-        
+
         # if not self.images.exists() or self.images.count() < 3:
         #     raise ValidationError("Product must have at least 3 images.")
 
@@ -116,14 +120,25 @@ class ProductImage(models.Model):
         img = img.convert("RGB")  # Convert to RGB if it's not
 
         # Resize the image to a maximum of 800x800 while keeping the aspect ratio
-        img.thumbnail((800, 800), PilImage.LANCZOS)
+        img.thumbnail((500, 500), PilImage.LANCZOS)
 
         # Save the image back to the specified path
         img.save(self.image.path)
 
+class ProductSpec(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='specs')
+    key = models.CharField(max_length=50)
+    value = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.key}: {self.value}"
+
+
 class EmailOTPDevice(Device):
     otp_code = models.CharField(max_length=6, blank=True, null=True)
-    otp_sent_at = models.DateTimeField(null=True, blank=True)  # Track when the OTP was sent
+    otp_sent_at = models.DateTimeField(
+        null=True, blank=True
+    )  # Track when the OTP was sent
 
     OTP_EXPIRY_MINUTES = 2  # OTP will expire after 5 minutes
 
@@ -137,7 +152,12 @@ class EmailOTPDevice(Device):
     def verify_otp(self, otp):
         """Verify the given OTP."""
         # Check if OTP has expired
-        if self.otp_code and self.otp_sent_at and timezone.now() < self.otp_sent_at + timedelta(minutes=self.OTP_EXPIRY_MINUTES):
+        if (
+            self.otp_code
+            and self.otp_sent_at
+            and timezone.now()
+            < self.otp_sent_at + timedelta(minutes=self.OTP_EXPIRY_MINUTES)
+        ):
             if self.otp_code == otp:
                 self.otp_code = None  # Clear OTP after successful verification
                 self.otp_sent_at = None
@@ -147,4 +167,24 @@ class EmailOTPDevice(Device):
 
     def is_otp_expired(self):
         """Check if the OTP has expired."""
-        return self.otp_sent_at is None or timezone.now() > self.otp_sent_at + timedelta(minutes=self.OTP_EXPIRY_MINUTES)
+        return (
+            self.otp_sent_at is None
+            or timezone.now()
+            > self.otp_sent_at + timedelta(minutes=self.OTP_EXPIRY_MINUTES)
+        )
+
+
+class Review(models.Model):
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="reviews"
+    )
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    rating = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"
