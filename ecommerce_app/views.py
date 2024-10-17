@@ -83,6 +83,14 @@ def user_logout(request):
     logout(request)
     return redirect("app:user_login")
 
+def demo_login(request):
+    user = authenticate(username='mijwad', password='1234')
+    if user is not None:
+        login(request, user)
+        return redirect('app:index')  # Redirect to the main page after login
+    else:
+        # Handle case where demo user is not set up properly
+        return redirect('login')
 
 def index(request):
     return render(request, "app/index.html")

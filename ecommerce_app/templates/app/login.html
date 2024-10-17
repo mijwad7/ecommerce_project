@@ -1,31 +1,41 @@
 {% extends './base.html' %}
-{% load socialaccount %} 
-
+{% load socialaccount %}
 {% block title %}Login{% endblock %}
-
-
 {% block content %}
 <div class="container my-5">
-    <h2>Login</h2>
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="username">Username:</label>
-            <input type="text" class="form-control" name="username" required>
-        </div>
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" class="form-control" name="password" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Login</button>
-    </form>
-    <div class="mt-4">
-        <p>Or log in using:</p>
-        <a href="{% provider_login_url 'google' %}" class="btn btn-warning">
-            Google
-        </a>
-        
+  <div class="row align-items-center">
+    <!-- Left Side: Welcome Text -->
+    <div class="col-lg-6 d-none d-lg-block">
+      <h1 class="display-4 fw-bold">Welcome to</h1>
+      <h1 class="display-3 fw-bolder">ShopHive</h1>
     </div>
     
+    <!-- Right Side: Login Form -->
+    <div class="col-lg-6 col-md-8 mx-auto">
+      <div class="card p-4 shadow-sm">
+        <h3 class="fw-bold mb-3">Login</h3>
+        <p class="text-muted mb-4"><a href="#" class="text-decoration-none">Forgot your password?</a></p>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <input type="text" class="form-control form-control-lg" placeholder="Username" name="username" required />
+          </div>
+          <div class="mb-3">
+            <input type="password" class="form-control form-control-lg" placeholder="Password" name="password" required />
+          </div>
+          <button type="submit" class="btn btn-dark btn-lg w-100">Login</button>
+        </form>
+        <div class="mt-4">
+          <p class="text-center">Or log in using:</p>
+          <a href="{% provider_login_url 'google' %}" class="btn btn-outline-dark w-100">
+            Google
+          </a>
+          <br>
+          <br>
+          <a href="{% url 'app:demo_login' %}" class="btn btn-outline-dark w-100">Demo Login</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

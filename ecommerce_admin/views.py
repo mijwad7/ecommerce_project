@@ -35,6 +35,15 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+def demo_login(request):
+    user = authenticate(username='mijwad', password='1234')
+    if user is not None:
+        login(request, user)
+        return redirect('admin_dashboard')  # Redirect to the main page after login
+    else:
+        # Handle case where demo user is not set up properly
+        return redirect('login')
+
 @login_required
 @superuser_required
 def index(request):
