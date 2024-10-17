@@ -108,6 +108,8 @@ def product_detail(request, product_id):
     specs = ProductSpec.objects.filter(product=product)
     coupons = product.coupons.filter(start_date__lte=timezone.now(), end_date__gte=timezone.now())
 
+    related_products = Product.objects.filter(category=product.category).exclude(id=product.id)[:4]
+
 
     return render(
         request,
@@ -118,6 +120,7 @@ def product_detail(request, product_id):
             "review_score": round(review_score, 1),
             "num_reviews": review_data["num_reviews"],
             "specs": specs,
-            "coupons": coupons
+            "coupons": coupons,
+            "related_products": related_products
         },
     )
