@@ -19,6 +19,15 @@
         font-family: "Poppins", sans-serif;
         font-weight: 400;
       }
+      .btn-black {
+        background-color: #000; /* Pure black */
+        color: #fff; /* Text color - white */
+      }
+
+      .btn-black:hover {
+        background-color: #333; /* Darker shade on hover */
+        color: #fff; /* Keep text color white on hover */
+      }
     </style>
   </head>
   <body>
@@ -41,6 +50,7 @@
       <!-- Navbar links -->
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
+          {% if user.is_authenticated %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'user_list' %}">Users</a>
           </li>
@@ -55,6 +65,11 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">Logout</a>
           </li>
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'login' %}">Login</a>
+          </li>
+          {% endif %}
         </ul>
       </div>
     </nav>

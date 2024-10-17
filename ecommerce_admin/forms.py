@@ -26,6 +26,12 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = ['name', 'description', 'stock', 'price', 'is_on_sale', 'is_featured', 'sale_price', 'category', 'coupons']
 
+    def __init__(self, *args, **kwargs):
+        super(ProductForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if not isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'form-control'})
+
     # def save(self, commit=True):
     #     product = super().save(commit=commit)
 

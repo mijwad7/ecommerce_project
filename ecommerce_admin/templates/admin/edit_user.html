@@ -13,7 +13,15 @@
                 <input type="checkbox" name="is_blocked" class="form-check-input" id="is_blocked" {% if user.is_blocked %}checked{% endif %}>
                 <label class="form-check-label" for="is_blocked">Blocked</label>
             </div>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <div class="form-group form-check">
+                <input type="checkbox" name="is_superuser" class="form-check-input" id="is_superuser" {% if user.is_superuser %}checked{% endif %}>
+                <label class="form-check-label" for="is_superuser">Superuser</label>
+            </div>
+            <div class="form-group form-check">
+                <input type="checkbox" name="is_active" class="form-check-input" id="is_active" {% if user.is_active %}checked{% endif %}>
+                <label class="form-check-label" for="is_active">Active</label>
+            </div>
+            <button type="submit" class="btn btn-black">Save Changes</button>
             <a href="{% url 'user_list' %}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>

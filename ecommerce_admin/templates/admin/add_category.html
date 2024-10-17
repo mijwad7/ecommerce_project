@@ -6,7 +6,7 @@
         <form method="post">
             {% csrf_token %}
             <input type="text" name="category_name" id="category_name">
-            <button type="submit" class="btn btn-primary">Add Category</button>
+            <button type="submit" class="btn btn-black">Add Category</button>
             <a href="{% url 'user_list' %}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>

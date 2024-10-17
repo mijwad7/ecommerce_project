@@ -28,6 +28,15 @@
   .breadcrumb {
     background-color: white; /* Change this to your desired color */
   }
+  .btn-black {
+    background-color: #000; /* Pure black */
+    color: #fff; /* Text color - white */
+  }
+
+  .btn-black:hover {
+    background-color: #333; /* Darker shade on hover */
+    color: #fff; /* Keep text color white on hover */
+  }
 </style>
 {% endblock %} {% block content %}
 <div class="container mt-5">
@@ -95,35 +104,39 @@
       <div class="coupons">
         <h4>Available Coupons:</h4>
         {% if coupons %}
-          <ul>
-            {% for coupon in coupons %}
-              <li>{{ coupon.code }} - {{ coupon.discount_percent }}% off</li>
-            {% endfor %}
-          </ul>
+        <ul>
+          {% for coupon in coupons %}
+          <li>{{ coupon.code }} - {{ coupon.discount_percent }}% off</li>
+          {% endfor %}
+        </ul>
         {% else %}
-          <p>No coupons available for this product.</p>
+        <p>No coupons available for this product.</p>
         {% endif %}
       </div>
-      
-     {% for spec in specs %}
+
+      {% for spec in specs %}
       <p><strong>{{ spec.key }}:</strong> {{ spec.value }}</p>
       {% endfor %}
 
       <p>{{ product.description }}</p>
 
+
+      {% if product.stock > 0 %}
       <!-- Add to Cart & Buy Now Buttons -->
-      <div class="d-flex align-items-center mb-3">
-        <button class="btn btn-dark me-2">
+      <div class="align-items-center mb-3">
+        <button class="btn btn-black me-2">
           Add to Cart - ${{ product.price }}
         </button>
-        <button class="btn btn-dark">Buy Now - ${{ product.price }}</button>
+        <button class="btn btn-black">Buy Now - ${{ product.price }}</button>
       </div>
+
 
       <!-- Quantity Selector -->
       <div class="d-flex align-items-center mb-3">
         <label class="me-2">Quantity:</label>
         <input type="number" value="1" min="1" class="form-control w-25" />
       </div>
+      {% endif %}
 
       <!-- Compare Button -->
       <button class="btn btn-outline-dark">Compare to another product</button>
@@ -150,25 +163,34 @@
 
 <h2 class="text-center mb-4">Related Products</h2>
 <div class="row">
-    {% for product in related_products %}
-        <div class="col-md-3 mb-4">
-            <div class="card h-100 shadow-sm">
-                <img class="card-img-top" src="{{ product.images.first.image.url }}" alt="{{ product.name }}" style="object-fit: cover; height: 200px;">
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">{{ product.name }}</h5>
-                    <p class="card-text font-weight-bold">{{ product.price|floatformat:2 }} $</p>
-                    <a href="{% url 'app:product_detail' product.id %}" class="btn btn-primary mt-auto">View Details</a>
-                </div>
-            </div>
-        </div>
-    {% endfor %}
+  {% for product in related_products %}
+  <div class="col-md-3 mb-4">
+    <div class="card h-100 shadow-sm">
+      <img
+        class="card-img-top"
+        src="{{ product.images.first.image.url }}"
+        alt="{{ product.name }}"
+        style="object-fit: cover; height: 200px"
+      />
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title">{{ product.name }}</h5>
+        <p class="card-text font-weight-bold">
+          {{ product.price|floatformat:2 }} $
+        </p>
+        <a
+          href="{% url 'app:product_detail' product.id %}"
+          class="btn btn-primary mt-auto"
+          >View Details</a
+        >
+      </div>
+    </div>
+  </div>
+  {% endfor %}
 </div>
 
 <a href="{% url 'app:products' %}" class="btn btn-link mt-4"
   >Back to Product List</a
 >
-
-
 
 {% endblock %} {% block script %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zooming/2.1.1/zooming.min.js"></script>
