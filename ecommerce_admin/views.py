@@ -172,7 +172,7 @@ def add_product(request):
 @login_required
 @superuser_required
 def product_detail(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(Product.objects.all_objects(), id=product_id)
     return render(request, 'admin/product_detail.html', {'product': product})
 
 @login_required
@@ -210,3 +210,38 @@ def edit_product(request, product_id):
         product_form = ProductForm(instance=product)
 
     return render(request, 'admin/edit_product.html', {'product_form': product_form, 'product': product})
+
+
+@login_required
+@superuser_required
+def view_deleted_products(request):
+    products = Product.objects.all_objects().deleted()
+    return render(request, 'admin/view_deleted_products.html', {'products': products})
+
+@login_required
+@superuser_required
+def restore_product(request, product_id):
+    product = get_object_or_404(Product.objects.all_objects(), id=product_id)
+    if request.method == "POST":
+        product.restore()
+        product.save()
+        messages.success(request, "Product restored successfully!")
+        return redirect('products_list')
+    return render(request, 'admin/view_deleted_products.html', {'product': product})
+
+@login_required
+@superuser_required
+def view_deleted_categories(request):
+    categories = Category.objects.all_objects().deleted()
+    return render(request, 'admin/view_deleted_categories.html', {'categories': categories})
+
+@login_required
+@superuser_required
+def restore_category(request, category_id):
+    category = get_object_or_404(Category.objects.all_objects(), id=category_id)
+    if request.method == "POST":
+        category.restore()
+        category.save()
+        messages.success(request, "Category restored successfully!")
+        return redirect('categories_list')
+    return render(request, 'admin/view_deleted_categories.html', {'category': category})

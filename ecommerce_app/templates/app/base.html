@@ -33,7 +33,7 @@
     {% endblock %}
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light ml-5">
       <div class="container-fluid">
         <a class="navbar-brand" href="{% url 'app:index' %}">ShopHive</a>
         <button
@@ -50,6 +50,9 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <!-- Aligns items to the right -->
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'app:products' %}">Products</a>
+            </li>
             {% if user.is_authenticated %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'app:user_logout' %}">Logout</a>
@@ -62,15 +65,17 @@
               <a class="nav-link" href="{% url 'app:user_signup' %}">Sign Up</a>
             </li>
             {% endif %}
+            {% if request.user.is_superuser %}
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'app:products' %}">Products</a>
+              <a class="nav-link" href="{% url 'admin_dashboard' %}">Admin Panel</a>
             </li>
+            {% endif %}
           </ul>
         </div>
       </div>
     </nav>
-
-    <div class="container mt-4">
+    <hr>
+    <div class="container mt-2">
       {% if messages %}
       <div class="container mt-3">
         {% for message in messages %}

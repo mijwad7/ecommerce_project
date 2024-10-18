@@ -2,6 +2,8 @@
 {% block content %}
 <h2>Categories</h2>
 <a href="{% url 'add_category' %}" class="btn btn-black mb-2">Add Category</a>
+<a class="btn btn-black mb-2" href="{% url 'view_deleted_categories' %}">View Deleted Categories</a>
+
 <table class="table table-bordered">
     <thead>
         <tr>
@@ -14,11 +16,35 @@
         <tr>
             <td>{{ category.name }}</td>
             <td>
-                <a href="{% url 'edit_category' category.id %}" class="btn btn-warning btn-sm">Edit</a>
-                <a href="{% url 'delete_category' category.id %}" class="btn btn-danger btn-sm">Delete</a>
+                <a href="{% url 'edit_category' category.id %}" class="btn btn-outline-dark">Edit</a>
+                
+                <!-- Trigger Modal -->
+                <button type="button" class="btn btn-black" data-bs-toggle="modal" data-bs-target="#deleteModal{{ category.id }}">
+                    Delete
+                </button>
             </td>
-
         </tr>
+
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal{{ category.id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete the category "{{ category.name }}"?
+                    </div>
+                    <div class="modal-footer">
+                        <form method="post" action="{% url 'delete_category' category.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% endfor %}
     </tbody>
 </table>

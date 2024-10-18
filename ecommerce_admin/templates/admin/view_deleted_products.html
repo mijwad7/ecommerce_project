@@ -1,0 +1,53 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<h2>Deleted Product List</h2>
+<a href="{% url 'products_list' %}" class="btn btn-black mb-2">Back to Products</a>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+        <tr>
+            <td><a href="{% url 'product_detail' product.id %}">{{ product.name }}</a></td>
+            <td>{{ product.category }}</td>
+            <td>${{ product.price }}</td>
+            <td>
+                <!-- Button to trigger modal -->
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#restoreModal{{ product.id }}">
+                    Restore
+                </button>
+            </td>
+        </tr>
+
+        <!-- Modal -->
+        <div class="modal fade" id="restoreModal{{ product.id }}" tabindex="-1" aria-labelledby="restoreModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="restoreModalLabel">Confirm Restore</h5>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to restore {{ product.name }}?
+                    </div>
+                    <div class="modal-footer">
+                        <form method="post" action="{% url 'restore_product' product.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success">Yes, Restore</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

@@ -68,7 +68,8 @@ class ProductManager(models.Manager):
 
     def all_objects(self):
         return ProductQuerySet(self.model)
-    
+
+
 class Coupon(models.Model):
     code = models.CharField(max_length=20)
     discount_percent = models.DecimalField(max_digits=5, decimal_places=2)
@@ -107,11 +108,18 @@ class Product(models.Model):
         self.save()
 
     def clean(self):
+        if self.is_on_sale and not self.sale_price:
+            raise ValidationError("Sale price must be set if the product is on sale.")
         if self.is_on_sale and self.sale_price >= self.price:
             raise ValidationError("Sale price must be less than the regular price.")
+        
 
         # if not self.images.exists() or self.images.count() < 3:
         #     raise ValidationError("Product must have at least 3 images.")
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Calls the clean method before saving
+        super().save(*args, **kwargs)
 
 
 class ProductImage(models.Model):

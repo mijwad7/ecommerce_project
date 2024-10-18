@@ -3,6 +3,7 @@
 {% block content %}
 <h2>Product List</h2>
 <a class="btn btn-black mb-2" href="{% url 'add_product' %}">Add New Product</a>
+<a class="btn btn-black mb-2" href="{% url 'view_deleted_products' %}">View Deleted Products</a>
 <table class="table table-bordered">
     <thead>
         <tr>
@@ -15,14 +16,39 @@
     <tbody>
         {% for product in products %}
         <tr>
-            <td><a href="{% url 'product_detail' product.id %}">{{ product.name }}</a></td>
+            <td><a class="text-dark" href="{% url 'product_detail' product.id %}">{{ product.name }}</a></td>
             <td>{{ product.category }}</td>
             <td>${{ product.price }}</td>
             <td>
-                <a class="btn btn-warning" href="{% url 'edit_product' product.id %}">Edit</a>
-                <a class="btn btn-danger" href="{% url 'delete_product' product.id %}">Delete</a>
+                <a class="btn btn-outline-dark" href="{% url 'edit_product' product.id %}">Edit</a>
+                
+                <!-- Trigger Modal -->
+                <button type="button" class="btn btn-black" data-bs-toggle="modal" data-bs-target="#deleteModal{{ product.id }}">
+                    Delete
+                </button>
             </td>
         </tr>
+
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal{{ product.id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete "{{ product.name }}"?
+                    </div>
+                    <div class="modal-footer">
+                        <form method="post" action="{% url 'delete_product' product.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% endfor %}
     </tbody>
 </table>

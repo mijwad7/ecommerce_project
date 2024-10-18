@@ -22,7 +22,7 @@
     <label for="images">Upload New Images (Optional):</label>
     <input type="file" name="images" id="images" multiple>  <!-- Handle multiple images directly -->
     
-    <button type="submit">Update Product</button>
+    <button class="btn btn-black btn-lg w-100 mt-3 mb-4" type="submit">Update Product</button>
 </form>
 
 {% if messages %}
@@ -33,5 +33,4 @@
     </ul>
 {% endif %}
 
-<a href="{% url 'product_detail' product.id %}">Back to Product Details</a>
 {% endblock %}
