@@ -109,6 +109,10 @@ def products(request):
 
     if category_id:
         products = products.filter(category_id=category_id)
+
+    for product in products:
+        average_rating = product.reviews.aggregate(Avg('rating'))['rating__avg']
+        product.average_rating = average_rating if average_rating is not None else 0
     
     return render(request, "app/products.html", {
         "products": products,

@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -14,32 +16,7 @@
       rel="stylesheet"
     />
     <title>{% block title %} ShopHive {% endblock %}</title>
-    {% block style %}
-    <style>
-      body {
-        font-family: "Poppins", sans-serif;
-        font-weight: 400;
-      }
-      .btn-black {
-        background-color: #000; /* Pure black */
-        color: #fff; /* Text color - white */
-      }
-
-      .btn-black:hover {
-        background-color: #333; /* Darker shade on hover */
-        color: #fff; /* Keep text color white on hover */
-      }
-      .btn {
-        border-radius: 0px;
-      }
-      .form-control {
-        border-radius: 0px;
-      }
-      .card {
-        border-radius: 0px;
-      }
-    </style>
-    {% endblock %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light ml-5">

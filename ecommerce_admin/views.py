@@ -76,6 +76,8 @@ def edit_user(request, user_id):
     if request.method == 'POST':
         user.email = request.POST.get('email', user.email)
         user.is_blocked = 'is_blocked' in request.POST
+        user.is_superuser = 'is_superuser' in request.POST
+        user.is_active = 'is_active' in request.POST
         user.save()
         return redirect('user_list')
     return render(request, 'admin/edit_user.html', {'user': user})

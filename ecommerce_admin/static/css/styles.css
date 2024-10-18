@@ -1,0 +1,19 @@
+body {
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+}
+.btn {
+  border-radius: 0px;
+}
+.btn-black {
+  background-color: #000; /* Pure black */
+  color: #fff; /* Text color - white */
+}
+
+.btn-black:hover {
+  background-color: #333; /* Darker shade on hover */
+  color: #fff; /* Keep text color white on hover */
+}
+.form-control {
+  border-radius: 0px;
+}

@@ -1,5 +1,9 @@
 {% extends './base.html' %}
 
 {% block content %}
-<h1>Welcome to ShopHive</h1>
+<div class="container my-5 text-center banner" >
+    <h1 class="display-3">Welcome to ShopHive</h1>
+    <p class="h3">The one stop shop for all your needs.</p>
+    <a href="{% url 'app:products' %}" class="btn btn-black btn-lg mt-4">Shop Now</a>
+</div>
 {% endblock %}
