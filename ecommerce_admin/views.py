@@ -5,6 +5,8 @@ from .forms import UserProfileForm, LoginForm, ProductForm, ProductSpecFormSet
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
+from django.db.models import Q
+
 
 def superuser_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
@@ -127,8 +129,31 @@ def delete_category(request, category_id):
 @login_required
 @superuser_required
 def products_list(request):
+    query = request.GET.get('query')
+    category_id = request.GET.get('category')
+    sort_by = request.GET.get('sort', 'id')
     products = Product.objects.all()
-    return render(request, 'admin/products_list.html', {'products': products})
+
+    if query:
+        products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
+
+    if category_id:
+        products = products.filter(category_id=category_id)
+
+    if sort_by == 'name':
+        products = products.order_by('name')
+    elif sort_by == 'price':
+        products = products.order_by('price')
+    elif sort_by == 'category':
+        products = products.order_by('category__name')  # Assuming category has a name field
+    else:
+        products = products.order_by('id')
+
+    return render(request, 'admin/products_list.html', {
+        'products': products,
+        'categories': Category.objects.all(),
+    })
+
 
 @login_required
 @superuser_required

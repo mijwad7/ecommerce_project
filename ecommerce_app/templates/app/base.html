@@ -32,6 +32,12 @@
       .btn {
         border-radius: 0px;
       }
+      .form-control {
+        border-radius: 0px;
+      }
+      .card {
+        border-radius: 0px;
+      }
     </style>
     {% endblock %}
   </head>
@@ -82,15 +88,16 @@
       {% if messages %}
       <div class="container mt-3">
         {% for message in messages %}
-        <div
-          class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}"
-          role="alert"
-        >
-          {{ message }}
-        </div>
+          <div class="alert alert-dismissible fade show {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
         {% endfor %}
       </div>
-      {% endif %} {% block content %} {% endblock %}
+    {% endif %}
+     {% block content %} {% endblock %}
     </div>
     {% block script %}
     <script

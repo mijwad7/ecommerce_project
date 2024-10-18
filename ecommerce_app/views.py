@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec
+from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec, Category
 from .forms import UserSignUpForm
 from .otp_utils import send_otp_to_email
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Q
 from django.utils import timezone
 
 
@@ -99,8 +99,21 @@ def index(request):
 
 
 def products(request):
-    products = Product.objects.all()
-    return render(request, "app/products.html", {"products": products})
+    query = request.GET.get('query')
+    category_id = request.GET.get('category')
+    products = Product.objects.all().order_by('id')
+    categories = Category.objects.all()
+
+    if query:
+        products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
+
+    if category_id:
+        products = products.filter(category_id=category_id)
+    
+    return render(request, "app/products.html", {
+        "products": products,
+        "categories": categories
+    })
 
 
 def product_detail(request, product_id):
