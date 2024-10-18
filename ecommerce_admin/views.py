@@ -52,7 +52,7 @@ def index(request):
 @login_required
 @superuser_required
 def user_list(request):
-    users = UserProfile.objects.filter(is_active=True)
+    users = UserProfile.objects.all()
     return render(request, 'admin/user_list.html', {'users': users})
 
 @login_required

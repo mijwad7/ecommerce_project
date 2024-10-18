@@ -38,6 +38,9 @@
     background-color: #333; /* Darker shade on hover */
     color: #fff; /* Keep text color white on hover */
   }
+  .btn {
+    border-radius: 0px;
+  }
 </style>
 {% endblock %} {% block content %}
 <div class="container">
@@ -130,10 +133,10 @@
       </div>
       <!-- Add to Cart & Buy Now Buttons -->
       <div class="align-items-center mb-3">
-        <button class="btn btn-black me-2">
+        <button class="btn btn-black me-2 mb-sm-3">
           Add to Cart - ${{ product.price }}
         </button>
-        <button class="btn btn-black">Buy Now - ${{ product.price }}</button>
+        <button class="btn btn-black mb-sm-3">Buy Now - ${{ product.price }}</button>
       </div>
       {% endif %}
       
