@@ -89,16 +89,15 @@ def demo_login(request):
     user = authenticate(username='mijwad', password='1234')
     if user is not None:
         login(request, user)
-        return redirect('app:index')  # Redirect to the main page after login
+        return redirect('app:index')
     else:
-        # Handle case where demo user is not set up properly
         return redirect('login')
 
 def index(request):
     featured_products = Product.objects.filter(is_featured=True)[:3]
     on_sale_products = Product.objects.filter(is_on_sale=True)[:3]
     recently_added_products = Product.objects.filter().order_by('-id')[:3]
-    
+
     return render(request, "app/index.html", {
         'featured_products': featured_products,
         'on_sale_products': on_sale_products,
@@ -121,7 +120,7 @@ def products(request):
     for product in products:
         average_rating = product.reviews.aggregate(Avg('rating'))['rating__avg']
         product.average_rating = average_rating if average_rating is not None else 0
-    
+
     return render(request, "app/products.html", {
         "products": products,
         "categories": categories

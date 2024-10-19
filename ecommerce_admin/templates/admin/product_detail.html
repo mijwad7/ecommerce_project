@@ -1,20 +1,24 @@
-{% extends "./base.html" %}
-
-{% block content %}
+{% extends "./base.html" %} {% block content %}
 <h2>{{ product.name }}</h2>
 <p>Category: {{ product.category }}</p>
 <p>Description: {{ product.description }}</p>
 <p>Price: ${{ product.price }}</p>
 <p>In Stock: {{ product.stock }}</p>
+{% for spec in specs %}
+<p><strong>{{ spec.key }}:</strong> {{ spec.value }}</p>
+{% endfor %}
 
 <h3>Images:</h3>
 <div>
-    {% for image in product.images.all %}
-        <img src="{{ image.image.url }}" alt="Product Image" style="width:200px; height:200px;">
-    {% empty %}
-        <p>No images available.</p>
-    {% endfor %}
+  {% for image in product.images.all %}
+  <img
+    src="{{ image.image.url }}"
+    alt="Product Image"
+    style="width: 200px; height: 200px"
+  />
+  {% empty %}
+  <p>No images available.</p>
+  {% endfor %}
 </div>
 
-<a href="{% url 'products_list' %}">Back to Product List</a>
 {% endblock %}

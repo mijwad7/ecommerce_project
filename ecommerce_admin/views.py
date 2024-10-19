@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from ecommerce_app.models import UserProfile, Category, Product, ProductImage
+from ecommerce_app.models import UserProfile, Category, Product, ProductImage, ProductSpec
 from .forms import UserProfileForm, LoginForm, ProductForm, ProductSpecFormSet
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -147,7 +147,7 @@ def products_list(request):
     elif sort_by == 'price':
         products = products.order_by('price')
     elif sort_by == 'category':
-        products = products.order_by('category__name')  # Assuming category has a name field
+        products = products.order_by('category__name')
     else:
         products = products.order_by('id')
 
@@ -200,7 +200,11 @@ def add_product(request):
 @superuser_required
 def product_detail(request, product_id):
     product = get_object_or_404(Product.objects.all_objects(), id=product_id)
-    return render(request, 'admin/product_detail.html', {'product': product})
+    specs = ProductSpec.objects.filter(product=product)
+    return render(request, 'admin/product_detail.html', {
+        'product': product,
+        'specs': specs
+    })
 
 @login_required
 @superuser_required
