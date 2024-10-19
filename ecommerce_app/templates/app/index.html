@@ -1,9 +1,155 @@
-{% extends './base.html' %}
-
-{% block content %}
-<div class="container my-5 text-center banner" >
-    <h1 class="display-3">Welcome to ShopHive</h1>
-    <p class="h3">The one stop shop for all your needs.</p>
-    <a href="{% url 'app:products' %}" class="btn btn-black btn-lg mt-4">Shop Now</a>
+{% extends './base.html' %} {% load static %} {% block content %}
+<div class="container my-5 banner">
+  <div class="row align-items-center">
+    <div class="col-md-6 text-md-start mb-4 mb-md-0">
+      <h1 class="display-3">Welcome to ShopHive</h1>
+      <p class="h4 mb-4">The one-stop shop for all your needs.</p>
+      <p class="lead">
+        Discover a wide range of products tailored to suit your lifestyle. From
+        the latest electronics to everyday essentials, we have something for
+        everyone. Enjoy exclusive deals and fast shipping right to your
+        doorstep.
+      </p>
+      <a href="{% url 'app:products' %}" class="btn btn-black btn-lg"
+        >Shop Now</a
+      >
+    </div>
+    <div class="col-md-6 text-center">
+      <img
+        src="{% static 'img/banner.png' %}"
+        alt="Banner Image"
+        class="img-fluid"
+      />
+    </div>
+  </div>
 </div>
+<br>
+<!-- Featured Products Section -->
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Featured Products</h2>
+  <div class="row">
+    {% for product in featured_products %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 shadow-sm">
+        <a href="{% url 'app:product_detail' product.id %}">
+          <img
+            class="card-img-top"
+            src="{{ product.images.first.image.url }}"
+            alt="{{ product.name }}"
+            style="object-fit: contain; max-height: 200px"
+          />
+        </a>
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">
+            <a
+              class="text-dark"
+              href="{% url 'app:product_detail' product.id %}"
+              >{{ product.name }}</a
+            >
+          </h5>
+          <p class="card-text text-muted">{{ product.category }}</p>
+          <p>
+            {% if product.is_on_sale %}
+            <span style="text-decoration: line-through" class="h5"
+              >${{ product.price|floatformat:2 }}</span
+            >
+            <span class="h5">${{ product.sale_price|floatformat:2 }}</span>
+            {% else %}
+            <span class="h5">${{ product.price|floatformat:2 }}</span>
+            {% endif %}
+          </p>
+          {% if request.user.is_authenticated %}
+          <a href="#" class="btn btn-black mt-auto">Add to cart</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- On-Sale Products Section -->
+<div class="container mt-5">
+  <h2 class="text-center mb-4">On-Sale Products</h2>
+  <div class="row">
+    {% for product in on_sale_products %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 shadow-sm">
+        <a href="{% url 'app:product_detail' product.id %}">
+          <img
+            class="card-img-top"
+            src="{{ product.images.first.image.url }}"
+            alt="{{ product.name }}"
+            style="object-fit: contain; max-height: 200px"
+          />
+        </a>
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">
+            <a
+              class="text-dark"
+              href="{% url 'app:product_detail' product.id %}"
+              >{{ product.name }}</a
+            >
+          </h5>
+          <p class="card-text text-muted">{{ product.category }}</p>
+          <p>
+            <span style="text-decoration: line-through" class="h5"
+              >${{ product.price|floatformat:2 }}</span
+            >
+            <span class="h5">${{ product.sale_price|floatformat:2 }}</span>
+          </p>
+          {% if request.user.is_authenticated %}
+          <a href="#" class="btn btn-black mt-auto">Add to cart</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Recently Added Products Section -->
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Recently Added Products</h2>
+  <div class="row">
+    {% for product in recently_added_products %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 shadow-sm">
+        <a href="{% url 'app:product_detail' product.id %}">
+          <img
+            class="card-img-top"
+            src="{{ product.images.first.image.url }}"
+            alt="{{ product.name }}"
+            style="object-fit: contain; max-height: 200px"
+          />
+        </a>
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">
+            <a
+              class="text-dark"
+              href="{% url 'app:product_detail' product.id %}"
+              >{{ product.name }}</a
+            >
+          </h5>
+          <p class="card-text text-muted">{{ product.category }}</p>
+          <p>
+            {% if product.is_on_sale %}
+            <span style="text-decoration: line-through" class="h5"
+              >${{ product.price|floatformat:2 }}</span
+            >
+            <span class="h5">${{ product.sale_price|floatformat:2 }}</span>
+            {% else %}
+            <span class="h5">${{ product.price|floatformat:2 }}</span>
+            {% endif %}
+          </p>
+          {% if request.user.is_authenticated %}
+          <a href="#" class="btn btn-black mt-auto">Add to cart</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
 {% endblock %}

@@ -95,7 +95,15 @@ def demo_login(request):
         return redirect('login')
 
 def index(request):
-    return render(request, "app/index.html")
+    featured_products = Product.objects.filter(is_featured=True)[:3]
+    on_sale_products = Product.objects.filter(is_on_sale=True)[:3]
+    recently_added_products = Product.objects.filter().order_by('-id')[:3]
+    
+    return render(request, "app/index.html", {
+        'featured_products': featured_products,
+        'on_sale_products': on_sale_products,
+        'recently_added_products': recently_added_products
+    })
 
 
 def products(request):
