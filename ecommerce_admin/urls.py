@@ -28,7 +28,8 @@ urlpatterns = [
     path('view_deleted_brands/', views.view_deleted_brands, name='view_deleted_brands'),
     path('restore_category/<int:category_id>/', views.restore_category, name='restore_category'),
     path('add_product_variant/<int:product_id>/', views.add_product_variant, name='add_product_variant'),
-    # path('edit_product_variant/<int:product_id>/<int:variant_id>/', views.edit_product_variant, name='edit_product_variant'),
-    # path('delete_product_variant/<int:product_id>/<int:variant_id>/', views.delete_product_variant, name='delete_product_variant'),
+    path('product_variant/<int:variant_id>/', views.product_variant_detail, name='product_variant_detail'),
+    path('product/variant/<int:variant_id>/edit/', views.edit_product_variant, name='edit_product_variant'),
+    path('product/variant/<int:variant_id>/delete/', views.delete_product_variant, name='delete_product_variant'),
     # path('view_product_variants/<int:product_id>/', views.view_product_variants, name='view_product_variants'),
 ]

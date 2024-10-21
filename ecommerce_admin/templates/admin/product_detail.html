@@ -1,29 +1,56 @@
-{% extends "./base.html" %} {% block content %}
-<h2>{{ product.name }}</h2>
-<p>Category: {{ product.category }}</p>
-<p>Description: {{ product.description }}</p>
-<p>Price: ${{ product.price }}</p>
-<p>In Stock: {{ product.stock }}</p>
+{% extends './base.html' %}
 
-<h3>Variants:</h3>
-{% for variant in variants %}
-{{ variant }}
-{% endfor %}
-{% for spec in specs %}
-<p><strong>{{ spec.key }}:</strong> {{ spec.value }}</p>
-{% endfor %}
+{% block title %}Product Details{% endblock %}
 
-<h3>Images:</h3>
-<div>
-  {% for image in product.images.all %}
-  <img
-    src="{{ image.image.url }}"
-    alt="Product Image"
-    style="width: 200px; height: 200px"
-  />
-  {% empty %}
-  <p>No images available.</p>
-  {% endfor %}
+{% block content %}
+<div class="container my-4">
+    <div class="card shadow">
+        <div class="card-body">
+            <h2 class="card-title">{{ product.name }}</h2>
+            <p><strong>Category:</strong> {{ product.category }}</p>
+            <p><strong>Description:</strong> {{ product.description }}</p>
+            <p><strong>Price:</strong> ${{ product.price }}</p>
+            <p><strong>In Stock:</strong> {{ product.stock }}</p>
+        </div>
+    </div>
+    
+    <div class="my-4">
+        <h3>Variants:</h3>
+        <ul class="list-group">
+            {% for variant in variants %}
+            <li class="list-group-item">
+                <a href="{% url 'product_variant_detail' variant.id %}" class="text-dark font-weight-bold">
+                    {{ variant }}
+                </a>
+            </li>
+            {% empty %}
+            <p class="text-muted">No variants available.</p>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="my-4">
+        <h3>Specifications:</h3>
+        <div class="row">
+            {% for spec in specs %}
+            <div class="col-md-6">
+                <p><strong>{{ spec.key }}:</strong> {{ spec.value }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="my-4">
+        <h3>Images:</h3>
+        <div class="row">
+            {% for image in product.images.all %}
+            <div class="col-md-3 col-sm-6 mb-3">
+                <img src="{{ image.image.url }}" alt="Product Image" class="img-thumbnail" style="width: 100%; height: auto;" />
+            </div>
+            {% empty %}
+            <p class="text-muted">No images available.</p>
+            {% endfor %}
+        </div>
+    </div>
 </div>
-
 {% endblock %}

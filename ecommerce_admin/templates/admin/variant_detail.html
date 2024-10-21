@@ -1,0 +1,79 @@
+{% extends './base.html' %} {% block title %}Product Variant Details
+{% endblock %} {% block content %}
+<div class="container my-4">
+  <div class="card shadow">
+    <div class="card-body">
+      <h2 class="card-title">
+        {{ variant.product.name }} - {{ variant.variant_type }}: {{ variant.value }}
+      </h2>
+      <hr />
+      <p><strong>Stock:</strong> {{ variant.stock }}</p>
+      <p><strong>Price:</strong> ${{ variant.price }}</p>
+      {% if variant.is_on_sale %}
+      <p>
+        <strong>Sale Price:</strong>
+        <span class="text-danger">${{ variant.sale_price }}</span>
+      </p>
+      {% endif %}
+      <p><strong>Variant Type:</strong> {{ variant.variant_type }}</p>
+      <p><strong>Variant Value:</strong> {{ variant.value }}</p>
+      <p>
+        <a
+          href="{% url 'product_detail' variant.product.id %}"
+          class="text-dark font-weight-bold"
+        >
+          Back to Product
+        </a>
+      </p>
+      <a href="{% url 'edit_product_variant' variant.id %}" class="btn btn-outline-dark">
+        Edit
+      </a>
+      <button type="button" class="btn btn-black" data-bs-toggle="modal" data-bs-target="#deleteVariantModal{{ variant.id }}">
+        Delete
+    </button>
+    </div>
+  </div>
+
+
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteVariantModal{{ variant.id }}" tabindex="-1" aria-labelledby="deleteVariantModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteVariantModalLabel">Confirm Delete</h5>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this variant?
+            </div>
+            <div class="modal-footer">
+                <form method="post" action="{% url 'delete_product_variant' variant.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+  <div class="my-4">
+    <h3>Images:</h3>
+    <div class="row">
+      {% for image in variant.images.all %}
+      <div class="col-md-3 col-sm-6 mb-3">
+        <img
+          src="{{ image.image.url }}"
+          alt="Product Image"
+          class="img-thumbnail"
+          style="width: auto; height: 35vh"
+        />
+      </div>
+      {% empty %}
+      <p class="text-muted">No images available.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

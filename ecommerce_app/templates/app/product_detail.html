@@ -8,7 +8,7 @@
         <a class="text-dark" href="{% url 'app:products' %}">Products</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
-        {{ product.name }}
+        <a class="text-dark" href="{% url 'app:product_detail' product.id %}">{{ product.name }}</a>
       </li>
     </ol>
   </nav>
@@ -24,7 +24,7 @@
           class="img-fluid"
         />
       </div>
-      <div class="row">
+      <div class="row d-flex justify-content-center">
         {% for image in product.images.all %}
         <div class="col-3">
           <img

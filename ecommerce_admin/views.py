@@ -334,6 +334,65 @@ def add_product_variant(request, product_id):
 #     variants = ProductVariant.objects.filter(product=product)
 #     return render(request, 'admin/view_product_variants.html', {'product': product, 'variants': variants})
 
+def product_variant_detail(request, variant_id):
+    # Fetch the product variant using the ID
+    variant = get_object_or_404(ProductVariant, id=variant_id)
+    
+    # Pass the variant details to the template
+    context = {
+        'variant': variant,
+        'images': variant.images.all(),
+    }
+    return render(request, 'admin/variant_detail.html', context)
+
+@login_required
+@superuser_required
+def edit_product_variant(request, variant_id):
+    variant = get_object_or_404(ProductVariant, id=variant_id)
+    product = variant.product  # Get the parent product
+
+    if request.method == 'POST':
+        variant_form = ProductVariantForm(request.POST, instance=variant)
+        uploaded_images = request.FILES.getlist('images')
+
+        if variant_form.is_valid():
+            variant = variant_form.save()
+
+            # If new images are uploaded, delete the old ones and save the new ones
+            if uploaded_images:
+                ProductVariantImage.objects.filter(variant=variant).delete()  # Delete existing images
+                for image in uploaded_images:
+                    ProductVariantImage.objects.create(variant=variant, image=image)
+
+            messages.success(request, 'Product variant updated successfully!')
+            return redirect('product_variant_detail', variant_id=variant.id)
+
+        else:
+            messages.error(request, 'Please correct the errors below.')
+
+    else:
+        variant_form = ProductVariantForm(instance=variant)
+
+    return render(request, 'admin/edit_product_variant.html', {
+        'variant_form': variant_form,
+        'product': product,
+        'variant': variant,
+    })
+
+@login_required
+@superuser_required
+def delete_product_variant(request, variant_id):
+    variant = get_object_or_404(ProductVariant, id=variant_id)
+    product = variant.product  # Get the parent product
+
+    if request.method == 'POST':
+        variant.delete()
+        messages.success(request, 'Product variant deleted successfully!')
+        return redirect('product_detail', product_id=product.id)
+
+    return render(request, 'admin/delete_product_variant.html', {'variant': variant, 'product': product})
+
+
 
 @login_required
 @superuser_required

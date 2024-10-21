@@ -1,36 +1,43 @@
-{% extends "./base.html" %}
-
-{% block content %}
+{% extends "./base.html" %} {% block content %}
 <h2>Edit Product: {{ product.name }}</h2>
 
 <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    
-    <h3>Product Details</h3>
-    {{ product_form.as_p }}  <!-- This renders all product-related fields -->
+  {% csrf_token %}
 
-    <h3>Product Images:</h3>
-    <p>Current Images:</p>
-    <div>
-        {% for image in product.images.all %}
-            <img src="{{ image.image.url }}" alt="Product Image" style="width:100px; height:auto;">
-        {% empty %}
-            <p>No images available for this product.</p>
-        {% endfor %}
-    </div>
+  <h3>Product Details</h3>
+  {{ product_form.as_p }}
+  <!-- This renders all product-related fields -->
 
-    <label for="images">Upload New Images (Optional):</label>
-    <input type="file" name="images" id="images" multiple>  <!-- Handle multiple images directly -->
-    
-    <button class="btn btn-black btn-lg w-100 mt-3 mb-4" type="submit">Update Product</button>
+  <h3>Product Images:</h3>
+  <p>Current Images:</p>
+  <div>
+    {% for image in product.images.all %}
+    <img
+      src="{{ image.image.url }}"
+      alt="Product Image"
+      style="width: 100px; height: auto"
+    />
+    {% empty %}
+    <p>No images available for this product.</p>
+    {% endfor %}
+  </div>
+
+  <label for="images">Upload New Images (Optional):</label>
+  <input type="file" name="images" id="images" multiple />
+  <!-- Handle multiple images directly -->
+
+  <button class="btn btn-black btn-lg w-100 mt-3 mb-4" type="submit">
+    Update Product
+  </button>
 </form>
+<a href="{% url 'add_product_variant' product.id %}" class="btn btn-black btn-lg w-100 mt-3 mb-4" type="submit">
+  Add Product Variant
+</a>
 
 {% if messages %}
-    <ul>
-    {% for message in messages %}
-        <li>{{ message }}</li>
-    {% endfor %}
-    </ul>
-{% endif %}
-
-{% endblock %}
+<ul>
+  {% for message in messages %}
+  <li>{{ message }}</li>
+  {% endfor %}
+</ul>
+{% endif %} {% endblock %}
