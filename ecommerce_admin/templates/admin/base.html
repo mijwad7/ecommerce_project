@@ -16,51 +16,44 @@
     />
     <title>Admin Panel</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    {% block script %}
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-      crossorigin="anonymous"
-    ></script>
-    {% endblock %}
-
+    
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <a class="navbar-brand" href="{% url 'admin_dashboard' %}">Admin Panel</a>
-
+      
       <!-- Toggler button for mobile view -->
       <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarNav"
-        aria-controls="navbarNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
       >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <!-- Navbar links -->
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          {% if user.is_authenticated %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'user_list' %}">Users</a>
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <!-- Navbar links -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'user_list' %}">Users</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'products_list' %}">Products</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'categories_list' %}"
-              >Categories</a
+            >Categories</a
             >
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'brands_list' %}"
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'brands_list' %}"
               >Brands</a
-            >
-          </li>
+              >
+            </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">Logout</a>
           </li>
@@ -83,11 +76,19 @@
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-        {% endfor %}
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% block content %} {% endblock %}
       </div>
-    {% endif %}
-     {% block content %} {% endblock %}
-    </div>
-  </body>
-
-</html>
+      {% block script %}
+      <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"
+      ></script>
+      {% endblock %}
+    </body>
+    
+    </html>
+    

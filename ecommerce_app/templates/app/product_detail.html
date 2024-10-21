@@ -46,6 +46,7 @@
       {% if product.brand %}
       <p>From {{ product.brand }}</p>
       {% endif %}
+      {% if variants %}
       <p class="h4">Variants:</p>
       <div id="variant-list">
         {% for variant in variants %}
@@ -57,10 +58,11 @@
           data-stock="{{ variant.stock }}"
           data-is-on-sale="{{ variant.is_on_sale }}"
         >
-          {{ variant.name }}
+          {{ variant.variant_type }}: {{ variant.value }}
         </button>
         {% endfor %}
       </div>
+      {% endif %}
       <div class="mb-2">
         <span
           {% if product.is_on_sale %}
