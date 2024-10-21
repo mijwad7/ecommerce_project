@@ -236,4 +236,20 @@
   
 </script>
 
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const variantButtons = document.querySelectorAll(".variant-btn");
+
+      variantButtons.forEach(button => {
+          button.addEventListener("click", function() {
+              // Remove 'active-variant' class from all buttons
+              variantButtons.forEach(btn => btn.classList.remove("btn-black"));
+              
+              // Add 'active-variant' class to the clicked button
+              this.classList.add("btn-black");
+          });
+      });
+  });
+</script>
+
 {% endblock %}
