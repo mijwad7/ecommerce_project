@@ -1,0 +1,20 @@
+{% extends './base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Add Product Variant for {{ product.name }}</h2>
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ variant_form.as_p }}
+        </div>
+        
+        <div class="mb-3">
+            <label for="images">Upload Variant Images (Minimum 3)</label>
+            <input type="file" name="images" accept="image/*" multiple class="form-control">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add Variant</button>
+    </form>
+</div>
+{% endblock %}

@@ -4,6 +4,11 @@
 <p>Description: {{ product.description }}</p>
 <p>Price: ${{ product.price }}</p>
 <p>In Stock: {{ product.stock }}</p>
+
+<h3>Variants:</h3>
+{% for variant in variants %}
+{{ variant }}
+{% endfor %}
 {% for spec in specs %}
 <p><strong>{{ spec.key }}:</strong> {{ spec.value }}</p>
 {% endfor %}

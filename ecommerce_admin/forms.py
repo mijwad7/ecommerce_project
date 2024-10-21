@@ -1,5 +1,5 @@
 from django import forms
-from ecommerce_app.models import UserProfile, Product, ProductImage, ProductSpec
+from ecommerce_app.models import UserProfile, Product, ProductImage, ProductSpec, ProductVariant
 from django.forms import inlineformset_factory
 
 
@@ -38,7 +38,7 @@ class LoginForm(forms.Form):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description', 'stock', 'price', 'is_on_sale', 'is_featured', 'sale_price', 'category', 'coupons']
+        fields = ['name', 'description', 'stock', 'price', 'is_on_sale', 'is_featured', 'sale_price', 'category', 'brand', 'coupons']
 
     def __init__(self, *args, **kwargs):
         super(ProductForm, self).__init__(*args, **kwargs)
@@ -58,3 +58,30 @@ class ProductForm(forms.ModelForm):
 
 
 ProductSpecFormSet = inlineformset_factory(Product, ProductSpec, fields=('key', 'value'), extra=5, can_delete=True)
+
+
+class ProductVariantForm(forms.ModelForm):
+    class Meta:
+        model = ProductVariant
+        fields = ['name', 'variant_type', 'value', 'stock', 'price', 'is_on_sale', 'sale_price']
+    
+    def __init__(self, *args, **kwargs):
+        super(ProductVariantForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if not isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'form-control'})
+
+    def clean(self):
+        cleaned_data = super().clean()
+        is_on_sale = cleaned_data.get("is_on_sale")
+        sale_price = cleaned_data.get("sale_price")
+
+        # Ensure sale price is present if the product is marked as on sale
+        if is_on_sale and not sale_price:
+            self.add_error('sale_price', 'Sale price is required when marking as on sale.')
+
+        # Ensure sale price is less than regular price if it exists
+        if sale_price and sale_price >= cleaned_data.get("price"):
+            self.add_error('sale_price', 'Sale price must be less than the regular price.')
+        
+        return cleaned_data

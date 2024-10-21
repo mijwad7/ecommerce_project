@@ -1,0 +1,51 @@
+{% extends './base.html' %}
+{% block content %}
+<h2>Brands</h2>
+<a href="{% url 'add_brand' %}" class="btn btn-black mb-2">Add Brand</a>
+<a class="btn btn-black mb-2" href="{% url 'view_deleted_brands' %}">View Deleted Brands</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Brand</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for brand in brands %}
+        <tr>
+            <td>{{ brand.name }}</td>
+            <td>
+                <a href="{% url 'edit_brand' brand.id %}" class="btn btn-outline-dark">Edit</a>
+                
+                <!-- Trigger Modal -->
+                <button type="button" class="btn btn-black" data-bs-toggle="modal" data-bs-target="#deleteModal{{ brand.id }}">
+                    Delete
+                </button>
+            </td>
+        </tr>
+
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal{{ brand.id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete the brand "{{ brand.name }}"?
+                    </div>
+                    <div class="modal-footer">
+                        <form method="post" action="{% url 'delete_brand' brand.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

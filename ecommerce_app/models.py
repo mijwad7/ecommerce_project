@@ -53,6 +53,38 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+class BrandQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(is_deleted=False)
+
+    def deleted(self):
+        return self.filter(is_deleted=True)
+
+
+class BrandManager(models.Manager):
+    def get_queryset(self):
+        return BrandQuerySet(self.model).active()
+
+    def all_objects(self):
+        return BrandQuerySet(self.model)
+
+
+class Brand(models.Model):
+    name = models.CharField(max_length=20)
+    is_deleted = models.BooleanField(default=False)
+
+    objects = BrandManager()
+
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.save()
+
+    def restore(self, *args, **kwargs):
+        self.is_deleted = False
+        self.save()
+
+    def __str__(self):
+        return self.name
 
 class ProductQuerySet(models.QuerySet):
     def active(self):
@@ -91,6 +123,7 @@ class Product(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name="products", blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
     coupons = models.ManyToManyField(Coupon, blank=True, related_name="products")
 
@@ -150,6 +183,42 @@ class ProductSpec(models.Model):
 
     def __str__(self):
         return f"{self.key}: {self.value}"
+
+class ProductVariant(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="variants")
+    name = models.CharField(max_length=100, help_text="Variant name (e.g., iPhone 15 Pro, Blue)")
+    variant_type = models.CharField(max_length=50, help_text="Type of variant (e.g., model, color, size)")
+    value = models.CharField(max_length=50, help_text="Specific variant value (e.g., Blue, 128GB)")
+    stock = models.PositiveIntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    is_on_sale = models.BooleanField(default=False)
+    sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['product', 'variant_type', 'value'], name='unique_variant')
+        ]
+
+    def __str__(self):
+        return f"{self.product.name} - {self.variant_type}: {self.value}"
+    
+class ProductVariantImage(models.Model):
+    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name="images")
+    image = models.ImageField(upload_to="variant_images/")
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.process_image()
+
+    def process_image(self):
+        img = PilImage.open(self.image)
+        img = img.convert("RGB")
+
+        # Resize the image to a maximum of 500x500 while maintaining the aspect ratio
+        img.thumbnail((500, 500), PilImage.LANCZOS)
+
+        img.save(self.image.path)
+
 
 
 class EmailOTPDevice(Device):

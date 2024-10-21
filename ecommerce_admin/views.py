@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from ecommerce_app.models import UserProfile, Category, Product, ProductImage, ProductSpec
-from .forms import UserProfileForm, LoginForm, ProductForm, ProductSpecFormSet
+from ecommerce_app.models import UserProfile, Category, Product, ProductImage, ProductSpec, Brand, ProductVariantImage, ProductVariant
+from .forms import UserProfileForm, LoginForm, ProductForm, ProductSpecFormSet, ProductVariantForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
@@ -130,6 +130,51 @@ def delete_category(request, category_id):
 
 @login_required
 @superuser_required
+def brands_list(request):
+    brands = Brand.objects.all()
+    return render(request, 'admin/brands_list.html', {'brands': brands})
+
+
+@login_required
+@superuser_required
+def add_brand(request):
+    if request.method == "POST":
+        brand_name = request.POST.get('brand_name')
+        if brand_name:
+            Brand.objects.create(name=brand_name)
+            messages.success(request, "Brand added successfully!")
+            return redirect('brands_list')
+        else:
+            messages.error(request, "Please enter a brand name.")
+    return render(request, 'admin/add_brand.html')
+
+@login_required
+@superuser_required
+def edit_brand(request, brand_id):
+    brand = get_object_or_404(Brand, id=brand_id)
+    if request.method == "POST":
+        brand_name = request.POST.get('name')
+        if brand_name:
+            brand.name = brand_name
+            brand.save()
+            messages.success(request, "Brand updated successfully!")
+            return redirect('brands_list')
+        else:
+            messages.error(request, "Please enter a brand name.")
+    return render(request, 'admin/edit_brand.html', {'brand': brand})
+
+@login_required
+@superuser_required
+def delete_brand(request, brand_id):
+    brand = get_object_or_404(Brand, id=brand_id)
+    if request.method == "POST":
+        brand.delete()
+        messages.success(request, "Brand deleted successfully!")
+        return redirect('brands_list')
+    return render(request, 'admin/delete_brand.html', {'brand': brand})
+
+@login_required
+@superuser_required
 def products_list(request):
     query = request.GET.get('query')
     category_id = request.GET.get('category')
@@ -201,9 +246,11 @@ def add_product(request):
 def product_detail(request, product_id):
     product = get_object_or_404(Product.objects.all_objects(), id=product_id)
     specs = ProductSpec.objects.filter(product=product)
+    variants = ProductVariant.objects.filter(product=product)
     return render(request, 'admin/product_detail.html', {
         'product': product,
-        'specs': specs
+        'specs': specs,
+        'variants': variants
     })
 
 @login_required
@@ -242,6 +289,51 @@ def edit_product(request, product_id):
 
     return render(request, 'admin/edit_product.html', {'product_form': product_form, 'product': product})
 
+@login_required
+@superuser_required
+def add_product_variant(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    if request.method == 'POST':
+        variant_form = ProductVariantForm(request.POST)
+        uploaded_images = request.FILES.getlist('images')
+
+        if variant_form.is_valid():
+            variant = variant_form.save(commit=False)
+            variant.product = product
+
+            # Ensure at least 3 images are provided
+            if len(uploaded_images) < 3:
+                messages.error(request, 'Each variant must have at least 3 images.')
+                return render(request, 'admin/add_product_variant.html', {'variant_form': variant_form})
+
+            variant.save()
+
+            # Save variant images
+            for image in uploaded_images:
+                ProductVariantImage.objects.create(variant=variant, image=image)
+
+            messages.success(request, 'Product variant added successfully!')
+            return redirect('product_detail', product_id=product.id)
+
+        else:
+            messages.error(request, 'Please correct the errors below.')
+
+    else:
+        variant_form = ProductVariantForm()
+
+    return render(request, 'admin/add_product_variant.html', {
+        'variant_form': variant_form,
+        'product': product,
+    })
+
+# @login_required
+# @superuser_required
+# def view_product_variants(request, product_id):
+#     product = get_object_or_404(Product, id=product_id)
+#     variants = ProductVariant.objects.filter(product=product)
+#     return render(request, 'admin/view_product_variants.html', {'product': product, 'variants': variants})
+
 
 @login_required
 @superuser_required
@@ -276,3 +368,20 @@ def restore_category(request, category_id):
         messages.success(request, "Category restored successfully!")
         return redirect('categories_list')
     return render(request, 'admin/view_deleted_categories.html', {'category': category})
+
+@login_required
+@superuser_required
+def view_deleted_brands(request):
+    brands = Brand.objects.all_objects().deleted()
+    return render(request, 'admin/view_deleted_brands.html', {'brands': brands})
+
+@login_required
+@superuser_required
+def restore_brand(request, brand_id):
+    brand = get_object_or_404(Brand.objects.all_objects(), id=brand_id)
+    if request.method == "POST":
+        brand.restore()
+        brand.save()
+        messages.success(request, "Brand restored successfully!")
+        return redirect('brands_list')
+    return render(request, 'admin/view_deleted_brands.html', {'brand': brand})

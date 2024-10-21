@@ -1,6 +1,5 @@
-{% extends './base.html' %} {% load static %}
-{% block title %} {{ product.name }} {% endblock %}
- {% block content %}
+{% extends './base.html' %} {% load static %} {% block title %}
+{{ product.name }} {% endblock %} {% block content %}
 <div class="container">
   <!-- Breadcrumbs -->
   <nav aria-label="breadcrumb">
@@ -44,8 +43,33 @@
     <!-- Product Details Section -->
     <div class="col-md-6">
       <h2>{{ product.name }}</h2>
+      {% if product.brand %}
+      <p>From {{ product.brand }}</p>
+      {% endif %}
+      <p class="h4">Variants:</p>
+      <div id="variant-list">
+        {% for variant in variants %}
+        <button
+          class="variant-btn btn btn-outline-dark mb-2"
+          data-variant-id="{{ variant.id }}"
+          data-price="{{ variant.price }}"
+          data-sale-price="{{ variant.sale_price }}"
+          data-stock="{{ variant.stock }}"
+          data-is-on-sale="{{ variant.is_on_sale }}"
+        >
+          {{ variant.name }}
+        </button>
+        {% endfor %}
+      </div>
       <div class="mb-2">
-        <span {% if product.is_on_sale %} style="text-decoration:line-through;" {% endif %} class="h4">${{ product.price }}</span>
+        <span
+          {% if product.is_on_sale %}
+          style="text-decoration: line-through"
+          {% endif %}
+          class="h4"
+          id="product-price"
+          >${{ product.price }}</span
+        >
         {% if product.is_on_sale %}
         <span class="h4">${{ product.sale_price }}</span>
         {% endif %}
@@ -56,18 +80,36 @@
 
       <!-- Stock Availability -->
       {% if product.stock > 0 %}
-      <p class="text-success">{{ product.stock }} left in stock</p>
+      <p id="product-stock" class="text-success">{{ product.stock }} left in stock</p>
       {% else %}
       <p class="text-danger">Sold Out / Unavailable</p>
       {% endif %}
 
-      
+      <p><strong>Description:</strong> {{ product.description }}</p>
+
       {% for spec in specs %}
       <p><strong>{{ spec.key }}:</strong> {{ spec.value }}</p>
       {% endfor %}
-      
-      <p><strong>Description:</strong> {{ product.description }}</p>
+
       <!-- Display Coupons or Discounts -->
+
+      {% if product.stock > 0 %} {% if request.user.is_authenticated %}
+      <!-- Quantity Selector -->
+      <div class="d-flex align-items-center mb-3">
+        <label class="me-2">Quantity:</label>
+        <input type="number" value="1" min="1" class="form-control w-25" />
+      </div>
+      <!-- Add to Cart & Buy Now Buttons -->
+      <div class="align-items-center mb-3">
+        <button class="btn btn-black me-2 mb-sm-3">
+          Add to Cart - ${{ product.price }}
+        </button>
+        <button class="btn btn-black mb-sm-3">
+          Buy Now - ${{ product.price }}
+        </button>
+      </div>
+      {% endif %} {% endif %}
+
       <div class="coupons">
         <h4>Available Coupons:</h4>
         {% if coupons %}
@@ -80,25 +122,6 @@
         <p>No coupons available for this product.</p>
         {% endif %}
       </div>
-      
-      
-      {% if product.stock > 0 %}
-      {% if request.user.is_authenticated %}
-      <!-- Quantity Selector -->
-      <div class="d-flex align-items-center mb-3">
-        <label class="me-2">Quantity:</label>
-        <input type="number" value="1" min="1" class="form-control w-25" />
-      </div>
-      <!-- Add to Cart & Buy Now Buttons -->
-      <div class="align-items-center mb-3">
-        <button class="btn btn-black me-2 mb-sm-3">
-          Add to Cart - ${{ product.price }}
-        </button>
-        <button class="btn btn-black mb-sm-3">Buy Now - ${{ product.price }}</button>
-      </div>
-      {% endif %}
-      {% endif %}
-      
       <!-- Compare Button -->
       <button class="btn btn-outline-dark">Compare to another product</button>
     </div>
@@ -128,15 +151,19 @@
   <div class="col-md-3 mb-4">
     <div class="card h-100 shadow-sm">
       <a href="{% url 'app:product_detail' product.id %}">
-      <img
-        class="card-img-top"
-        src="{{ product.images.first.image.url }}"
-        alt="{{ product.name }}"
-        style="object-fit: contain; height: 200px"
-      />
+        <img
+          class="card-img-top"
+          src="{{ product.images.first.image.url }}"
+          alt="{{ product.name }}"
+          style="object-fit: contain; height: 200px"
+        />
       </a>
       <div class="card-body d-flex flex-column">
-        <h5 class="card-title"><a class="text-dark" href="{% url 'app:product_detail' product.id %}">{{ product.name }}</a></h5>
+        <h5 class="card-title">
+          <a class="text-dark" href="{% url 'app:product_detail' product.id %}"
+            >{{ product.name }}</a
+          >
+        </h5>
         <p class="card-text font-weight-bold">
           {{ product.price|floatformat:2 }} $
         </p>
@@ -145,7 +172,6 @@
   </div>
   {% endfor %}
 </div>
-
 
 {% endblock %} {% block script %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zooming/2.1.1/zooming.min.js"></script>
@@ -166,6 +192,46 @@
   integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
   crossorigin="anonymous"
 ></script>
-
+<script>
+  
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".variant-btn").forEach(function (button) {
+      button.addEventListener("click", function () {
+        const variantId = this.getAttribute("data-variant-id");
+  
+        // Make an AJAX request to fetch the variant details
+        fetch(`/get-variant-details/${variantId}/`)
+          .then((response) => response.json())
+          .then((data) => {
+            // Update the price and stock details
+            const productPrice = document.getElementById("product-price");
+            const productStock = document.getElementById("product-stock");
+  
+            if (data.is_on_sale) {
+              productPrice.innerHTML = `<span style="text-decoration:line-through;">$${data.price}</span> $${data.sale_price}`;
+            } else {
+              productPrice.textContent = `$${data.price}`;
+            }
+  
+            productStock.textContent = `${data.stock} left in stock`;
+  
+            // Update the main image with the first variant image
+            const mainImage = document.getElementById("mainProductImage");
+            mainImage.src = data.images[0].image_url; // Ensure you have a field for the main image
+  
+            // Update the thumbnail images
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            thumbnails.forEach((thumbnail, index) => {
+              if (data.images[index]) {
+                thumbnail.src = data.images[index].image_url; // Update thumbnail src
+                thumbnail.setAttribute('onclick', `changeMainImage('${data.images[index].image_url}')`); // Update onclick for each thumbnail
+              }
+            });
+          });
+      });
+    });
+  });
+  
+</script>
 
 {% endblock %}

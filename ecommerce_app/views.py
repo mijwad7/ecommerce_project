@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec, Category
+from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec, Category, ProductVariant
 from .forms import UserSignUpForm
 from .otp_utils import send_otp_to_email
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
+from django.http import JsonResponse
 
 
 def user_signup(request):
@@ -144,6 +145,8 @@ def product_detail(request, product_id):
 
     related_products = Product.objects.filter(category=product.category).exclude(id=product.id)[:4]
 
+    variants = ProductVariant.objects.filter(product=product)
+
 
     return render(
         request,
@@ -155,6 +158,20 @@ def product_detail(request, product_id):
             "num_reviews": review_data["num_reviews"],
             "specs": specs,
             "coupons": coupons,
-            "related_products": related_products
+            "related_products": related_products,
+            "variants": variants
         },
     )
+
+def get_variant_details(request, variant_id):
+    variant = ProductVariant.objects.get(id=variant_id)
+    images = [{'image_url': img.image.url} for img in variant.images.all()]  # Fetching variant images
+
+    data = {
+        'price': variant.price,
+        'sale_price': variant.sale_price,
+        'is_on_sale': variant.is_on_sale,
+        'stock': variant.stock,
+        'images': images,
+    }
+    return JsonResponse(data)
