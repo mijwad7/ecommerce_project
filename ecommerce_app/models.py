@@ -53,6 +53,7 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+
 class BrandQuerySet(models.QuerySet):
     def active(self):
         return self.filter(is_deleted=False)
@@ -86,6 +87,7 @@ class Brand(models.Model):
     def __str__(self):
         return self.name
 
+
 class ProductQuerySet(models.QuerySet):
     def active(self):
         return self.filter(is_deleted=False)
@@ -112,6 +114,7 @@ class Coupon(models.Model):
     def __str__(self):
         return f"{self.code} - {self.discount_percent}%"
 
+
 class Product(models.Model):
     name = models.CharField(max_length=30)
     description = models.TextField()
@@ -123,9 +126,12 @@ class Product(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name="products", blank=True, null=True)
+    brand = models.ForeignKey(
+        Brand, on_delete=models.CASCADE, related_name="products", blank=True, null=True
+    )
     is_deleted = models.BooleanField(default=False)
     coupons = models.ManyToManyField(Coupon, blank=True, related_name="products")
+    max_per_user = models.PositiveIntegerField(default=10)
 
     objects = ProductManager()
 
@@ -145,11 +151,10 @@ class Product(models.Model):
             raise ValidationError("Sale price must be set if the product is on sale.")
         if self.is_on_sale and self.sale_price >= self.price:
             raise ValidationError("Sale price must be less than the regular price.")
-        
 
         # if not self.images.exists() or self.images.count() < 3:
         #     raise ValidationError("Product must have at least 3 images.")
-    
+
     def save(self, *args, **kwargs):
         self.full_clean()  # Calls the clean method before saving
         super().save(*args, **kwargs)
@@ -176,34 +181,51 @@ class ProductImage(models.Model):
         # Save the image back to the specified path
         img.save(self.image.path)
 
+
 class ProductSpec(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='specs')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="specs")
     key = models.CharField(max_length=50)
     value = models.CharField(max_length=100)
 
     def __str__(self):
         return f"{self.key}: {self.value}"
 
+
 class ProductVariant(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="variants")
-    name = models.CharField(max_length=100, help_text="Variant name (e.g., iPhone 15 Pro, Blue)")
-    variant_type = models.CharField(max_length=50, help_text="Type of variant (e.g., model, color, size)")
-    value = models.CharField(max_length=50, help_text="Specific variant value (e.g., Blue, 128GB)")
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="variants"
+    )
+    name = models.CharField(
+        max_length=100, help_text="Variant name (e.g., iPhone 15 Pro, Blue)"
+    )
+    variant_type = models.CharField(
+        max_length=50, help_text="Type of variant (e.g., model, color, size)"
+    )
+    value = models.CharField(
+        max_length=50, help_text="Specific variant value (e.g., Blue, 128GB)"
+    )
     stock = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     is_on_sale = models.BooleanField(default=False)
-    sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    sale_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['product', 'variant_type', 'value'], name='unique_variant')
+            models.UniqueConstraint(
+                fields=["product", "variant_type", "value"], name="unique_variant"
+            )
         ]
 
     def __str__(self):
         return f"{self.product.name} - {self.variant_type}: {self.value}"
-    
+
+
 class ProductVariantImage(models.Model):
-    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name="images")
+    variant = models.ForeignKey(
+        ProductVariant, on_delete=models.CASCADE, related_name="images"
+    )
     image = models.ImageField(upload_to="variant_images/")
 
     def save(self, *args, **kwargs):
@@ -218,7 +240,6 @@ class ProductVariantImage(models.Model):
         img.thumbnail((500, 500), PilImage.LANCZOS)
 
         img.save(self.image.path)
-
 
 
 class EmailOTPDevice(Device):
@@ -275,3 +296,48 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.product.name}"
+
+
+class Cart(models.Model):
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name="cart")
+
+    def __str__(self):
+        return f"{self.user.username} - {self.total_price}"
+
+    @property
+    def total_price(self):
+        return sum(item.total_price for item in self.cart_products.all())
+
+    def total_items(self):
+        return self.cart_products.count()
+
+
+class CartProduct(models.Model):
+    cart = models.ForeignKey(
+        Cart, on_delete=models.CASCADE, related_name="cart_products"
+    )
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+
+    def __str__(self):
+        return f"{self.cart.user.username} - {self.product.name}"
+
+    def clean(self):
+        # Check stock availability
+        if self.quantity > self.product.stock:
+            raise ValidationError("Quantity cannot be greater than available stock.")
+
+        # Check max quantity per user (assuming a field `max_per_user` in Product)
+        if self.product.max_per_user and self.quantity > self.product.max_per_user:
+            raise ValidationError(
+                f"You can only add up to {self.product.max_per_user} of this product."
+            )
+
+    def save(self, *args, **kwargs):
+        # Automatically set the total price based on the product price and quantity
+        price = (
+            self.product.sale_price if self.product.is_on_sale else self.product.price
+        )
+        self.total_price = price * self.quantity
+        super().save(*args, **kwargs)

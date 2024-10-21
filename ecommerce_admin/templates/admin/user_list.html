@@ -18,7 +18,7 @@
             <td>{{ user.email }}</td>
             <td>{% if user.is_blocked %}Yes{% else %}No{% endif %}</td>
             <td>
-                <a href="{% url 'edit_user' user.id %}" class="btn btn-black btn-sm">Edit</a>
+                <a href="{% url 'edit_user' user.id %}" class="btn btn-black">Manage</a>
             </td>
         </tr>
         {% endfor %}
