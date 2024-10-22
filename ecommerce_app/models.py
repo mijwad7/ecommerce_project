@@ -20,6 +20,26 @@ class UserProfile(AbstractUser):
         return self.username
 
 
+class Address(models.Model):
+    ADDRESS_TYPES = [
+        ('billing', 'Billing'),
+        ('shipping', 'Shipping'),
+        ('office', 'Office'),
+        ('home', 'Home'),
+    ]
+    
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='addresses')
+    line_1 = models.TextField()
+    line_2 = models.TextField(null=True, blank=True)
+    city = models.CharField(max_length=50)
+    state = models.CharField(max_length=50)
+    post_code = models.CharField(max_length=6)
+    is_primary = models.BooleanField(default=False)
+    address_type = models.CharField(max_length=20, choices=ADDRESS_TYPES)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.get_address_type_display()} - {self.line_1}"
+
 class CategoryQuerySet(models.QuerySet):
     def active(self):
         return self.filter(is_deleted=False)

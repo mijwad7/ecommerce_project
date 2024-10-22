@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import UserProfile
+from .models import UserProfile, Address
 
 
 class UserSignUpForm(UserCreationForm):
@@ -22,3 +22,18 @@ class UserSignUpForm(UserCreationForm):
             field.widget.attrs.update({'class': 'form-control'})
 
 
+class AddressForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        fields = [
+            'line_1', 'line_2', 'city', 'state', 'post_code', 'is_primary', 'address_type'
+        ]
+        widgets = {
+            'line_1': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Address Line 1'}),
+            'line_2': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Address Line 2 (Optional)'}),
+            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City'}),
+            'state': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'State'}),
+            'post_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Post Code'}),
+            'is_primary': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'address_type': forms.Select(attrs={'class': 'form-select'}),
+        }

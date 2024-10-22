@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec, Category, ProductVariant, Cart, CartProduct
+from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec, Category, ProductVariant, Cart, CartProduct, Address
 from django.contrib.auth.decorators import login_required
-from .forms import UserSignUpForm
+from .forms import UserSignUpForm, AddressForm
 from .otp_utils import send_otp_to_email
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
@@ -284,9 +284,30 @@ def view_cart(request):
         },
     )
 
-
+@login_required
 def remove_from_cart(request, cartproduct_id):
     cart_product = get_object_or_404(CartProduct, id=cartproduct_id)
     cart_product.delete()
     messages.success(request, f"{cart_product.product.name} has been removed from your cart.")
     return redirect("app:view_cart")
+
+@login_required
+def add_address(request):
+    if request.method == "POST":
+        form = AddressForm(request.POST)
+        if form.is_valid():
+            address = form.save(commit=False)
+            address.user = request.user
+            address.save()
+            messages.success(request, "Address added successfully!")
+            return redirect("app:view_cart")
+    else:
+        form = AddressForm()
+
+    return render(request, "app/add_address.html", {"form": form})
+
+@login_required
+def view_addresses(request):
+    user = request.user
+    addresses = user.addresses.all()
+    return render(request, "app/view_addresses.html", {"addresses": addresses})
