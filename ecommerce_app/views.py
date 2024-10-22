@@ -9,6 +9,8 @@ from django.db.models import Avg, Count, Q
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.core.paginator import Paginator
+
 
 
 def user_signup(request):
@@ -108,24 +110,49 @@ def index(request):
     })
 
 
+
 def products(request):
     query = request.GET.get('query')
     category_id = request.GET.get('category')
-    products = Product.objects.all().order_by('id')
+    sort = request.GET.get('sort', 'id')
+    
+    # Pre-select related data to optimize queries
+    products = Product.objects.select_related('category').prefetch_related('reviews').all()
     categories = Category.objects.all()
 
+    # Filter by search query
     if query:
         products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
 
-    if category_id:
+    # Filter by category (only if valid)
+    if category_id and Category.objects.filter(id=category_id).exists():
         products = products.filter(category_id=category_id)
 
-    for product in products:
-        average_rating = product.reviews.aggregate(Avg('rating'))['rating__avg']
-        product.average_rating = average_rating if average_rating is not None else 0
+    # Annotate with average ratings
+    products = products.annotate(average_rating=Avg('reviews__rating'))
+    
+
+    # Handle sorting
+    if sort == 'A-Z':
+        products = products.order_by('name')
+    elif sort == 'Z-A':
+        products = products.order_by('-name')
+    elif sort == 'newest':
+        products = products.order_by('-id')
+    elif sort == 'low-high':
+        products = products.order_by('price')
+    elif sort == 'high-low':
+        products = products.order_by('-price')
+    elif sort == 'rating':
+        products = products.order_by('-average_rating')
+
+    # Pagination (10 products per page)
+    paginator = Paginator(products, 6)
+    page_number = request.GET.get('page')
+    paginated_products = paginator.get_page(page_number)
 
     return render(request, "app/products.html", {
-        "products": products,
+        "products": paginated_products,
         "categories": categories
     })
 
