@@ -13,6 +13,6 @@ urlpatterns = [
     path('verify-otp/', views.verify_otp, name='verify_otp'),
     path('products/<int:product_id>/', views.product_detail, name='product_detail'),
     path('get-variant-details/<int:variant_id>/', views.get_variant_details, name='get_variant_details'),
-    path("products/<int:product_id>/add-to-cart/", views.add_to_cart, name="add_to_cart"),
+    path('add-to-cart/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/', views.view_cart, name='view_cart')
 ]

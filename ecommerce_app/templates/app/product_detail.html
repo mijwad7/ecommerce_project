@@ -13,6 +13,8 @@
     </ol>
   </nav>
 
+  <div id="message-container"></div>
+
   <div class="row">
     <!-- Product Images Section -->
     <div class="col-md-6">
@@ -97,15 +99,15 @@
 
       {% if product.stock > 0 %} {% if request.user.is_authenticated %}
       <!-- Quantity Selector -->
-      <form method="post" action="{% url 'app:add_to_cart' product.id %}">
+      <form id="add-to-cart-form" data-url="{% url 'app:add_to_cart' product.id %}">
         {% csrf_token %}
         <div class="d-flex align-items-center mb-3">
             <label class="me-2">Quantity:</label>
-            <input type="number" name="quantity" value="1" min="1" class="form-control w-25" />
+            <input id="quantity" type="number" name="quantity" value="1" min="1" class="form-control w-25" />
         </div>
         <div class="align-items-center mb-3">
             <button type="submit" class="btn btn-black me-2 mb-sm-3">
-                Add to Cart - ${{ product.price }}
+                Add to Cart - ${% if product.sale_price %}{{ product.sale_price }}{% else %}{{ product.price }}{% endif %}
             </button>
         </div>
     </form>
@@ -250,5 +252,71 @@
       });
   });
 </script>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script>
+  $(document).ready(function () {
+      $("#add-to-cart-form").on("submit", function (e) {
+          e.preventDefault();
+
+          const url = $(this).data("url");
+          const quantity = $('#quantity').val();
+          const csrfToken = $("input[name='csrfmiddlewaretoken']").val();
+
+          $.ajax({
+              type: "POST",
+              url: url,
+              data: {
+                  quantity: quantity,
+                  csrfmiddlewaretoken: csrfToken
+              },
+              success: function (response) {
+                  let messageContainer = $("#message-container");
+                  
+                  // Remove existing alerts
+                  messageContainer.html("");
+
+                  if (response.success) {
+                      // Show success message
+                      messageContainer.append(`
+                          <div class="alert alert-success alert-dismissible fade show" role="alert">
+                              ${response.message}
+                              <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                          </div>
+                      `);
+                  } else {
+                      // Show error message
+                      messageContainer.append(`
+                          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                              ${response.message}
+                              <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                          </div>
+                      `);
+                  }
+              },
+              error: function () {
+                  let messageContainer = $("#message-container");
+                  
+                  // Remove existing alerts
+                  messageContainer.html("");
+
+                  messageContainer.append(`
+                      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                          An error occurred. Please try again.
+                          <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                      </div>
+                  `);
+              }
+          });
+      });
+  });
+</script>
+
 
 {% endblock %}

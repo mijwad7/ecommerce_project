@@ -177,6 +177,12 @@ def get_variant_details(request, variant_id):
     }
     return JsonResponse(data)
 
+from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
+
+@csrf_exempt  # For AJAX POST requests
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     user = request.user
@@ -184,19 +190,18 @@ def add_to_cart(request, product_id):
     # Check if the user has a cart; create one if not
     cart, created = Cart.objects.get_or_create(user=user)
 
-    # Get the quantity from the form submission
+    # Get the quantity from the AJAX request
     quantity = int(request.POST.get("quantity", 1))
 
     # Validate the requested quantity
     if quantity > product.stock:
-        messages.error(request, "Not enough stock available.")
-        return redirect("app:product_detail", product_id=product_id)
+        return JsonResponse({"success": False, "message": "Not enough stock available."})
 
     if product.max_per_user and quantity > product.max_per_user:
-        messages.error(
-            request, f"You can only add up to {product.max_per_user} of this product."
-        )
-        return redirect("app:product_detail", product_id=product_id)
+        return JsonResponse({
+            "success": False,
+            "message": f"You can only add up to {product.max_per_user} of this product."
+        })
 
     # Check if the product is already in the cart
     cart_product, created = CartProduct.objects.get_or_create(
@@ -207,22 +212,21 @@ def add_to_cart(request, product_id):
         # If already exists, increase the quantity (with validations)
         new_quantity = cart_product.quantity + quantity
         if new_quantity > product.stock:
-            messages.error(request, "Not enough stock available.")
-            return redirect("app:product_detail", product_id=product_id)
+            return JsonResponse({"success": False, "message": "Not enough stock available."})
 
         if product.max_per_user and new_quantity > product.max_per_user:
-            messages.error(
-                request, f"You can only add up to {product.max_per_user} of this product."
-            )
-            return redirect("app:product_detail", product_id=product_id)
+            return JsonResponse({
+                "success": False,
+                "message": f"You can only add up to {product.max_per_user} of this product."
+            })
 
         # Update the cart product quantity
         cart_product.quantity = new_quantity
         cart_product.save()
 
-    # Redirect to cart or the same product page
-    messages.success(request, f"Added {product.name} to your cart.")
-    return redirect("app:product_detail", product_id=product_id)
+    # Return success response
+    return JsonResponse({"success": True, "message": f"Added {product.name} to your cart."})
+
 
 
 
