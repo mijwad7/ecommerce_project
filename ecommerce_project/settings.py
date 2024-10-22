@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'django_otp',
     'django_otp.plugins.otp_static',    # Static OTPs
     'django_otp.plugins.otp_totp', 
-    'ecommerce_app',
+    'ecommerce_app.apps.EcommerceAppConfig',
     'ecommerce_admin',
     'django.contrib.admin',
     'django.contrib.auth',
