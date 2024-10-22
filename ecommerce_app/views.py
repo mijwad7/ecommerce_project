@@ -251,3 +251,10 @@ def view_cart(request):
             "total_price": total_price,
         },
     )
+
+
+def remove_from_cart(request, cartproduct_id):
+    cart_product = get_object_or_404(CartProduct, id=cartproduct_id)
+    cart_product.delete()
+    messages.success(request, f"{cart_product.product.name} has been removed from your cart.")
+    return redirect("app:view_cart")

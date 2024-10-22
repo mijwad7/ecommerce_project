@@ -34,7 +34,7 @@
             <div class="mt-auto">
               <p>Quantity: {{ item.quantity }}</p>
               <p>Total: {{ item.total_price }}</p>
-              <a href="#" class="btn btn-black">Add More</a>
+              <a href="{% url 'app:remove_from_cart' item.id %}" class="btn btn-black">Remove from cart</a>
             </div>
           </div>
         </div>
