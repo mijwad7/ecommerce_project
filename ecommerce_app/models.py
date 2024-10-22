@@ -318,14 +318,17 @@ class CartProduct(models.Model):
     )
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
+    variant = models.ForeignKey(ProductVariant, null=True, blank=True, on_delete=models.SET_NULL)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
 
     def __str__(self):
-        return f"{self.cart.user.username} - {self.product.name}"
+        variant_info = f" ({self.variant.value})" if self.variant else ""
+        return f"{self.cart.user.username} - {self.product.name}{variant_info}"
 
     def clean(self):
         # Check stock availability
-        if self.quantity > self.product.stock:
+        available_stock = self.variant.stock if self.variant else self.product.stock
+        if self.quantity > available_stock:
             raise ValidationError("Quantity cannot be greater than available stock.")
 
         # Check max quantity per user (assuming a field `max_per_user` in Product)
@@ -335,9 +338,17 @@ class CartProduct(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        # Automatically set the total price based on the product price and quantity
-        price = (
-            self.product.sale_price if self.product.is_on_sale else self.product.price
-        )
+        # Determine the price based on variant or base product
+        if self.variant:
+            price = (
+                self.variant.sale_price if self.variant.is_on_sale else self.variant.price
+            )
+        else:
+            price = (
+                self.product.sale_price if self.product.is_on_sale else self.product.price
+            )
+        
+        # Automatically set the total price based on the determined price and quantity
         self.total_price = price * self.quantity
         super().save(*args, **kwargs)
+

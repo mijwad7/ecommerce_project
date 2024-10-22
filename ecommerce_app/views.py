@@ -7,6 +7,7 @@ from .forms import UserSignUpForm
 from .otp_utils import send_otp_to_email
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 
 
@@ -177,10 +178,6 @@ def get_variant_details(request, variant_id):
     }
     return JsonResponse(data)
 
-from django.http import JsonResponse
-from django.shortcuts import redirect
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib import messages
 
 @csrf_exempt  # For AJAX POST requests
 def add_to_cart(request, product_id):
@@ -190,35 +187,43 @@ def add_to_cart(request, product_id):
     # Check if the user has a cart; create one if not
     cart, created = Cart.objects.get_or_create(user=user)
 
-    # Get the quantity from the AJAX request
+    # Get the quantity and variant ID from the AJAX request
     quantity = int(request.POST.get("quantity", 1))
+    variant_id = request.POST.get("variant_id")
 
-    # Validate the requested quantity
-    if quantity > product.stock:
-        return JsonResponse({"success": False, "message": "Not enough stock available."})
+    # Determine if we are adding a base product or a variant
+    if variant_id:
+        variant = get_object_or_404(ProductVariant, id=variant_id)
 
-    if product.max_per_user and quantity > product.max_per_user:
-        return JsonResponse({
-            "success": False,
-            "message": f"You can only add up to {product.max_per_user} of this product."
-        })
+        # Validate the requested quantity against the variant's stock
+        if quantity > variant.stock:
+            return JsonResponse({"success": False, "message": "Not enough stock available for this variant."})
 
-    # Check if the product is already in the cart
-    cart_product, created = CartProduct.objects.get_or_create(
-        cart=cart, product=product, defaults={"quantity": quantity}
-    )
+        # Check if the variant is already in the cart
+        cart_product, created = CartProduct.objects.get_or_create(
+            cart=cart, product=product, variant=variant, defaults={"quantity": quantity}
+        )
+    else:
+        # Validate the requested quantity against the base product's stock
+        if quantity > product.stock:
+            return JsonResponse({"success": False, "message": "Not enough stock available for this product."})
 
+        # Check if the base product is already in the cart
+        cart_product, created = CartProduct.objects.get_or_create(
+            cart=cart, product=product, defaults={"quantity": quantity}
+        )
+
+    # If the product or variant is already in the cart, increase the quantity (with validations)
     if not created:
-        # If already exists, increase the quantity (with validations)
         new_quantity = cart_product.quantity + quantity
-        if new_quantity > product.stock:
-            return JsonResponse({"success": False, "message": "Not enough stock available."})
-
-        if product.max_per_user and new_quantity > product.max_per_user:
-            return JsonResponse({
-                "success": False,
-                "message": f"You can only add up to {product.max_per_user} of this product."
-            })
+        
+        # Check the stock limits for variants or base products
+        if variant_id:
+            if new_quantity > variant.stock:
+                return JsonResponse({"success": False, "message": "Not enough stock available for this variant."})
+        else:
+            if new_quantity > product.stock:
+                return JsonResponse({"success": False, "message": "Not enough stock available for this product."})
 
         # Update the cart product quantity
         cart_product.quantity = new_quantity

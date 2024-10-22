@@ -101,12 +101,13 @@
       <!-- Quantity Selector -->
       <form id="add-to-cart-form" data-url="{% url 'app:add_to_cart' product.id %}">
         {% csrf_token %}
+        <input type="hidden" name="variant_id" id="variant-id" value="">
         <div class="d-flex align-items-center mb-3">
             <label class="me-2">Quantity:</label>
             <input id="quantity" type="number" name="quantity" value="1" min="1" class="form-control w-25" />
         </div>
         <div class="align-items-center mb-3">
-            <button type="submit" class="btn btn-black me-2 mb-sm-3">
+            <button id="cart-btn" type="submit" class="btn btn-black me-2 mb-sm-3">
                 Add to Cart - ${% if product.sale_price %}{{ product.sale_price }}{% else %}{{ product.price }}{% endif %}
             </button>
         </div>
@@ -209,11 +210,14 @@
             // Update the price and stock details
             const productPrice = document.getElementById("product-price");
             const productStock = document.getElementById("product-stock");
+            const cartBtn = document.getElementById("cart-btn");
   
             if (data.is_on_sale) {
               productPrice.innerHTML = `<span style="text-decoration:line-through;">$${data.price}</span> $${data.sale_price}`;
+              cartBtn.innerHTML = `Add to Cart - $${data.sale_price}`;
             } else {
               productPrice.textContent = `$${data.price}`;
+              cartBtn.textContent = `Add to Cart - $${data.price}`;
             }
   
             productStock.textContent = `${data.stock} left in stock`;
@@ -248,6 +252,10 @@
               
               // Add 'active-variant' class to the clicked button
               this.classList.add("btn-black");
+
+              const variantId = this.getAttribute("data-variant-id");
+              document.getElementById("variant-id").value = variantId;
+              console.log(variantId);
           });
       });
   });
@@ -268,6 +276,7 @@
               url: url,
               data: {
                   quantity: quantity,
+                  variant_id: $("#variant-id").val(),
                   csrfmiddlewaretoken: csrfToken
               },
               success: function (response) {

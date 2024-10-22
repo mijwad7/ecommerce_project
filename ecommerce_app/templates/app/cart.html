@@ -1,4 +1,4 @@
-{% extends "./base.html" %} 
+{% extends "./base.html" %}
 {% block content %}
 <div class="container mt-4">
   <h2>Your Cart</h2>
@@ -11,24 +11,41 @@
           <a href="{% url 'app:product_detail' item.product.id %}">
             <img
               class="card-img-top"
-              src="{{ item.product.images.first.image.url }}"
-              alt="{{ item.product.name }}"
+              src="{% if item.variant %}{{ item.variant.images.first.image.url }}{% else %}{{ item.product.images.first.image.url }}{% endif %}"
+              alt="{% if item.variant %}{{ item.variant.value }} - {{ item.product.name }}{% else %}{{ item.product.name }}{% endif %}"
               style="object-fit: contain; max-height: 200px"
             />
           </a>
           <div class="card-body d-flex flex-column">
             <h5 class="card-title">
-              <a class="text-dark" href="{% url 'app:product_detail' item.product.id %}">{{ item.product.name }}</a>
+              <a class="text-dark" href="{% url 'app:product_detail' item.product.id %}">
+                {% if item.variant %}
+                  {{ item.product.name }} - {{ item.variant.value }}
+                {% else %}
+                  {{ item.product.name }}
+                {% endif %}
+              </a>
             </h5>
             <p class="card-text text-muted">{{ item.product.category }}</p>
             <p>
-              {% if item.product.is_on_sale %}
-              <span style="text-decoration: line-through" class="h5 text-muted">
-                ${{ item.product.price|floatformat:2 }}
-              </span>
-              <span class="h5 text-danger">${{ item.product.sale_price|floatformat:2 }}</span>
+              {% if item.variant %}
+                {% if item.variant.is_on_sale %}
+                  <span style="text-decoration: line-through" class="h5 text-muted">
+                    ${{ item.variant.price|floatformat:2 }}
+                  </span>
+                  <span class="h5 text-danger">${{ item.variant.sale_price|floatformat:2 }}</span>
+                {% else %}
+                  <span class="h5">${{ item.variant.price|floatformat:2 }}</span>
+                {% endif %}
               {% else %}
-              <span class="h5">${{ item.product.price|floatformat:2 }}</span>
+                {% if item.product.is_on_sale %}
+                  <span style="text-decoration: line-through" class="h5 text-muted">
+                    ${{ item.product.price|floatformat:2 }}
+                  </span>
+                  <span class="h5 text-danger">${{ item.product.sale_price|floatformat:2 }}</span>
+                {% else %}
+                  <span class="h5">${{ item.product.price|floatformat:2 }}</span>
+                {% endif %}
               {% endif %}
             </p>
             <div class="mt-auto">
@@ -57,5 +74,3 @@
   {% endif %}
 </div>
 {% endblock %}
-
-
