@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec, Category, ProductVariant
+from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec, Category, ProductVariant, Cart, CartProduct
+from django.contrib.auth.decorators import login_required
 from .forms import UserSignUpForm
 from .otp_utils import send_otp_to_email
 from django.db.models import Avg, Count, Q
@@ -175,3 +176,74 @@ def get_variant_details(request, variant_id):
         'images': images,
     }
     return JsonResponse(data)
+
+def add_to_cart(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    user = request.user
+
+    # Check if the user has a cart; create one if not
+    cart, created = Cart.objects.get_or_create(user=user)
+
+    # Get the quantity from the form submission
+    quantity = int(request.POST.get("quantity", 1))
+
+    # Validate the requested quantity
+    if quantity > product.stock:
+        messages.error(request, "Not enough stock available.")
+        return redirect("app:product_detail", product_id=product_id)
+
+    if product.max_per_user and quantity > product.max_per_user:
+        messages.error(
+            request, f"You can only add up to {product.max_per_user} of this product."
+        )
+        return redirect("app:product_detail", product_id=product_id)
+
+    # Check if the product is already in the cart
+    cart_product, created = CartProduct.objects.get_or_create(
+        cart=cart, product=product, defaults={"quantity": quantity}
+    )
+
+    if not created:
+        # If already exists, increase the quantity (with validations)
+        new_quantity = cart_product.quantity + quantity
+        if new_quantity > product.stock:
+            messages.error(request, "Not enough stock available.")
+            return redirect("app:product_detail", product_id=product_id)
+
+        if product.max_per_user and new_quantity > product.max_per_user:
+            messages.error(
+                request, f"You can only add up to {product.max_per_user} of this product."
+            )
+            return redirect("app:product_detail", product_id=product_id)
+
+        # Update the cart product quantity
+        cart_product.quantity = new_quantity
+        cart_product.save()
+
+    # Redirect to cart or the same product page
+    messages.success(request, f"Added {product.name} to your cart.")
+    return redirect("app:product_detail", product_id=product_id)
+
+
+
+@login_required
+def view_cart(request):
+    user = request.user
+
+    # Fetch the user's cart; if no cart exists, it will show an empty cart
+    try:
+        cart = user.cart
+        cart_products = cart.cart_products.all()
+        total_price = cart.total_price
+    except Cart.DoesNotExist:
+        cart_products = []
+        total_price = 0
+
+    return render(
+        request,
+        "app/cart.html",
+        {
+            "cart_products": cart_products,
+            "total_price": total_price,
+        },
+    )

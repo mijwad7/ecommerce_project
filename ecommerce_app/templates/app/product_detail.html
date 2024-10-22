@@ -97,19 +97,18 @@
 
       {% if product.stock > 0 %} {% if request.user.is_authenticated %}
       <!-- Quantity Selector -->
-      <div class="d-flex align-items-center mb-3">
-        <label class="me-2">Quantity:</label>
-        <input type="number" value="1" min="1" class="form-control w-25" />
-      </div>
-      <!-- Add to Cart & Buy Now Buttons -->
-      <div class="align-items-center mb-3">
-        <button class="btn btn-black me-2 mb-sm-3">
-          Add to Cart - ${{ product.price }}
-        </button>
-        <button class="btn btn-black mb-sm-3">
-          Buy Now - ${{ product.price }}
-        </button>
-      </div>
+      <form method="post" action="{% url 'app:add_to_cart' product.id %}">
+        {% csrf_token %}
+        <div class="d-flex align-items-center mb-3">
+            <label class="me-2">Quantity:</label>
+            <input type="number" name="quantity" value="1" min="1" class="form-control w-25" />
+        </div>
+        <div class="align-items-center mb-3">
+            <button type="submit" class="btn btn-black me-2 mb-sm-3">
+                Add to Cart - ${{ product.price }}
+            </button>
+        </div>
+    </form>
       {% endif %} {% endif %}
 
       <div class="coupons">
