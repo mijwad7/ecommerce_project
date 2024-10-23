@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from .models import UserProfile, Address
 
 
@@ -34,10 +34,9 @@ class AddressForm(forms.ModelForm):
             'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City'}),
             'state': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'State'}),
             'post_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Post Code'}),
-            'is_primary': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_primary': forms.CheckboxInput(attrs={'class': 'form-check-inline'}),
             'address_type': forms.Select(attrs={'class': 'form-select'}),
         }
-
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = UserProfile
@@ -52,3 +51,19 @@ class UserEditForm(forms.ModelForm):
             field.help_text = None
             if not isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs.update({'class': 'form-control'})
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super(CustomPasswordChangeForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+    
+    def clean_new_password1(self):
+        new_password = self.cleaned_data.get('new_password1')
+        old_password = self.cleaned_data.get('old_password')
+        
+        # Check if the new password is the same as the old password
+        if new_password == old_password:
+            raise forms.ValidationError("The new password cannot be the same as the old password.")
+        
+        return new_password

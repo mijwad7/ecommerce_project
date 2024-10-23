@@ -3,7 +3,9 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec, Category, ProductVariant, Cart, CartProduct, Address
 from django.contrib.auth.decorators import login_required
-from .forms import UserSignUpForm, AddressForm, UserEditForm
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+from .forms import UserSignUpForm, AddressForm, UserEditForm, CustomPasswordChangeForm
 from .otp_utils import send_otp_to_email
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
@@ -300,17 +302,34 @@ def add_address(request):
             address.user = request.user
             address.save()
             messages.success(request, "Address added successfully!")
-            return redirect("app:view_cart")
+            return redirect("app:view_profile")
     else:
         form = AddressForm()
 
     return render(request, "app/add_address.html", {"form": form})
 
 @login_required
-def view_addresses(request):
-    user = request.user
-    addresses = user.addresses.all()
-    return render(request, "app/view_addresses.html", {"addresses": addresses})
+def edit_address(request, address_id):
+    address = get_object_or_404(Address, id=address_id)
+    if request.method == "POST":
+        form = AddressForm(request.POST, instance=address)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Address updated successfully!")
+            return redirect("app:view_addresses")
+    else:
+        form = AddressForm(instance=address)
+
+    return render(request, "app/edit_address.html", {"form": form})
+
+
+
+@login_required
+def delete_address(request, address_id):
+    address = get_object_or_404(Address, id=address_id)
+    address.delete()
+    messages.success(request, "Address deleted successfully!")
+    return redirect("app:view_profile")
 
 @login_required
 def view_profile(request):
@@ -336,3 +355,20 @@ def edit_profile(request):
         form = UserEditForm(instance=profile)
 
     return render(request, "app/edit_profile.html", {"form": form})
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = CustomPasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            # Update the session to keep the user logged in after password change
+            update_session_auth_hash(request, form.user)
+            messages.success(request, "Your password was successfully updated!")
+            return redirect('app:view_profile')
+        else:
+            messages.error(request, "Please correct the error below.")
+    else:
+        form = CustomPasswordChangeForm(user=request.user)
+    
+    return render(request, 'app/change_password.html', {'form': form})
