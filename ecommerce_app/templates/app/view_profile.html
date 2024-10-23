@@ -1,7 +1,23 @@
 {% extends "./base.html" %} {% block content %}
+<div class="container">
+    <h1 class="fw-bold">My Profile</h1>
+    <p class="lead">
+        Welcome, {{ profile.first_name }} {{ profile.last_name }}!
+    </p>
+    <p>
+        Email: {{ profile.email }}
+    </p>
+    <p>
+        Phone Number: {{ profile.phone_number }}
+    </p>
+    <a href="{% url 'app:edit_profile' %}" class="btn btn-black">Edit Profile</a>
+    
+</div>
 <div class="container mt-5">
-  <h2 class="fw-bold mb-4">My Addresses</h2>
-
+    <h2 class="fw-bold mb-4">My Addresses</h2>
+    <a href="{% url 'app:add_address' %}" class="btn btn-black">Add New Address</a>
+    <br>
+    <br>
   <!-- Check if the user has any addresses -->
   {% if addresses %}
   <div class="row">
@@ -35,11 +51,6 @@
     {% endfor %}
 
     <!-- Add new address button -->
-  </div>
-  <div class="col-md-6">
-    <a href="{% url 'app:add_address' %}" class="btn btn-black"
-      >Add New Address</a
-    >
   </div>
   {% else %}
   <!-- Show message if no addresses are found -->

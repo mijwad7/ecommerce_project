@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec, Category, ProductVariant, Cart, CartProduct, Address
 from django.contrib.auth.decorators import login_required
-from .forms import UserSignUpForm, AddressForm
+from .forms import UserSignUpForm, AddressForm, UserEditForm
 from .otp_utils import send_otp_to_email
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
@@ -311,3 +311,28 @@ def view_addresses(request):
     user = request.user
     addresses = user.addresses.all()
     return render(request, "app/view_addresses.html", {"addresses": addresses})
+
+@login_required
+def view_profile(request):
+    username = request.user.username
+    profile = get_object_or_404(UserProfile, username=username)
+    addresses = profile.addresses.all()
+    return render(request, "app/view_profile.html", {
+        "profile": profile,
+        "addresses": addresses
+    })
+
+@login_required
+def edit_profile(request):
+    username = request.user.username
+    profile = get_object_or_404(UserProfile, username=username)
+    if request.method == "POST":
+        form = UserEditForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect("app:view_profile")
+    else:
+        form = UserEditForm(instance=profile)
+
+    return render(request, "app/edit_profile.html", {"form": form})

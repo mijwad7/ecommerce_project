@@ -37,3 +37,18 @@ class AddressForm(forms.ModelForm):
             'is_primary': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'address_type': forms.Select(attrs={'class': 'form-select'}),
         }
+
+class UserEditForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['username', 'email', 'first_name', 'last_name', 'phone_number']
+        widgets = {
+            'username': forms.TextInput(attrs={'help_text': ''}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(UserEditForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.help_text = None
+            if not isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'form-control'})

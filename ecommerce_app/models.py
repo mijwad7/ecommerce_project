@@ -10,11 +10,14 @@ from django.contrib.auth.models import User
 import random
 import os
 from django.conf import settings
+from phonenumber_field.modelfields import PhoneNumberField
+
 
 
 class UserProfile(AbstractUser):
     email = models.EmailField(unique=True, null=True, blank=True)
     is_blocked = models.BooleanField(default=False)
+    phone_number = PhoneNumberField(unique=True, null=True, blank=True)
 
     def __str__(self):
         return self.username
@@ -39,6 +42,12 @@ class Address(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.get_address_type_display()} - {self.line_1}"
+    
+    def save(self, *args, **kwargs):
+        if self.is_primary:
+            # Make sure no other addresses are marked as primary for this user
+            Address.objects.filter(user=self.user, is_primary=True).update(is_primary=False)
+        super(Address, self).save(*args, **kwargs)
 
 class CategoryQuerySet(models.QuerySet):
     def active(self):
