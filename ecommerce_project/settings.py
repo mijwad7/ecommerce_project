@@ -89,7 +89,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'mijuzzuae@gmail.com'
 EMAIL_HOST_PASSWORD = 'jcsq fbiy pwno ldrz'
-
+DOMAIN = '127.0.0.1:8000'
 
 ROOT_URLCONF = 'ecommerce_project.urls'
 

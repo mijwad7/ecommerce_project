@@ -21,6 +21,8 @@
           </div>
           <div class="mb-3">
             <input type="password" class="form-control form-control-lg" placeholder="Password" name="password" required />
+            <br>
+            <a class="text-dark font-weight-bold" href="{% url 'app:password_reset' %}">Forgot Password?</a>
           </div>
           <button type="submit" class="btn btn-black btn-lg w-100">Login</button>
         </form>
