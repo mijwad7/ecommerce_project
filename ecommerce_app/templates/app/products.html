@@ -4,7 +4,7 @@
 <div class="container my-2">
     <h2 class="text-center mb-4">All Products</h2>
     <form class="row gx-2 gy-2 align-items-center" action="" method="GET">
-        <div class="col-12 col-md-6 mb-md-0 mb-3">
+        <div class="col-12 col-md-4 mb-md-0 mb-3">
             <input 
                 class="form-control" 
                 type="text" 
@@ -20,7 +20,15 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="col-6 col-md-auto">
+        <div class="col-6 col-md-2">
+            <select class="form-control" name="brand">
+                <option value="">All Brands</option>
+                {% for brand in brands %}
+                <option value="{{ brand.id }}" {% if request.GET.brand == brand.id|stringformat:"s" %}selected{% endif %}>{{ brand.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-6 col-md-auto mt-md-0 mt-3">
             <select class="form-control" name="sort">
                 <option value="A-Z" {% if request.GET.sort == 'A-Z' %}selected{% endif %}>A - Z</option>
                 <option value="Z-A" {% if request.GET.sort == 'Z-A' %}selected{% endif %}>Z - A</option>

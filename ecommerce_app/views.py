@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec, Category, ProductVariant, Cart, CartProduct, Address
+from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec, Category, ProductVariant, Cart, CartProduct, Address, Brand
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
@@ -116,11 +116,17 @@ def index(request):
 def products(request):
     query = request.GET.get('query')
     category_id = request.GET.get('category')
+    brand_id = request.GET.get('brand')
     sort = request.GET.get('sort', 'id')
     
     # Pre-select related data to optimize queries
     products = Product.objects.select_related('category').prefetch_related('reviews').all()
     categories = Category.objects.all()
+    brands = Brand.objects.all()
+
+    # Filter by brand (only if valid)
+    if brand_id and Brand.objects.filter(id=brand_id).exists():
+        products = products.filter(brand_id=brand_id)
 
     # Filter by search query
     if query:
@@ -155,7 +161,8 @@ def products(request):
 
     return render(request, "app/products.html", {
         "products": paginated_products,
-        "categories": categories
+        "categories": categories,
+        "brands": brands,
     })
 
 
