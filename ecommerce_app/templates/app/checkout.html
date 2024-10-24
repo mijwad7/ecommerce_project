@@ -1,0 +1,51 @@
+{% extends './base.html' %} {% block content %}
+<div class="container">
+  <h2>Checkout</h2>
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <h4>Select Shipping Address:</h4>
+      {% for address in addresses %}
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="radio"
+          name="address"
+          value="{{ address.id }}"
+          required
+        />
+        <label class="form-check-label">
+          {{ address.line_1 }}, {% if address.line_2 %} {{ address.line_2 }}, {% endif %} {{ address.city }}, {{ address.post_code }}
+        </label>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="mb-3">
+      <h4>Select Payment Method:</h4>
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="radio"
+          name="payment_method"
+          value="COD"
+          required
+        />
+        <label class="form-check-label">Cash on Delivery</label>
+      </div>
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="radio"
+          name="payment_method"
+          value="ONLINE"
+        />
+        <label class="form-check-label">Online Payment</label>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Place Order</button>
+  </form>
+</div>
+{% endblock %}

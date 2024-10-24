@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
-from .models import UserProfile, Address
+from .models import UserProfile, Address, Order
 
 
 class UserSignUpForm(UserCreationForm):
@@ -67,3 +67,8 @@ class CustomPasswordChangeForm(PasswordChangeForm):
             raise forms.ValidationError("The new password cannot be the same as the old password.")
         
         return new_password
+    
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['payment_method', 'address']

@@ -1,0 +1,43 @@
+{% extends './base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Order History</h1>
+
+    {% for order in orders %}
+        <h3>Order ID: {{ order.id }}</h3>
+        <p>Order Status: {{ order.order_status }}</p>
+        <p>Payment Method: {{ order.payment_method }}</p>
+        <p>Total Price: {{ order.total_price }}</p>
+        <p>Address: {{ order.address.line_1 }}, {% if order.address.line_2 %} {{ order.address.line_2 }}, {% endif %} {{ order.address.city }}, {{ order.address.post_code }}</p>
+        <p>Order Placed At: {{ order.created_at }}</p>
+
+        <a class="btn btn-outline-dark" href="{% url 'app:order_detail' order.id %}">View Items</a>
+        <button type="button" class="btn btn-black" data-bs-toggle="modal" data-bs-target="#cancelOrderModal{{ order.id }}">
+            Cancel Order
+        </button>
+
+        <!-- Cancel Order Confirmation Modal -->
+        <div class="modal fade" id="cancelOrderModal{{ order.id }}" tabindex="-1" aria-labelledby="cancelOrderLabel{{ order.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cancelOrderLabel{{ order.id }}">Confirm Cancellation</h5>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to cancel this order (ID: {{ order.id }})?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Keep Order</button>
+                        <a href="{% url 'app:cancel_order' order.id %}" class="btn btn-danger">Yes, Cancel Order</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+
+    {% empty %}
+        <p>No orders found.</p>
+    {% endfor %}
+</div>
+{% endblock %}

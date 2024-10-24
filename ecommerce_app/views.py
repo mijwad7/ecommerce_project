@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec, Category, ProductVariant, Cart, CartProduct, Address, Brand
+from .models import Product, UserProfile, EmailOTPDevice, Review, ProductSpec, Category, ProductVariant, Cart, CartProduct, Address, Brand, Order, OrderItem
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
@@ -323,7 +323,7 @@ def edit_address(request, address_id):
         if form.is_valid():
             form.save()
             messages.success(request, "Address updated successfully!")
-            return redirect("app:view_addresses")
+            return redirect("app:view_profile")
     else:
         form = AddressForm(instance=address)
 
@@ -379,3 +379,79 @@ def change_password(request):
         form = CustomPasswordChangeForm(user=request.user)
     
     return render(request, 'app/change_password.html', {'form': form})
+
+
+@login_required
+def checkout(request):
+    user = request.user
+    cart = get_object_or_404(Cart, user=user)
+    addresses = Address.objects.filter(user=user)
+
+    if request.method == "POST":
+        address_id = request.POST.get("address")
+        address = get_object_or_404(Address, id=address_id)
+        payment_method = request.POST.get('payment_method')
+
+        order = Order.objects.create(
+            user=user,
+            address=address,
+            payment_method=payment_method,
+            total_price=cart.total_price
+        )
+
+        for item in cart.cart_products.all():
+            OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                price=item.total_price,
+                quantity=item.quantity,
+            )
+
+        cart.cart_products.all().delete()
+
+        messages.success(request, "Order placed successfully!")
+        return redirect('app:order_confirmation', order_id=order.id)
+
+    return render(request, "app/checkout.html", {
+        "cart": cart,
+        "addresses": addresses
+    })
+
+@login_required
+def order_confirmation(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    return render(request, "app/order_confirmation.html", {
+        "order": order
+    })
+
+@login_required
+def view_orders(request):
+    orders = Order.objects.filter(user=request.user)
+
+    return render(request, "app/view_orders.html", {
+        "orders": orders
+    })
+
+@login_required
+def order_detail(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    items = order.items.all()
+
+    return render(request, "app/order_detail.html", {
+        "order": order,
+        "items": items
+    })
+
+@login_required
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    if order.order_status in ['PENDING', 'CONFIRMED']:
+        order.order_status = 'CANCELED'
+        order.save()
+        messages.success(request, "Order canceled successfully!")
+    else:
+        messages.error(request, "Order cannot be cancelled at this stage.")
+
+    messages.success(request, "Order canceled successfully!")
+    return redirect("app:view_orders")

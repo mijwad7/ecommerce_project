@@ -69,4 +69,9 @@ urlpatterns = [
         ),
         name="password_reset_complete",
     ),
+    path('checkout/', views.checkout, name='checkout'),
+    path('order-confirmation/<int:order_id>/', views.order_confirmation, name='order_confirmation'),
+    path('orders/', views.view_orders, name='view_orders'),
+    path('order/<int:order_id>/', views.order_detail, name='order_detail'),
+    path('cancel-order/<int:order_id>/', views.cancel_order, name='cancel_order'),
 ]
