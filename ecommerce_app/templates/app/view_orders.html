@@ -1,21 +1,30 @@
 {% extends './base.html' %}
 
 {% block content %}
-<div class="container">
-    <h1>Order History</h1>
+<div class="container my-5">
+    <h1 class="mb-4">Order History</h1>
 
     {% for order in orders %}
-        <h3>Order ID: {{ order.id }}</h3>
-        <p>Order Status: {{ order.order_status }}</p>
-        <p>Payment Method: {{ order.payment_method }}</p>
-        <p>Total Price: {{ order.total_price }}</p>
-        <p>Address: {{ order.address.line_1 }}, {% if order.address.line_2 %} {{ order.address.line_2 }}, {% endif %} {{ order.address.city }}, {{ order.address.post_code }}</p>
-        <p>Order Placed At: {{ order.created_at }}</p>
-
-        <a class="btn btn-outline-dark" href="{% url 'app:order_detail' order.id %}">View Items</a>
-        <button type="button" class="btn btn-black" data-bs-toggle="modal" data-bs-target="#cancelOrderModal{{ order.id }}">
-            Cancel Order
-        </button>
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <div class="d-md-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Order ID: <span class="text-muted">#{{ order.id }}</span></h5>
+                        <p class="mb-1"><strong>Status:</strong> <span class="badge bg-primary">{{ order.order_status }}</span></p>
+                        <p class="mb-1"><strong>Payment:</strong> {{ order.payment_method }}</p>
+                        <p class="mb-1"><strong>Total:</strong> ${{ order.total_price }}</p>
+                        <p class="mb-1"><strong>Address:</strong> {{ order.address.line_1 }}, {% if order.address.line_2 %} {{ order.address.line_2 }}, {% endif %} {{ order.address.city }}, {{ order.address.post_code }}</p>
+                        <p class="text-muted">Placed on: {{ order.created_at }}</p>
+                    </div>
+                    <div>
+                        <a class="btn btn-outline-dark btn-sm me-2" href="{% url 'app:order_detail' order.id %}">View Items</a>
+                        <button type="button" class="btn btn-black btn-sm" data-bs-toggle="modal" data-bs-target="#cancelOrderModal{{ order.id }}">
+                            Cancel Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Cancel Order Confirmation Modal -->
         <div class="modal fade" id="cancelOrderModal{{ order.id }}" tabindex="-1" aria-labelledby="cancelOrderLabel{{ order.id }}" aria-hidden="true">
@@ -23,6 +32,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="cancelOrderLabel{{ order.id }}">Confirm Cancellation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         Are you sure you want to cancel this order (ID: {{ order.id }})?
@@ -34,10 +44,11 @@
                 </div>
             </div>
         </div>
-        <hr>
 
     {% empty %}
-        <p>No orders found.</p>
+        <div class="alert alert-info text-center">
+            <p>No orders found.</p>
+        </div>
     {% endfor %}
 </div>
 {% endblock %}

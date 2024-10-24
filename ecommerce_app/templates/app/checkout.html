@@ -1,51 +1,59 @@
-{% extends './base.html' %} {% block content %}
-<div class="container">
-  <h2>Checkout</h2>
-  <form method="post">
+{% extends './base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Checkout</h2>
+  <form method="post" class="needs-validation" novalidate>
     {% csrf_token %}
 
-    <div class="mb-3">
+    <div class="mb-4">
       <h4>Select Shipping Address:</h4>
-      {% for address in addresses %}
-      <div class="form-check">
-        <input
-          class="form-check-input"
-          type="radio"
-          name="address"
-          value="{{ address.id }}"
-          required
-        />
-        <label class="form-check-label">
-          {{ address.line_1 }}, {% if address.line_2 %} {{ address.line_2 }}, {% endif %} {{ address.city }}, {{ address.post_code }}
-        </label>
+      <div class="card p-3">
+        {% for address in addresses %}
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="address"
+            id="address_{{ address.id }}"
+            value="{{ address.id }}"
+            required
+          />
+          <label for="address_{{ address.id }}" class="form-check-label">
+            {{ address.line_1 }}, {% if address.line_2 %} {{ address.line_2 }}, {% endif %} {{ address.city }}, {{ address.post_code }}
+          </label>
+        </div>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
 
-    <div class="mb-3">
+    <div class="mb-4">
       <h4>Select Payment Method:</h4>
-      <div class="form-check">
-        <input
-          class="form-check-input"
-          type="radio"
-          name="payment_method"
-          value="COD"
-          required
-        />
-        <label class="form-check-label">Cash on Delivery</label>
-      </div>
-      <div class="form-check">
-        <input
-          class="form-check-input"
-          type="radio"
-          name="payment_method"
-          value="ONLINE"
-        />
-        <label class="form-check-label">Online Payment</label>
+      <div class="card p-3">
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="payment_method"
+            value="COD"
+            id="payment_method_COD"
+            required
+          />
+          <label for="payment_method_COD" class="form-check-label">Cash on Delivery</label>
+        </div>
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="payment_method"
+            id="payment_method_ONLINE"
+            value="ONLINE"
+          />
+          <label class="form-check-label" for="payment_method_ONLINE">Online Payment</label>
+        </div>
       </div>
     </div>
 
-    <button type="submit" class="btn btn-primary">Place Order</button>
+    <button type="submit" class="btn btn-black btn-lg mt-3">Place Order</button>
   </form>
 </div>
 {% endblock %}
