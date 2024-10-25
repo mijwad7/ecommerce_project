@@ -31,5 +31,7 @@ urlpatterns = [
     path('product_variant/<int:variant_id>/', views.product_variant_detail, name='product_variant_detail'),
     path('product/variant/<int:variant_id>/edit/', views.edit_product_variant, name='edit_product_variant'),
     path('product/variant/<int:variant_id>/delete/', views.delete_product_variant, name='delete_product_variant'),
-    # path('view_product_variants/<int:product_id>/', views.view_product_variants, name='view_product_variants'),
+    path('orders/', views.view_orders, name='view_orders'),
+    path('change_order_status/<int:order_id>/', views.change_order_status, name='change_order_status'),
+    path('cancel_order/<int:order_id>/', views.cancel_order, name='cancel_order'),
 ]

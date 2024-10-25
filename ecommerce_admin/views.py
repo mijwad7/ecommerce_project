@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from ecommerce_app.models import UserProfile, Category, Product, ProductImage, ProductSpec, Brand, ProductVariantImage, ProductVariant
+from ecommerce_app.models import UserProfile, Category, Product, ProductImage, ProductSpec, Brand, ProductVariantImage, ProductVariant, Order
 from .forms import UserProfileForm, LoginForm, ProductForm, ProductSpecFormSet, ProductVariantForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -444,3 +444,35 @@ def restore_brand(request, brand_id):
         messages.success(request, "Brand restored successfully!")
         return redirect('brands_list')
     return render(request, 'admin/view_deleted_brands.html', {'brand': brand})
+
+
+@login_required
+@superuser_required
+def view_orders(request):
+    orders = Order.objects.all().order_by('-id')
+    return render(request, 'admin/view_orders.html', {'orders': orders})
+
+@login_required
+@superuser_required
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)  # Remove user restriction
+    order.order_status = "CANCELLED"  # Ensure the status matches your ORDER_STATUS_CHOICES
+    order.save()
+    messages.success(request, "Order canceled successfully!")
+    return redirect("view_orders")
+
+
+@login_required
+@superuser_required
+def change_order_status(request, order_id):
+    order = get_object_or_404(Order, id=order_id)  # Remove user restriction
+    new_status = request.POST.get("status")  # Ensure you retrieve the correct field name
+    if new_status in dict(Order.ORDER_STATUS_CHOICES):  # Validate against choices
+        order.order_status = new_status
+        order.save()
+        messages.success(request, "Order status changed successfully!")
+    else:
+        messages.error(request, "Invalid status selected.")
+    return redirect("view_orders")
+
+

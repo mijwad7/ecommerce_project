@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="mb-4">Order History</h1>
+    <h1 class="mb-4">Admin Orders Management</h1>
 
     {% for order in orders %}
         <div class="card mb-4 shadow-sm">
@@ -10,7 +10,8 @@
                 <div class="d-md-flex justify-content-between align-items-center">
                     <div>
                         <h5 class="card-title">Order ID: <span class="text-muted">#{{ order.id }}</span></h5>
-                        <p class="mb-1"><strong>Status:</strong>
+                        <p class="mb-1"><strong>User:</strong> {{ order.user.username }}</p>
+                        <p class="mb-1"><strong>Status:</strong> 
                             <span class="badge 
                                 {% if order.order_status == 'CONFIRMED' or order.order_status == 'SHIPPED' or order.order_status == 'DELIVERED' %}bg-success
                                 {% elif order.order_status == 'PENDING' %}bg-warning
@@ -19,18 +20,34 @@
                                 {% endif %}">
                                 {{ order.order_status }}
                             </span>
+
                         </p>
                         <p class="mb-1"><strong>Payment:</strong> {{ order.payment_method }}</p>
                         <p class="mb-1"><strong>Total:</strong> ${{ order.total_price }}</p>
-                        <p class="mb-1"><strong>Address:</strong> {{ order.address.line_1 }}, {% if order.address.line_2 %} {{ order.address.line_2 }}, {% endif %} {{ order.address.city }}, {{ order.address.post_code }}</p>
-                        <p class="text-muted">Placed on: {{ order.created_at }}</p>
+                        <p class="mb-1"><strong>Address:</strong> {{ order.address.line_1 }}, {% if order.address.line_2 %}
+                            {{ order.address.line_2 }}, {% endif %} {{ order.address.city }}, {{ order.address.post_code }}</p>
+                        <p class="text-muted mb-1">Placed on: {{ order.created_at }}</p>
+                        <p class="text-muted">Updated on: {{ order.updated_at }}</p>
                     </div>
-                    {% if order.order_status == 'CANCELLED' %}
-                        <p class="text-muted">Cancelled on: {{ order.updated_at }}</p>
+                    {% if order.order_status == "CANCELLED" %}
+                        <div>
+                            <p class="text-muted">Cancelled on: {{ order.updated_at }}</p>
+                        </div>
                     {% else %}
                     <div>
-                        <a class="btn btn-outline-dark btn-sm me-2" href="{% url 'app:order_detail' order.id %}">View Items</a>
-                        <button type="button" class="btn btn-black btn-sm" data-bs-toggle="modal" data-bs-target="#cancelOrderModal{{ order.id }}">
+                        <form method="post" action="{% url 'change_order_status' order.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <select name="status" class="form-select form-select-sm mb-2">
+                                <option value="PENDING" {% if order.order_status == "PENDING" %}selected{% endif %}>Pending</option>
+                                <option value="CONFIRMED" {% if order.order_status == "CONFIRMED" %}selected{% endif %}>Confirmed</option>
+                                <option value="SHIPPED" {% if order.order_status == "SHIPPED" %}selected{% endif %}>Shipped</option>
+                                <option value="DELIVERED" {% if order.order_status == "DELIVERED" %}selected{% endif %}>Delivered</option>
+                            </select>
+                            <button type="submit" class="btn btn-outline-dark btn-sm">Update Status</button>
+                        </form>
+                        
+                        <button type="button" class="btn btn-black btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#cancelOrderModal{{ order.id }}">
                             Cancel Order
                         </button>
                     </div>
@@ -45,14 +62,13 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="cancelOrderLabel{{ order.id }}">Confirm Cancellation</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         Are you sure you want to cancel this order (ID: {{ order.id }})?
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Keep Order</button>
-                        <a href="{% url 'app:cancel_order' order.id %}" class="btn btn-danger">Yes, Cancel Order</a>
+                        <a href="{% url 'cancel_order' order.id %}" class="btn btn-danger">Yes, Cancel Order</a>
                     </div>
                 </div>
             </div>
