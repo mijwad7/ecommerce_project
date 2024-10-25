@@ -47,7 +47,7 @@
         <tr>
             <td><a class="text-dark font-weight-bold" href="{% url 'product_detail' product.id %}">{{ product.name }}</a></td>
             <td>{{ product.category }}</td>
-            <td>${{ product.price }}</td>
+            <td>₹{{ product.price }}</td>
             <td>
                 <a class="btn btn-outline-dark" href="{% url 'edit_product' product.id %}">Edit</a>
                 

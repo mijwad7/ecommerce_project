@@ -8,11 +8,11 @@
       </h2>
       <hr />
       <p><strong>Stock:</strong> {{ variant.stock }}</p>
-      <p><strong>Price:</strong> ${{ variant.price }}</p>
+      <p><strong>Price:</strong> ₹{{ variant.price }}</p>
       {% if variant.is_on_sale %}
       <p>
         <strong>Sale Price:</strong>
-        <span class="text-danger">${{ variant.sale_price }}</span>
+        <span class="text-danger">₹{{ variant.sale_price }}</span>
       </p>
       {% endif %}
       <p><strong>Variant Type:</strong> {{ variant.variant_type }}</p>

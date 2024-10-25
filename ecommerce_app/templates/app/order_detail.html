@@ -28,11 +28,11 @@
             </h5>
             <p class="card-text text-muted">{{ item.product.category }}</p>
             <p>
-              <span class="h5">${{ item.price|floatformat:2 }}</span>
+              <span class="h5">₹{{ item.price|floatformat:2 }}</span>
             </p>
             <div class="mt-auto">
               <p>Quantity: {{ item.quantity }}</p>
-              <p>Total: ${{ item.price|floatformat:2 }}</p>
+              <p>Total: ₹{{ item.price|floatformat:2 }}</p>
             </div>
           </div>
         </div>
@@ -42,7 +42,7 @@
 
     <div class="d-flex justify-content-between align-items-center mt-4">
       <h4>Total Price:</h4>
-      <h4>${{ order.total_price|floatformat:2 }}</h4>
+      <h4>₹{{ order.total_price|floatformat:2 }}</h4>
     </div>
 
     <div class="mt-4 mb-4">

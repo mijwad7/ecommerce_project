@@ -1,4 +1,5 @@
-{% extends './base.html' %} {% load static %} {% block title %}
+{% extends './base.html' %} {% load static %} {% load humanize %}
+{% block title %}
 {{ product.name }} {% endblock %} {% block content %}
 <div class="container">
   <!-- Breadcrumbs -->
@@ -72,10 +73,10 @@
           {% endif %}
           class="h4"
           id="product-price"
-          >${{ product.price }}</span
+          >₹{{ product.price|intcomma }}</span
         >
         {% if product.is_on_sale %}
-        <span class="h4">${{ product.sale_price }}</span>
+        <span class="h4">₹{{ product.sale_price|intcomma }}</span>
         {% endif %}
         <span class="text-muted"
           >{{ review_score }} Star Rating ({{ num_reviews }} Reviews)</span
@@ -108,7 +109,7 @@
         </div>
         <div class="align-items-center mb-3">
             <button id="cart-btn" type="submit" class="btn btn-black me-2 mb-sm-3">
-                Add to Cart - ${% if product.sale_price %}{{ product.sale_price }}{% else %}{{ product.price }}{% endif %}
+                Add to Cart - ₹{% if product.sale_price %}{{ product.sale_price|intcomma }}{% else %}{{ product.price|intcomma }}{% endif %}
             </button>
         </div>
     </form>
@@ -169,7 +170,7 @@
           >
         </h5>
         <p class="card-text font-weight-bold">
-          {{ product.price|floatformat:2 }} $
+          ₹{{ product.price|floatformat:2|intcomma }}
         </p>
       </div>
     </div>
@@ -213,11 +214,11 @@
             const cartBtn = document.getElementById("cart-btn");
   
             if (data.is_on_sale) {
-              productPrice.innerHTML = `<span style="text-decoration:line-through;">$${data.price}</span> $${data.sale_price}`;
-              cartBtn.innerHTML = `Add to Cart - $${data.sale_price}`;
+              productPrice.innerHTML = `<span style="text-decoration:line-through;">₹${data.price}</span> ₹${data.sale_price}`;
+              cartBtn.innerHTML = `Add to Cart - ₹${data.sale_price}`;
             } else {
-              productPrice.textContent = `$${data.price}`;
-              cartBtn.textContent = `Add to Cart - $${data.price}`;
+              productPrice.textContent = `₹${data.price}`;
+              cartBtn.textContent = `Add to Cart - ₹${data.price}`;
             }
   
             productStock.textContent = `${data.stock} left in stock`;
