@@ -44,3 +44,6 @@ body {
 .breadcrumb {
   background-color: white; /* Change this to your desired color */
 }
+.selected-card {
+  border: 2px solid #000; /* Highlight the selected card */
+}

@@ -1,59 +1,125 @@
-{% extends './base.html' %}
-{% block content %}
+{% extends './base.html' %} {% load static %} {% block content %}
 <div class="container mt-5">
   <h2 class="mb-4">Checkout</h2>
-  <form method="post" class="needs-validation" novalidate>
+  <form method="post">
     {% csrf_token %}
 
     <div class="mb-4">
+      <h4>Select Payment Method:</h4>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <div
+            class="card p-3 cursor-pointer js-select-card"
+            data-input-id="payment_method_COD"
+          >
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="payment_method"
+                id="payment_method_COD"
+                value="COD"
+                required
+                style="position: absolute; opacity: 0"
+              />
+              <label for="payment_method_COD" class="form-check-label"
+                >Cash on Delivery</label
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div
+            class="card p-3 cursor-pointer js-select-card"
+            data-input-id="payment_method_ONLINE"
+          >
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="payment_method"
+                id="payment_method_ONLINE"
+                value="ONLINE"
+                style="position: absolute; opacity: 0"
+              />
+              <label class="form-check-label" for="payment_method_ONLINE"
+                >Online Payment</label
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-4">
       <h4>Select Shipping Address:</h4>
-      <div class="card p-3">
+      <div class="row">
         {% for address in addresses %}
-        <div class="form-check">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="address"
-            id="address_{{ address.id }}"
-            value="{{ address.id }}"
-            required
-          />
-          <label for="address_{{ address.id }}" class="form-check-label">
-            {{ address.line_1 }}, {% if address.line_2 %} {{ address.line_2 }}, {% endif %} {{ address.city }}, {{ address.post_code }}
-          </label>
+        <div class="col-md-6 mb-3">
+          <div
+            class="card p-3 h-100 cursor-pointer js-select-card"
+            data-input-id="address_{{ address.id }}"
+          >
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="address"
+                id="address_{{ address.id }}"
+                value="{{ address.id }}"
+                required
+                style="position: absolute; opacity: 0"
+              />
+              <label for="address_{{ address.id }}" class="form-check-label">
+                <strong>{{ address.line_1 }}</strong>, {% if address.line_2 %}
+                {{ address.line_2 }}, {% endif %} {{ address.city }}, {{ address.post_code }}
+              </label>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center">
+          <p>No addresses found.</p>
+          <a href="{% url 'app:add_address' %}" class="btn btn-black">Please add an address</a>
         </div>
         {% endfor %}
       </div>
     </div>
 
-    <div class="mb-4">
-      <h4>Select Payment Method:</h4>
-      <div class="card p-3">
-        <div class="form-check">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="payment_method"
-            value="COD"
-            id="payment_method_COD"
-            required
-          />
-          <label for="payment_method_COD" class="form-check-label">Cash on Delivery</label>
-        </div>
-        <div class="form-check">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="payment_method"
-            id="payment_method_ONLINE"
-            value="ONLINE"
-          />
-          <label class="form-check-label" for="payment_method_ONLINE">Online Payment</label>
-        </div>
-      </div>
-    </div>
-
-    <button type="submit" class="btn btn-black btn-lg mt-3">Place Order</button>
+    <button type="submit" {% if not addresses %} disabled {% endif %} class="btn btn-black btn-lg mt-3">Place Order</button>
   </form>
 </div>
+{% endblock %} {% block script %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const cards = document.querySelectorAll(".js-select-card");
+    
+    cards.forEach((card) => {
+      card.addEventListener("click", function () {
+        const inputId = this.getAttribute("data-input-id");
+        const input = document.getElementById(inputId);
+        
+        if (input) {
+          input.checked = true;
+          
+          // Find all cards within the same input group by checking the name attribute of the input
+          const inputName = input.getAttribute("name");
+          const groupCards = document.querySelectorAll(`input[name="${inputName}"]`);
+          
+          groupCards.forEach((groupInput) => {
+            // Remove the 'selected-card' class from all cards within the same group
+            const parentCard = groupInput.closest('.js-select-card');
+            if (parentCard) {
+              parentCard.classList.remove("selected-card");
+            }
+          });
+          
+          // Add the 'selected-card' class to the clicked card
+          this.classList.add("selected-card");
+        }
+      });
+    });
+  });
+  
+</script>
 {% endblock %}

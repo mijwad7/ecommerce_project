@@ -349,6 +349,7 @@ class CartProduct(models.Model):
     quantity = models.PositiveIntegerField()
     variant = models.ForeignKey(ProductVariant, null=True, blank=True, on_delete=models.SET_NULL)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    is_checked_out = models.BooleanField(default=False)
 
     def __str__(self):
         variant_info = f" ({self.variant.value})" if self.variant else ""

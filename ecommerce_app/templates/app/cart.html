@@ -64,9 +64,8 @@
       <h4>${{ total_price|floatformat:2 }}</h4>
     </div>
 
-    <div class="mt-4 mb-4">
-      <a href="{% url 'app:checkout' %}" class="btn btn-black">Checkout</a>
-      <a href="{% url 'app:index' %}" class="btn btn-secondary">Continue Shopping</a>
+    <div class="mt-4 mb-4 d-flex justify-content-end">
+      <a href="{% url 'app:checkout' %}" class="btn btn-black btn-lg">Checkout</a>
     </div>
 
   {% else %}

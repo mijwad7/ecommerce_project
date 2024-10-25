@@ -31,5 +31,6 @@ def adjust_stock_on_remove(sender, instance, **kwargs):
     """
     Restore product stock when a CartProduct is removed.
     """
-    instance.product.stock += instance.quantity
-    instance.product.save()
+    if not instance.is_checked_out:
+        instance.product.stock += instance.quantity
+        instance.product.save()
