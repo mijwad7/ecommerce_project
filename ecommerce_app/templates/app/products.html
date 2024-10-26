@@ -42,7 +42,7 @@
             </select>
         </div>
         <div class="col-12 col-md-auto mt-md-0 mt-3">
-            <button type="submit" class="btn btn-black w-100 w-md-auto">Search</button>
+            <button type="submit" class="btn btn-black w-100 w-md-auto"><i class="bi bi-search"></i> Search</button>
         </div>
     </form>
     
@@ -59,9 +59,9 @@
                         <a class="text-dark" href="{% url 'app:product_detail' product.id %}">{{ product.name }}</a>
                     </h5>
                     {% if product.stock > 0 %}
-                    <p id="product-stock" class="text-success">{{ product.stock }} left in stock</p>
+                    <p id="product-stock" class="text-success"> <i class="bi bi-check-circle-fill"></i> {{ product.stock }} left in stock</p>
                     {% else %}
-                    <p class="text-danger">Sold Out / Unavailable</p>
+                    <p class="text-danger"><i class="bi bi-x-circle-fill"></i> Sold Out / Unavailable</p>
                     {% endif %}
                     <p class="card-text text-muted">
                         {% if product.average_rating %}
