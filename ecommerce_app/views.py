@@ -176,6 +176,8 @@ def products(request):
         products = products.order_by("-price")
     elif sort == "rating":
         products = products.order_by("-average_rating")
+    elif sort == "featured":
+        products = products.filter(is_featured=True)
 
     # Pagination (10 products per page)
     paginator = Paginator(products, 6)

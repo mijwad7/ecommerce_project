@@ -34,6 +34,7 @@
                 <option value="A-Z" {% if request.GET.sort == 'A-Z' %}selected{% endif %}>A - Z</option>
                 <option value="Z-A" {% if request.GET.sort == 'Z-A' %}selected{% endif %}>Z - A</option>
                 <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>Newest</option>
+                <option value="featured" {% if request.GET.sort == 'featured' %}selected{% endif %}>Featured</option>
                 <option value="low-high" {% if request.GET.sort == 'low-high' %}selected{% endif %}>Price: Low - High</option>
                 <option value="high-low" {% if request.GET.sort == 'high-low' %}selected{% endif %}>Price: High - Low</option>
                 <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>Rating</option>
