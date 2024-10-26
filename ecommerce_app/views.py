@@ -224,7 +224,7 @@ def product_detail(request, product_id):
         {
             "product": product,
             "reviews": reviews,
-            "review_score": round(review_score, 1),
+            "review_score": str(round(review_score, 1)),
             "num_reviews": review_data["num_reviews"],
             "specs": specs,
             "coupons": coupons,
@@ -512,11 +512,10 @@ def order_detail(request, order_id):
 def cancel_order(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     if order.order_status in ["PENDING", "CONFIRMED"]:
-        order.order_status = "CANCELED"
+        order.order_status = "CANCELLED"
         order.save()
         messages.success(request, "Order canceled successfully!")
     else:
         messages.error(request, "Order cannot be cancelled at this stage.")
 
-    messages.success(request, "Order canceled successfully!")
     return redirect("app:view_orders")

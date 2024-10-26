@@ -47,89 +47,99 @@
     <div class="col-md-6">
       <h2>{{ product.name }}</h2>
       {% if product.brand %}
-      <p>From {{ product.brand }}</p>
+      <p><i class="bi bi-building"></i> From {{ product.brand }}</p>
       {% endif %}
+  
       {% if variants %}
-      <p class="h4">Variants:</p>
-      <div id="variant-list">
-        {% for variant in variants %}
-        <button
-          class="variant-btn btn btn-outline-dark mb-2"
-          data-variant-id="{{ variant.id }}"
-          data-price="{{ variant.price }}"
-          data-sale-price="{{ variant.sale_price }}"
-          data-stock="{{ variant.stock }}"
-          data-is-on-sale="{{ variant.is_on_sale }}"
-        >
-          {{ variant.variant_type }}: {{ variant.value }}
-        </button>
-        {% endfor %}
+      <p class="h5 mt-3"><i class="bi bi-card-list"></i> Variants:</p>
+      <div id="variant-list" class="d-flex flex-wrap">
+          {% for variant in variants %}
+          <button
+              class="variant-btn btn btn-outline-dark mb-2 me-2"
+              data-variant-id="{{ variant.id }}"
+              data-price="{{ variant.price }}"
+              data-sale-price="{{ variant.sale_price }}"
+              data-stock="{{ variant.stock }}"
+              data-is-on-sale="{{ variant.is_on_sale }}"
+          >
+              <i class="bi bi-sliders"></i> {{ variant.variant_type }}: {{ variant.value }}
+          </button>
+          {% endfor %}
       </div>
       {% endif %}
-      <div class="mb-2">
-        <span
+  
+      <!-- Price and Rating Section -->
+      <div class="d-flex mb-2">
+          <span
+              class="h4"
+              {% if product.is_on_sale %}
+              style="text-decoration: line-through"
+              {% endif %}
+              id="product-price"
+          >₹{{ product.price|intcomma }}</span>
+          
           {% if product.is_on_sale %}
-          style="text-decoration: line-through"
+          <span class="h4 text-danger">₹{{ product.sale_price|intcomma }}</span>
           {% endif %}
-          class="h4"
-          id="product-price"
-          >₹{{ product.price|intcomma }}</span
-        >
-        {% if product.is_on_sale %}
-        <span class="h4">₹{{ product.sale_price|intcomma }}</span>
-        {% endif %}
-        <span class="text-muted"
-          >{{ review_score }} Star Rating ({{ num_reviews }} Reviews)</span
-        >
+          
+            <!-- Dynamic Stars -->
+            <span class="text-warning ml-2">
+                {% for i in "12345" %}
+                    {% if review_score >= i %}
+                        <i class="bi bi-star-fill"></i> <!-- Full Star -->
+                    {% elif review_score >= i|add:"-0.5" %}
+                        <i class="bi bi-star-half"></i> <!-- Half Star -->
+                    {% else %}
+                        <i class="bi bi-star"></i> <!-- Empty Star -->
+                    {% endif %}
+                {% endfor %}
+            </span>
+            
+            <!-- Review Count -->
+            <span class="text-muted ms-2">({{ num_reviews }} Reviews)</span>
+        
       </div>
-
+  
       <!-- Stock Availability -->
       {% if product.stock > 0 %}
-      <p id="product-stock" class="text-success">{{ product.stock }} left in stock</p>
+      <p id="product-stock" class="text-success"><i class="bi bi-check-circle-fill"></i> {{ product.stock }} left in stock</p>
       {% else %}
-      <p class="text-danger">Sold Out / Unavailable</p>
+      <p class="text-danger"><i class="bi bi-x-circle-fill"></i> Sold Out / Unavailable</p>
       {% endif %}
-
-      <!-- <p><strong>Description:</strong> {{ product.description }}</p> -->
-
-      {% for spec in specs %}
-      <p><strong>{{ spec.key }}:</strong> {{ spec.value }}</p>
-      {% endfor %}
-
-      <!-- Display Coupons or Discounts -->
-
-      {% if product.stock > 0 %} {% if request.user.is_authenticated %}
-      <!-- Quantity Selector -->
-      <form id="add-to-cart-form" data-url="{% url 'app:add_to_cart' product.id %}">
-        {% csrf_token %}
-        <input type="hidden" name="variant_id" id="variant-id" value="">
-        <div class="d-flex align-items-center mb-3">
-            <label class="me-2">Quantity:</label>
-            <input id="quantity" type="number" name="quantity" value="1" min="1" class="form-control w-25" />
-        </div>
-        <div class="align-items-center mb-3">
-            <button id="cart-btn" type="submit" class="btn btn-black me-2 mb-sm-3">
-                Add to Cart - ₹{% if product.sale_price %}{{ product.sale_price|intcomma }}{% else %}{{ product.price|intcomma }}{% endif %}
-            </button>
-        </div>
-    </form>
-      {% endif %} {% endif %}
-
-      <div class="coupons">
-        <h4>Available Coupons:</h4>
-        {% if coupons %}
-        <ul>
-          {% for coupon in coupons %}
-          <li>{{ coupon.code }} - {{ coupon.discount_percent }}% off</li>
-          {% endfor %}
-        </ul>
-        {% else %}
-        <p>No coupons available for this product.</p>
-        {% endif %}
-      </div>
-      <!-- Compare Button -->
-      <button class="btn btn-outline-dark">Compare to another product</button>
+  
+      <!-- Product Specifications -->
+      <div class="row">
+        {% for spec in specs %}
+            <div class="col-lg-6">
+                <p><strong>{{ spec.key }}:</strong> {{ spec.value }}</p>
+            </div>
+        {% endfor %}
     </div>
+    
+  
+      <!-- Quantity Selector and Add to Cart Button -->
+      {% if product.stock > 0 %}
+      {% if request.user.is_authenticated %}
+      <form id="add-to-cart-form" data-url="{% url 'app:add_to_cart' product.id %}">
+          {% csrf_token %}
+          <input type="hidden" name="variant_id" id="variant-id" value="">
+          <div class="d-flex align-items-center mb-2">
+              <label class="me-2"><i class="bi bi-cart-plus"></i> Quantity:</label>
+              <input id="quantity" type="number" name="quantity" value="1" min="1" class="form-control w-25" />
+          </div>
+          <button id="cart-btn" type="submit" class="btn btn-black mb-3">
+              Add to Cart - ₹{% if product.sale_price %}{{ product.sale_price|intcomma }}{% else %}{{ product.price|intcomma }}{% endif %}
+          </button>
+      </form>
+      {% endif %}
+      {% endif %}
+  
+      <!-- Available Coupons -->
+      
+  
+      <!-- Compare Button -->
+  </div>
+  
   </div>
 </div>
 

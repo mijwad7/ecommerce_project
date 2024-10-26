@@ -20,18 +20,20 @@
                                 {{ order.order_status }}
                             </span>
                         </p>
-                        <p class="mb-1"><strong>Payment:</strong> {{ order.payment_method }}</p>
+                        <p class="mb-1"><strong>Payment:</strong> <i class="bi bi-cash-coin"></i> {{ order.payment_method }}</p>
                         <p class="mb-1"><strong>Total:</strong> ₹{{ order.total_price }}</p>
-                        <p class="mb-1"><strong>Address:</strong> {{ order.address.line_1 }}, {% if order.address.line_2 %} {{ order.address.line_2 }}, {% endif %} {{ order.address.city }}, {{ order.address.post_code }}</p>
+                        <p class="mb-1"><strong>Address:</strong> <i class="bi bi-house"></i> {{ order.address.line_1 }}, {% if order.address.line_2 %} {{ order.address.line_2 }}, {% endif %} {{ order.address.city }}, {{ order.address.post_code }}</p>
                         <p class="text-muted">Placed on: {{ order.created_at }}</p>
                     </div>
                     {% if order.order_status == 'CANCELLED' %}
                         <p class="text-muted">Cancelled on: {{ order.updated_at }}</p>
                     {% else %}
                     <div>
-                        <a class="btn btn-outline-dark btn-sm me-2" href="{% url 'app:order_detail' order.id %}">View Items</a>
+                        <a class="btn btn-outline-dark btn-sm me-2" href="{% url 'app:order_detail' order.id %}">
+                            <i class="bi bi-eye"></i> View Items
+                        </a>
                         <button type="button" class="btn btn-black btn-sm" data-bs-toggle="modal" data-bs-target="#cancelOrderModal{{ order.id }}">
-                            Cancel Order
+                            <i class="bi bi-x-circle"></i> Cancel Order
                         </button>
                     </div>
                     {% endif %}
@@ -51,8 +53,8 @@
                         Are you sure you want to cancel this order (ID: {{ order.id }})?
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Keep Order</button>
-                        <a href="{% url 'app:cancel_order' order.id %}" class="btn btn-danger">Yes, Cancel Order</a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-arrow-left"></i> No, Keep Order</button>
+                        <a href="{% url 'app:cancel_order' order.id %}" class="btn btn-danger"><i class="bi bi-check-circle"></i> Yes, Cancel Order</a>
                     </div>
                 </div>
             </div>
