@@ -1,23 +1,10 @@
 from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch import receiver
-from .models import CartProduct, Product
+from .models import CartProduct, Product, Order, OrderItem
 
-@receiver(pre_save, sender=CartProduct)
-def adjust_stock_on_update(sender, instance, **kwargs):
-    """
-    Adjust product stock when a CartProduct is updated.
-    """
-    if instance.pk:
-        # If the CartProduct already exists, get the original object
-        original = CartProduct.objects.get(pk=instance.pk)
-        if instance.quantity != original.quantity:
-            # Calculate the difference and adjust stock accordingly
-            difference = instance.quantity - original.quantity
-            instance.product.stock -= difference
-            instance.product.save()
 
-@receiver(post_save, sender=CartProduct)
-def adjust_stock_on_add(sender, instance, created, **kwargs):
+@receiver(post_save, sender=OrderItem)
+def adjust_stock_on_order(sender, instance, created, **kwargs):
     """
     Reduce product stock when a new CartProduct is added.
     """
@@ -26,11 +13,12 @@ def adjust_stock_on_add(sender, instance, created, **kwargs):
         instance.product.stock -= instance.quantity
         instance.product.save()
 
-@receiver(post_delete, sender=CartProduct)
-def adjust_stock_on_remove(sender, instance, **kwargs):
+@receiver(post_save, sender=Order)
+def adjust_stock_on_order_status_change(sender, instance, **kwargs):
     """
-    Restore product stock when a CartProduct is removed.
+    Restore product stock when an order is canceled.
     """
-    if not instance.is_checked_out:
-        instance.product.stock += instance.quantity
-        instance.product.save()
+    if instance.order_status == 'CANCELLED':
+        for item in instance.items.all():
+            item.product.stock += item.quantity
+            item.product.save()

@@ -495,7 +495,7 @@ def order_confirmation(request, order_id):
 
 @login_required
 def view_orders(request):
-    orders = Order.objects.filter(user=request.user)
+    orders = Order.objects.filter(user=request.user).order_by('-id')
 
     return render(request, "app/view_orders.html", {"orders": orders})
 
