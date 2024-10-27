@@ -208,7 +208,6 @@ def products(request):
 
 
 def product_detail(request, product_id):
-    
     product = get_object_or_404(Product, id=product_id)
 
     # Fetch reviews and use aggregation for the average rating and review count
@@ -301,6 +300,13 @@ def add_to_cart(request, product_id):
                     "message": "Not enough stock available for this product.",
                 }
             )
+        if quantity > product.max_per_user:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "You can only add up to " + str(product.max_per_user) + " items to your cart.",
+                }
+            )
 
         # Check if the base product is already in the cart
         cart_product, created = CartProduct.objects.get_or_create(
@@ -326,6 +332,14 @@ def add_to_cart(request, product_id):
                     {
                         "success": False,
                         "message": "Not enough stock available for this product.",
+                    }
+                )
+            
+            if quantity > product.max_per_user:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "You can only add up to " + str(product.max_per_user) + " items to your cart.",
                     }
                 )
 
@@ -534,17 +548,47 @@ def cancel_order(request, order_id):
     return redirect("app:view_orders")
 
 @login_required
+@csrf_exempt
 def update_cart_quantity(request, item_id):
     if request.method == "POST":
         item = get_object_or_404(CartProduct, id=item_id)
-        quantity = request.POST.get('quantity')
         
+        # Retrieve the product or variant associated with the cart item
+        product = item.product
+        variant = item.variant  # May be None if it's a base product
+        quantity = int(request.POST.get('quantity'))
+
+        # Validate the requested quantity against the stock
+        if variant:
+            if quantity > variant.stock:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Not enough stock available for this variant.",
+                    }
+                )
+        else:
+            if quantity > product.stock:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Not enough stock available for this product.",
+                    }
+                )
+            if quantity > product.max_per_user:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "You can only add up to " + str(product.max_per_user) + " items to your cart.",
+                    }
+                )
+
         # Update the quantity and recalculate the total price
-        item.quantity = int(quantity)
+        item.quantity = quantity
         item.save()
-        
+
         # You may want to return the updated total price or any other info
-        return JsonResponse({'total_price': item.total_price})
+        return JsonResponse({'success': True, 'total_price': item.total_price})
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 

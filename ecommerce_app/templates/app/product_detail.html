@@ -83,10 +83,10 @@
               style="text-decoration: line-through"
               {% endif %}
               id="product-price"
-          >₹{{ product.price|intcomma }}</span>
+          >₹{{ product.price|intcomma }} </span>
           
           {% if product.is_on_sale %}
-          <span class="h4 text-danger">₹{{ product.sale_price|intcomma }}</span>
+          <span class="h4 text-danger"> ₹{{ product.sale_price|intcomma }}</span>
           {% endif %}
           
             <!-- Dynamic Stars -->
@@ -345,7 +345,7 @@
               },
               success: function (response) {
                   let messageContainer = $("#message-container");
-                  
+
                   // Remove existing alerts
                   messageContainer.html("");
 

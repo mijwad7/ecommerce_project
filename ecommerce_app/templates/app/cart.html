@@ -102,10 +102,18 @@
         success: function (response) {
           // Update total price in the UI (if returned from server)
           location.reload();  // Reload the page to get updated cart info
+          if (response.success) {
+              // Display success message
+              $('#message-container').append(`<div class="alert alert-success">${response.message}</div>`);
+              // Update total price or other UI changes
+          } else {
+              // Display error message
+              $('#message-container').append(`<div class="alert alert-danger">${response.message}</div>`);
+          }
         },
         error: function (xhr) {
           // Handle error
-          alert("An error occurred. Please try again.");
+          $('#message-container').append(`<div class="alert alert-danger">An error occurred: ${error}</div>`);
         }
       });
     });
