@@ -15,6 +15,7 @@ from .models import (
     Brand,
     Order,
     OrderItem,
+    Tag
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
@@ -136,6 +137,8 @@ def products(request):
     category_id = request.GET.get("category")
     brand_id = request.GET.get("brand")
     sort = request.GET.get("sort", "id")
+    tags = Tag.objects.all()
+    selected_tags = request.GET.getlist('tags')
 
     # Pre-select related data to optimize queries
     products = (
@@ -179,6 +182,9 @@ def products(request):
     elif sort == "featured":
         products = products.filter(is_featured=True)
 
+    if selected_tags:
+        products = products.filter(tags__name__in=selected_tags).distinct()
+
     # Pagination (10 products per page)
     paginator = Paginator(products, 6)
     page_number = request.GET.get("page")
@@ -191,6 +197,8 @@ def products(request):
             "products": paginated_products,
             "categories": categories,
             "brands": brands,
+            "tags": tags,
+            "selected_tags": selected_tags
         },
     )
 

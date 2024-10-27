@@ -117,6 +117,12 @@ class Brand(models.Model):
         return self.name
 
 
+class Tag(models.Model):
+    name = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.name
+
 class ProductQuerySet(models.QuerySet):
     def active(self):
         return self.filter(is_deleted=False)
@@ -161,6 +167,7 @@ class Product(models.Model):
     is_deleted = models.BooleanField(default=False)
     coupons = models.ManyToManyField(Coupon, blank=True, related_name="products")
     max_per_user = models.PositiveIntegerField(default=10)
+    tags = models.ManyToManyField(Tag, blank=True)
 
     objects = ProductManager()
 

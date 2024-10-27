@@ -47,3 +47,18 @@ body {
 .selected-card {
   border: 2px solid #000; /* Highlight the selected card */
 }
+
+.bg-black {
+  background-color: #000;
+}
+
+.tag-label {
+  background-color: #f8f9fa; /* Light background by default */
+  color: #212529; /* Dark text by default */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.selected-label {
+  background-color: #000; /* Black background when selected */
+  color: #fff; /* White text when selected */
+}

@@ -456,9 +456,12 @@ def view_orders(request):
 @superuser_required
 def cancel_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)  # Remove user restriction
-    order.order_status = "CANCELLED"  # Ensure the status matches your ORDER_STATUS_CHOICES
-    order.save()
-    messages.success(request, "Order canceled successfully!")
+    if order.order_status in ["PENDING", "CONFIRMED"]:
+        order.order_status = "CANCELLED"
+        order.save()
+        messages.success(request, "Order canceled successfully!")
+    else:
+        messages.error(request, "Order cannot be cancelled at this stage.")
     return redirect("view_orders")
 
 
