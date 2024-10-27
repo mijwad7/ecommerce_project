@@ -44,15 +44,18 @@
                 </select>
             </div>
             <div class="col-12 mb-3">
-                <div class="d-flex flex-wrap g-2">
-                    {% for tag in tags %}
-                        <label class="badge rounded-pill border border-secondary mx-1 tag-label" style="padding: 8px 12px; cursor: pointer;">
-                            <input type="checkbox" name="tags" value="{{ tag.name }}" {% if tag.name in selected_tags %}checked{% endif %} style="display: none;">
-                            {{ tag.name }}
-                        </label>
-                    {% endfor %}
-                </div>
+                {% if request.GET.category %}
+                    <div class="d-flex flex-wrap g-2">
+                        {% for tag in tags %}
+                            <label class="badge rounded-pill border border-secondary mx-1 tag-label" style="padding: 8px 12px; cursor: pointer;">
+                                <input type="checkbox" name="tags" value="{{ tag.name }}" {% if tag.name in selected_tags %}checked{% endif %} style="display: none;">
+                                {{ tag.name }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
+            
             
             <div class="col-12 mb-3">
                 <button type="submit" class="btn btn-black w-100"><i class="bi bi-search"></i> Search</button>

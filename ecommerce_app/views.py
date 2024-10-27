@@ -137,15 +137,16 @@ def products(request):
     category_id = request.GET.get("category")
     brand_id = request.GET.get("brand")
     sort = request.GET.get("sort", "id")
-    tags = Tag.objects.all()
     selected_tags = request.GET.getlist('tags')
+
+    # Fetch categories and brands as before
+    categories = Category.objects.all()
+    brands = Brand.objects.all()
 
     # Pre-select related data to optimize queries
     products = (
         Product.objects.select_related("category").prefetch_related("reviews").all()
     )
-    categories = Category.objects.all()
-    brands = Brand.objects.all()
 
     # Filter by brand (only if valid)
     if brand_id and Brand.objects.filter(id=brand_id).exists():
@@ -160,6 +161,9 @@ def products(request):
     # Filter by category (only if valid)
     if category_id and Category.objects.filter(id=category_id).exists():
         products = products.filter(category_id=category_id)
+        tags = Tag.objects.filter(category_id=category_id)  # Only get tags for this category
+    else:
+        tags = Tag.objects.none()  # No tags if no category is selected
 
     # Annotate with average ratings
     products = products.annotate(average_rating=Avg("reviews__rating"))
@@ -204,6 +208,7 @@ def products(request):
 
 
 def product_detail(request, product_id):
+    
     product = get_object_or_404(Product, id=product_id)
 
     # Fetch reviews and use aggregation for the average rating and review count
