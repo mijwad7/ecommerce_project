@@ -194,7 +194,7 @@ def products_list(request):
     elif sort_by == 'category':
         products = products.order_by('category__name')
     else:
-        products = products.order_by('id')
+        products = products.order_by('-id')
 
     return render(request, 'admin/products_list.html', {
         'products': products,

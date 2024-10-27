@@ -1,4 +1,5 @@
 {% extends "./base.html" %}
+{% load humanize %}
 
 {% block content %}
 <h2>Product List</h2>
@@ -37,8 +38,9 @@
     <thead>
         <tr>
             <th>Name</th>
-            <th>Category</th>
+            <th class="d-none d-md-block">Category</th>
             <th>Price</th>
+            <th class="d-none d-md-block">Stock</th> <!-- New Column for Stock Levels -->
             <th>Actions</th>
         </tr>
     </thead>
@@ -46,8 +48,20 @@
         {% for product in products %}
         <tr>
             <td><a class="text-dark font-weight-bold" href="{% url 'product_detail' product.id %}">{{ product.name }}</a></td>
-            <td>{{ product.category }}</td>
-            <td>₹{{ product.price }}</td>
+            <td class="d-none d-md-block">{{ product.category }}</td>
+            <td>₹{{ product.price|intcomma }}</td>
+            
+            <!-- Stock Level Column -->
+            <td class="d-none d-md-block">
+                {% if product.stock > 10 %}
+                    <span class="badge bg-success">In Stock: {{ product.stock }}</span>
+                {% elif product.stock > 0 and product.stock <= 10 %}
+                    <span class="badge bg-warning text-dark">Low Stock: {{ product.stock }}</span>
+                {% else %}
+                    <span class="badge bg-danger">Out of Stock</span>
+                {% endif %}
+            </td>
+
             <td>
                 <a class="btn btn-outline-dark" href="{% url 'edit_product' product.id %}">Edit</a>
                 
@@ -81,5 +95,6 @@
         {% endfor %}
     </tbody>
 </table>
+
 
 {% endblock %}

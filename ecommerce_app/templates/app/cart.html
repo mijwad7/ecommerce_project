@@ -51,9 +51,14 @@
               {% endif %}
             </p>
             <div class="mt-auto">
-              <p>Quantity: {{ item.quantity }}</p>
-              <p>Total: ₹{{ item.total_price|intcomma }}</p>
-              <a href="{% url 'app:remove_from_cart' item.id %}" class="btn btn-black">Remove from cart</a>
+              <form class="edit-cart-form" data-url="{% url 'app:update_cart_quantity' item.id %}">
+                {% csrf_token %}
+                <label>Quantity:</label>
+                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control w-25 mb-2" />
+                <p>Total: ₹{{ item.total_price|intcomma }}</p>
+                <button type="submit" class="btn btn-outline-dark"><i class="bi bi-pencil"></i> Edit</button>
+                <a href="{% url 'app:remove_from_cart' item.id %}" class="btn btn-black"><i class="bi bi-trash-fill"></i> Remove</a>
+              </form>
             </div>
           </div>
         </div>
@@ -75,4 +80,35 @@
     <a href="{% url 'app:index' %}" class="btn btn-secondary">Continue Shopping</a>
   {% endif %}
 </div>
+{% endblock %}
+
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script>
+  $(document).ready(function () {
+    $(".edit-cart-form").on("submit", function (e) {
+      e.preventDefault();
+      const url = $(this).data("url");
+      const quantity = $(this).find('input[name="quantity"]').val();
+      const csrfToken = $("input[name='csrfmiddlewaretoken']").val();
+
+      $.ajax({
+        type: "POST",
+        url: url,
+        data: {
+          quantity: quantity,
+          csrfmiddlewaretoken: csrfToken
+        },
+        success: function (response) {
+          // Update total price in the UI (if returned from server)
+          location.reload();  // Reload the page to get updated cart info
+        },
+        error: function (xhr) {
+          // Handle error
+          alert("An error occurred. Please try again.");
+        }
+      });
+    });
+  });
+</script>
 {% endblock %}

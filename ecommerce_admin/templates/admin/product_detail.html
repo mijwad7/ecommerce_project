@@ -1,4 +1,6 @@
 {% extends './base.html' %}
+{% load humanize %}
+
 
 {% block title %}Product Details{% endblock %}
 
@@ -9,7 +11,13 @@
             <h2 class="card-title">{{ product.name }}</h2>
             <p><strong>Category:</strong> {{ product.category }}</p>
             <p><strong>Description:</strong> {{ product.description }}</p>
-            <p><strong>Price:</strong> ₹{{ product.price }}</p>
+            <p><strong>Price:</strong> ₹{{ product.price|intcomma }}</p>
+            {% if product.is_on_sale %}
+            <p>
+                <strong>Sale Price:</strong>
+                <span class="text-danger">₹{{ product.sale_price|intcomma }}</span>
+            </p>
+            {% endif %}
             <p><strong>In Stock:</strong> {{ product.stock }}</p>
         </div>
     </div>

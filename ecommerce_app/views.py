@@ -519,3 +519,18 @@ def cancel_order(request, order_id):
         messages.error(request, "Order cannot be cancelled at this stage.")
 
     return redirect("app:view_orders")
+
+@login_required
+def update_cart_quantity(request, item_id):
+    if request.method == "POST":
+        item = get_object_or_404(CartProduct, id=item_id)
+        quantity = request.POST.get('quantity')
+        
+        # Update the quantity and recalculate the total price
+        item.quantity = int(quantity)
+        item.save()
+        
+        # You may want to return the updated total price or any other info
+        return JsonResponse({'total_price': item.total_price})
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
