@@ -19,7 +19,7 @@ from .models import (
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from .forms import UserSignUpForm, AddressForm, UserEditForm, CustomPasswordChangeForm
+from .forms import UserSignUpForm, AddressForm, UserEditForm, CustomPasswordChangeForm, ReviewForm
 from .otp_utils import send_otp_to_email
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
@@ -534,3 +534,20 @@ def update_cart_quantity(request, item_id):
         return JsonResponse({'total_price': item.total_price})
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@login_required
+def add_review(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    form = ReviewForm(request.POST)
+
+    if form.is_valid():
+        review = form.save(commit=False)
+        review.product = product
+        review.user = request.user
+        review.save()
+        messages.success(request, "Review added successfully!")
+        return redirect("app:product_detail", product_id=product_id)
+    else:
+        messages.error(request, "Failed to add review. Please try again.")
+
+    return render(request, "app/product_detail.html", {"product": product, "form": form})

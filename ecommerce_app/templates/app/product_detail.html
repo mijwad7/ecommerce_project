@@ -145,12 +145,28 @@
 
 <!-- Reviews Section -->
 <div class="container mt-5">
-  <h3>Reviews:</h3>
+  <div class="row d-flex justify-content-between">
+    <h3>Reviews:</h3>
+    {% if request.user.is_authenticated %}
+    <a href="#" class="btn btn-black" data-bs-toggle="modal" data-bs-target="#addReviewModal">Add Review</a>
+    {% endif %}
+  </div>
+  <br>
   {% if reviews %}
   <ul class="list-group">
     {% for review in reviews %}
     <li class="list-group-item">
-      <strong>{{ review.user.username }}</strong> - {{ review.rating }} stars
+      <strong>{{ review.user.username }}</strong> - <span class="text-warning ml-2">
+                {% for i in "12345" %}
+                    {% if review.rating|stringformat:"s" >= i %}
+                        <i class="bi bi-star-fill"></i> <!-- Full Star -->
+                    {% elif review.rating|stringformat:"s" >= i|add:"-0.5" %}
+                        <i class="bi bi-star-half"></i> <!-- Half Star -->
+                    {% else %}
+                        <i class="bi bi-star"></i> <!-- Empty Star -->
+                    {% endif %}
+                {% endfor %}
+            </span>
       <p>{{ review.comment }}</p>
     </li>
     {% endfor %}
@@ -159,6 +175,35 @@
   <p class="text-muted">No reviews yet.</p>
   {% endif %}
 </div>
+
+<!-- Add Review Modal -->
+<div class="modal fade" id="addReviewModal" tabindex="-1" aria-labelledby="addReviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addReviewModalLabel">Add Review</h5>
+      </div>
+      <form method="post" action="{% url 'app:add_review' product.id %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="rating" class="form-label">Rating (1-5):</label>
+            <input type="number" name="rating" id="rating" min="1" max="5" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="comment" class="form-label">Comment:</label>
+            <textarea name="comment" id="comment" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-black">Submit Review</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 
 <h2 class="text-center mt-4 mb-4">Related Products</h2>
 <div class="row">
