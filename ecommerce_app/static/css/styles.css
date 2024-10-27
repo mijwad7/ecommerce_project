@@ -62,3 +62,9 @@ body {
   background-color: #000; /* Black background when selected */
   color: #fff; /* White text when selected */
 }
+.page-link:hover {
+  opacity: 0.9;
+}
+.page-link.bg-black:hover {
+  background-color: #000;
+}
