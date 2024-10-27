@@ -1,0 +1,20 @@
+{% extends './base.html' %}
+{% block content %}
+<h2>Edit Tag</h2>
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="name" class="form-label">Tag Name</label>
+        <input type="text" name="name" class="form-control" id="name" value="{{ tag.name }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="category" class="form-label">Category</label>
+        <select name="category" class="form-control" id="category">
+            {% for category in categories %}
+                <option value="{{ category.id }}" {% if tag.category.id == category.id %}selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-black">Update Tag</button>
+</form>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from ecommerce_app.models import UserProfile, Category, Product, ProductImage, ProductSpec, Brand, ProductVariantImage, ProductVariant, Order
+from ecommerce_app.models import UserProfile, Category, Product, ProductImage, ProductSpec, Brand, ProductVariantImage, ProductVariant, Order, Tag
 from .forms import UserProfileForm, LoginForm, ProductForm, ProductSpecFormSet, ProductVariantForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -478,4 +478,55 @@ def change_order_status(request, order_id):
         messages.error(request, "Invalid status selected.")
     return redirect("view_orders")
 
+@login_required
+@superuser_required
+def tags_list(request):
+    tags = Tag.objects.all()
+    return render(request, 'admin/tags_list.html', {'tags': tags})
 
+@login_required
+@superuser_required
+def add_tag(request):
+    categories = Category.objects.all()
+    if request.method == "POST":
+        tag_name = request.POST.get('tag_name')
+        category_id = request.POST.get('category')
+        category = Category.objects.filter(id=category_id).first()
+
+        if tag_name and category:
+            Tag.objects.create(name=tag_name, category=category)
+            messages.success(request, "Tag added successfully!")
+            return redirect('tags_list')
+        else:
+            messages.error(request, "Please enter a tag name and select a category.")
+    return render(request, 'admin/add_tag.html', {'categories': categories})
+
+@login_required
+@superuser_required
+def edit_tag(request, tag_id):
+    tag = get_object_or_404(Tag, id=tag_id)
+    categories = Category.objects.all()
+    if request.method == "POST":
+        tag_name = request.POST.get('name')
+        category_id = request.POST.get('category')
+        category = Category.objects.filter(id=category_id).first()
+
+        if tag_name and category:
+            tag.name = tag_name
+            tag.category = category
+            tag.save()
+            messages.success(request, "Tag updated successfully!")
+            return redirect('tags_list')
+        else:
+            messages.error(request, "Please enter a tag name and select a category.")
+    return render(request, 'admin/edit_tag.html', {'tag': tag, 'categories': categories})
+
+@login_required
+@superuser_required
+def delete_tag(request, tag_id):
+    tag = get_object_or_404(Tag, id=tag_id)
+    if request.method == "POST":
+        tag.delete()
+        messages.success(request, "Tag deleted successfully!")
+        return redirect('tags_list')
+    return render(request, 'admin/delete_tag.html', {'tag': tag})
