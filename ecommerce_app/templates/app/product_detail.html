@@ -62,7 +62,7 @@
       <div id="variant-list" class="d-flex flex-wrap">
           {% for variant in variants %}
           <button
-              class="variant-btn btn btn-outline-dark mb-2 me-2"
+              class="variant-btn btn btn-outline-dark mb-2 mr-2"
               data-variant-id="{{ variant.id }}"
               data-price="{{ variant.price }}"
               data-sale-price="{{ variant.sale_price }}"
@@ -388,6 +388,28 @@
               }
           });
       });
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      const quantityInput = document.getElementById('quantity');
+      const cartBtn = document.getElementById('cart-btn');
+      
+      // Get the product price from the button text
+      const productPrice = {{ product.sale_price|default:product.price }}; // Use sale price or regular price
+      
+      // Function to update the button text
+      function updatePrice() {
+          const quantity = parseInt(quantityInput.value);
+          const totalPrice = productPrice * quantity;
+          cartBtn.innerHTML = `Add to Cart - ₹${totalPrice.toLocaleString()}`;
+      }
+
+      // Event listener for changes in quantity
+      quantityInput.addEventListener('input', updatePrice);
+
+      // Initialize button text
+      updatePrice();
   });
 </script>
 

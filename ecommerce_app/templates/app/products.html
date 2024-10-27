@@ -79,13 +79,18 @@
                             {% else %}
                                 <p class="text-danger"><i class="bi bi-x-circle-fill"></i> Sold Out / Unavailable</p>
                             {% endif %}
-                            <p class="card-text text-muted">
-                                {% if product.average_rating %}
-                                    {{ product.average_rating|floatformat:1 }} stars
-                                {% else %}
-                                    No reviews
-                                {% endif %}
-                            </p>
+                            <div class="text-warning">
+                                {% for i in "12345" %}
+                                    {% with i|add:"0" as star_index %}
+                                        {% if product.average_rating >= star_index %}
+                                            <i class="bi bi-star-fill"></i> <!-- Full Star -->
+                                        {% else %}
+                                            <i class="bi bi-star"></i> <!-- Empty Star -->
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endfor %}
+                            </div>
+
                             <p class="card-text text-muted">{{ product.category }}</p>
                             <p>
                                 {% if product.is_on_sale %}
@@ -95,9 +100,7 @@
                                     <span class="h5">₹{{ product.price|floatformat:2|intcomma }}</span>
                                 {% endif %}
                             </p>
-                            {% if request.user.is_authenticated %}
-                                <a href="#" class="btn btn-black mt-auto">Add to cart</a>
-                            {% endif %}
+                            
                         </div>
                     </div>
                 </div>
