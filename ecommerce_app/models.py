@@ -79,6 +79,17 @@ class Category(models.Model):
         self.is_deleted = False
         self.save()
 
+    def delete_with_warning(self):
+        # Check if there are products in this category
+        products = self.products.filter(is_deleted=False)
+
+        # Proceed to soft delete the category
+        self.is_deleted = True
+        self.save()
+        
+        # Optionally, also delist the products if required
+        products.update(is_deleted=True)
+
     def __str__(self):
         return self.name
 
@@ -126,7 +137,7 @@ class Tag(models.Model):
 
 class ProductQuerySet(models.QuerySet):
     def active(self):
-        return self.filter(is_deleted=False)
+        return self.filter(is_deleted=False, category__is_deleted=False)
 
     def deleted(self):
         return self.filter(is_deleted=True)
@@ -161,7 +172,7 @@ class Product(models.Model):
     sale_price = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     brand = models.ForeignKey(
         Brand, on_delete=models.CASCADE, related_name="products", blank=True, null=True
     )

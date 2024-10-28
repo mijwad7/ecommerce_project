@@ -123,8 +123,11 @@ def edit_category(request, category_id):
 def delete_category(request, category_id):
     category = get_object_or_404(Category, id=category_id)
     if request.method == "POST":
-        category.delete()
-        messages.success(request, "Category deleted successfully!")
+        try:
+            category.delete_with_warning()
+            messages.success(request, "Category deleted successfully.")
+        except ValueError as e:
+            messages.error(request, str(e))
         return redirect('categories_list')
     return render(request, 'admin/delete_category.html', {'category': category})
 

@@ -557,7 +557,7 @@ def cancel_order(request, order_id):
 def update_cart_quantity(request, item_id):
     if request.method == "POST":
         item = get_object_or_404(CartProduct, id=item_id)
-        
+
         # Retrieve the product or variant associated with the cart item
         product = item.product
         variant = item.variant  # May be None if it's a base product

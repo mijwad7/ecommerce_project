@@ -36,7 +36,7 @@
                         Are you sure you want to delete the category "{{ category.name }}"?
                     </div>
                     <div class="modal-footer">
-                        <form method="post" action="{% url 'delete_category' category.id %}">
+                        <form method="post" onsubmit="return confirm('Are you sure you want to delete this category? This will delist all associated products.');" action="{% url 'delete_category' category.id %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger">Yes, Delete</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
