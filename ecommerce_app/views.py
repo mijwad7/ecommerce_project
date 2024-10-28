@@ -262,7 +262,6 @@ def get_variant_details(request, variant_id):
     return JsonResponse(data)
 
 
-@csrf_exempt  # For AJAX POST requests
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     user = request.user
@@ -310,7 +309,7 @@ def add_to_cart(request, product_id):
 
         # Check if the base product is already in the cart
         cart_product, created = CartProduct.objects.get_or_create(
-            cart=cart, product=product, defaults={"quantity": quantity}
+            cart=cart, product=product, variant=None, defaults={"quantity": quantity}
         )
 
     # If the product or variant is already in the cart, increase the quantity (with validations)
@@ -326,6 +325,13 @@ def add_to_cart(request, product_id):
                         "message": "Not enough stock available for this variant.",
                     }
                 )
+            if new_quantity > product.max_per_user:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "You can only add up to " + str(product.max_per_user) + " items to your cart.",
+                    }
+                )
         else:
             if new_quantity > product.stock:
                 return JsonResponse(
@@ -335,7 +341,7 @@ def add_to_cart(request, product_id):
                     }
                 )
             
-            if quantity > product.max_per_user:
+            if new_quantity > product.max_per_user:
                 return JsonResponse(
                     {
                         "success": False,
@@ -473,7 +479,7 @@ def change_password(request):
 def checkout(request):
     user = request.user
     cart = get_object_or_404(Cart, user=user)
-    addresses = Address.objects.filter(user=user)
+    addresses = Address.objects.filter(user=user, address_type='shipping')
 
     if request.method == "POST":
         address_id = request.POST.get("address")
@@ -548,7 +554,6 @@ def cancel_order(request, order_id):
     return redirect("app:view_orders")
 
 @login_required
-@csrf_exempt
 def update_cart_quantity(request, item_id):
     if request.method == "POST":
         item = get_object_or_404(CartProduct, id=item_id)
