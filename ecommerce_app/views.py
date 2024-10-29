@@ -114,7 +114,7 @@ def user_logout(request):
 
 
 def demo_login(request):
-    user = authenticate(username="mijwad", password="1234")
+    user = authenticate(username="mijwad", password="AlifLamMeem")
     if user is not None:
         login(request, user)
         return redirect("app:index")
