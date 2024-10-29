@@ -727,14 +727,14 @@ def add_to_wishlist(request):
         return JsonResponse({'status': 'success', 'message': 'Product added to wishlist!'})
 
 @login_required
-def remove_from_wishlist(request):
-    if request.method == 'POST':
-        product_id = request.POST.get('product_id')
-        product = get_object_or_404(Product, id=product_id)
-        wishlist = Wishlist.objects.get(user=request.user)
-        wishlist.products.remove(product)
-        return JsonResponse({'status': 'removed'})
-    
+def remove_from_wishlist(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    wishlist = Wishlist.objects.get(user=request.user)
+    wishlist.products.remove(product)
+
+    return redirect('app:wishlist')
+
+
 @login_required
 def wishlist(request):
     wishlist = Wishlist.objects.get(user=request.user)

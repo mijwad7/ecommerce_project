@@ -35,11 +35,9 @@
                 <span class="h5">₹{{ product.price|floatformat:2|intcomma }}</span>
               {% endif %}
             </p>
-            <form method="post" class="remove-from-wishlist-form" data-url="{% url 'app:remove_from_wishlist' %}">
-                {% csrf_token %}
-                <input type="hidden" name="product_id" value="{{ product.id }}">
-                <button type="submit" class="btn btn-black">Remove from Wishlist</button>
-            </form>
+            <a href="{% url 'app:remove_from_wishlist' product.id %}" class="btn btn-black">
+              <i class="bi bi-trash"></i> Remove
+            </a>
           </div>
         </div> <!-- End of card -->
       </div> <!-- End of column -->
@@ -50,37 +48,4 @@
       <a href="{% url 'app:index' %}" class="btn btn-secondary">Continue Shopping</a>
     {% endif %}
 </div>
-{% endblock %}
-
-{% block script %}
-<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-<script>
-    $(document).on('submit', '.remove-from-wishlist-form', function (e) {
-        e.preventDefault(); // Prevent normal submission
-
-        const url = $(this).data('url');
-        const formData = $(this).serialize();
-        const $card = $(this).closest('.card'); // Store the card for later removal
-
-        $.ajax({
-            type: 'POST',
-            url: url,
-            data: formData,
-            success: function (response) {
-                if (response.status === 'removed') {
-                    $card.remove(); // Remove the card from the DOM
-
-                    // Check if there are any remaining products
-                    if ($('.card').length === 0) {
-                        // Show empty message if no cards are left
-                        $('.container').html('<p>Your wishlist is empty.</p><a href="{% url "app:index" %}" class="btn btn-secondary">Continue Shopping</a>');
-                    }
-                }
-            },
-            error: function () {
-                alert('An error occurred while removing from wishlist.');
-            }
-        });
-    });
-</script>
 {% endblock %}
