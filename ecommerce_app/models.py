@@ -437,3 +437,9 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
 
+class Wishlist(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    products = models.ManyToManyField(Product, related_name='wishlisted_by', blank=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Wishlist"

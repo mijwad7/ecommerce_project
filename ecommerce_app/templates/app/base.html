@@ -54,6 +54,14 @@
               </a>
             </li>
             <li class="nav-item mr-4">
+              <a class="nav-link d-flex align-items-center" href="{% url 'app:wishlist' %}">
+                <i class="bi bi-heart"></i> Wishlist
+                {% if request.user.wishlist.products|length > 0 %}
+                <span class="badge bg-dark text-light ml-1 rounded-circle">{{ request.user.wishlist.products|length }}</span>
+                {% endif %}
+              </a>
+            </li>
+            <li class="nav-item mr-4">
               <a class="nav-link" href="{% url 'app:view_orders' %}">
                 <i class="bi bi-file-earmark-text"></i> Orders
               </a>

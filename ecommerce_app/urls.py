@@ -76,5 +76,9 @@ urlpatterns = [
     path('cancel-order/<int:order_id>/', views.cancel_order, name='cancel_order'),
     path('cart/update/<int:item_id>/', views.update_cart_quantity, name='update_cart_quantity'),
     path('add-review/<int:product_id>/', views.add_review, name='add_review'),
-    path('payment-complete/', views.payment_complete, name='payment_complete')
+    path('payment-complete/', views.payment_complete, name='payment_complete'),
+    path('wishlist/add/', views.add_to_wishlist, name='add_to_wishlist'),
+    path('wishlist/', views.wishlist, name='wishlist'),
+    path('wishlist/remove/', views.remove_from_wishlist, name='remove_from_wishlist'),
+
 ]

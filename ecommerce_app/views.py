@@ -15,7 +15,8 @@ from .models import (
     Brand,
     Order,
     OrderItem,
-    Tag
+    Tag,
+    Wishlist
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
@@ -709,3 +710,34 @@ def add_review(request, product_id):
         messages.error(request, "Failed to add review. Please try again.")
 
     return render(request, "app/product_detail.html", {"product": product, "form": form})
+
+
+@login_required
+def add_to_wishlist(request):
+    if request.method == 'POST':
+        product_id = request.POST.get('product_id')
+        product = get_object_or_404(Product, id=product_id)
+        wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+
+        # Check if product is already in wishlist
+        if wishlist.products.filter(id=product_id).exists():
+            return JsonResponse({'status': 'danger', 'message': 'Product is already in your wishlist.'})
+        
+        wishlist.products.add(product)
+        return JsonResponse({'status': 'success', 'message': 'Product added to wishlist!'})
+
+@login_required
+def remove_from_wishlist(request):
+    if request.method == 'POST':
+        product_id = request.POST.get('product_id')
+        product = get_object_or_404(Product, id=product_id)
+        wishlist = Wishlist.objects.get(user=request.user)
+        wishlist.products.remove(product)
+        return JsonResponse({'status': 'removed'})
+    
+@login_required
+def wishlist(request):
+    wishlist = Wishlist.objects.get(user=request.user)
+    products = wishlist.products.all()
+
+    return render(request, 'app/wishlist.html', {'wishlist': wishlist, 'products': products})

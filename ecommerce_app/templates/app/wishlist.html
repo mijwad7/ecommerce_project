@@ -1,0 +1,86 @@
+{% extends "./base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Your Wishlist</h2>
+
+  <div class="row">
+    {% if products %}
+      {% for product in products %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <a href="{% url 'app:product_detail' product.id %}">
+            <img
+              class="card-img-top"
+              src="{{ product.images.first.image.url }}"
+              alt="{{ product.name }}"
+              style="object-fit: contain; max-height: 200px"
+            />
+          </a>
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">
+              <a class="text-dark" href="{% url 'app:product_detail' product.id %}">
+                {{ product.name }}
+              </a>
+            </h5>
+            <p class="card-text text-muted">{{ product.category }}</p>
+            <p>
+              {% if product.is_on_sale %}
+                <span style="text-decoration: line-through" class="h5 text-muted">
+                  ₹{{ product.price|floatformat:2|intcomma }}
+                </span>
+                <span class="h5 text-danger">₹{{ product.sale_price|floatformat:2|intcomma }}</span>
+              {% else %}
+                <span class="h5">₹{{ product.price|floatformat:2|intcomma }}</span>
+              {% endif %}
+            </p>
+            <form method="post" class="remove-from-wishlist-form" data-url="{% url 'app:remove_from_wishlist' %}">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <button type="submit" class="btn btn-black">Remove from Wishlist</button>
+            </form>
+          </div>
+        </div> <!-- End of card -->
+      </div> <!-- End of column -->
+      {% endfor %}
+    </div> <!-- End of row -->
+    {% else %}
+      <p>Your wishlist is empty.</p>
+      <a href="{% url 'app:index' %}" class="btn btn-secondary">Continue Shopping</a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script>
+    $(document).on('submit', '.remove-from-wishlist-form', function (e) {
+        e.preventDefault(); // Prevent normal submission
+
+        const url = $(this).data('url');
+        const formData = $(this).serialize();
+        const $card = $(this).closest('.card'); // Store the card for later removal
+
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: formData,
+            success: function (response) {
+                if (response.status === 'removed') {
+                    $card.remove(); // Remove the card from the DOM
+
+                    // Check if there are any remaining products
+                    if ($('.card').length === 0) {
+                        // Show empty message if no cards are left
+                        $('.container').html('<p>Your wishlist is empty.</p><a href="{% url "app:index" %}" class="btn btn-secondary">Continue Shopping</a>');
+                    }
+                }
+            },
+            error: function () {
+                alert('An error occurred while removing from wishlist.');
+            }
+        });
+    });
+</script>
+{% endblock %}
