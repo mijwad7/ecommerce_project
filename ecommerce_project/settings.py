@@ -182,3 +182,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+PAYPAL_CLIENT_ID = 'ASCQ3zsW1UzF-c40tgL4lCNHcPnNZGZJM7IhD6ujPOQJgzNzHQyT7BgyK32YCN22pYPE-f1ZMwvG7HOn'
+PAYPAL_CLIENT_SECRET = 'EClO85qh37dnBpn3gD9bmRjjKxwsd_u6RXDlX3tT82ULMXRWrlYvCQUBqT3l2XKDNQJHfAXjTu4AdaBF'
+PAYPAL_MODE = 'sandbox'  # Change to 'live' when going live

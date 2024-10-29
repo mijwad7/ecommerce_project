@@ -27,6 +27,10 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.core.paginator import Paginator
+import paypalrestsdk
+from django.conf import settings
+
+
 
 
 def user_signup(request):
