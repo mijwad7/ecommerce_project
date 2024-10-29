@@ -29,7 +29,8 @@ from django.http import JsonResponse
 from django.core.paginator import Paginator
 import paypalrestsdk
 from django.conf import settings
-
+from django.urls import reverse
+from currency_converter import CurrencyConverter
 
 
 
@@ -479,15 +480,21 @@ def change_password(request):
     return render(request, "app/change_password.html", {"form": form})
 
 
+import paypalrestsdk
+from django.conf import settings
+
 @login_required
 def checkout(request):
     user = request.user
     cart = get_object_or_404(Cart, user=user)
     addresses = Address.objects.filter(user=user, address_type='shipping')
+    c = CurrencyConverter()
+    usd_amount = round(c.convert(cart.total_price, 'INR', 'USD'), 2)
 
     if request.method == "POST":
         address_id = request.POST.get("address")
         address = get_object_or_404(Address, id=address_id)
+        request.session['selected_address_id'] = address_id
         payment_method = request.POST.get("payment_method")
 
         if not payment_method:
@@ -498,6 +505,52 @@ def checkout(request):
             messages.error(request, "Please select an address.")
             return redirect("app:checkout")
 
+        if payment_method == "ONLINE":
+            # Configure PayPal SDK
+            paypalrestsdk.configure({
+                "mode": settings.PAYPAL_MODE,
+                "client_id": settings.PAYPAL_CLIENT_ID,
+                "client_secret": settings.PAYPAL_CLIENT_SECRET
+            })
+
+            # Create the PayPal payment
+            payment = paypalrestsdk.Payment({
+                "intent": "sale",
+                "payer": {
+                    "payment_method": "paypal"
+                },
+                "redirect_urls": {
+                    "return_url": request.build_absolute_uri(reverse("app:payment_complete")),
+                    "cancel_url": request.build_absolute_uri(reverse("app:checkout")),
+                },
+                "transactions": [{
+                    "item_list": {
+                        "items": [{
+                            "name": "Cart Purchase",
+                            "sku": "001",
+                            "price": str(usd_amount),
+                            "currency": "USD",
+                            "quantity": 1
+                        }]
+                    },
+                    "amount": {
+                        "total": str(usd_amount),
+                        "currency": "USD"
+                    },
+                    "description": "Purchase from My Django Store"
+                }]
+            })
+
+            if payment.create():
+                for link in payment.links:
+                    if link.rel == "approval_url":
+                        approval_url = link.href
+                        return redirect(approval_url)
+            else:
+                messages.error(request, "Error with PayPal payment.")
+                return redirect("app:checkout")
+
+        # Proceed with Cash on Delivery payment method
         order = Order.objects.create(
             user=user,
             address=address,
@@ -516,11 +569,50 @@ def checkout(request):
             )
 
         cart.cart_products.all().delete()
-
         messages.success(request, "Order placed successfully!")
         return redirect("app:order_confirmation", order_id=order.id)
 
     return render(request, "app/checkout.html", {"cart": cart, "addresses": addresses})
+
+@login_required
+def payment_complete(request):
+    payment_id = request.GET.get("paymentId")
+    payer_id = request.GET.get("PayerID")
+
+    # Retrieve the payment
+    payment = paypalrestsdk.Payment.find(payment_id)
+
+    # Execute the payment
+    if payment.execute({"payer_id": payer_id}):
+        # Payment success, create the order and items
+        user = request.user
+        cart = get_object_or_404(Cart, user=user)
+        address_id = request.session.get("selected_address_id")
+        address = get_object_or_404(Address, id=address_id)
+        
+        order = Order.objects.create(
+            user=user,
+            address=address,
+            payment_method="ONLINE",
+            total_price=cart.total_price,
+        )
+
+        for item in cart.cart_products.all():
+            item.is_checked_out = True
+            item.save()
+            OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                price=item.total_price,
+                quantity=item.quantity,
+            )
+
+        cart.cart_products.all().delete()
+        messages.success(request, "Payment completed successfully! Your order has been placed.")
+        return redirect("app:order_confirmation", order_id=order.id)
+    else:
+        messages.error(request, "Payment failed. Please try again.")
+        return redirect("app:checkout")
 
 
 @login_required
