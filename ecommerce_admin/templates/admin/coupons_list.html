@@ -20,7 +20,8 @@
             <td>{{ coupon.discount_percent }}</td>
             <td>{{ coupon.start_date }}</td>
             <td>{{ coupon.end_date }}</td>
-            <td>{% if coupon.is_active %}Yes{% else %}No{% endif %}</td>
+            <td>{% if coupon.is_active %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-x-circle-fill text-danger"></i>
+                {% endif %}</td>
             <td>
                 <a href="{% url 'edit_coupon' coupon.id %}" class="btn btn-outline-dark btn-sm">Edit</a>
                 <button type="button" class="btn btn-black btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="{{ coupon.id }}">Delete</button>
