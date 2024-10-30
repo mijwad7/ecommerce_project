@@ -227,7 +227,7 @@ def product_detail(request, product_id):
 
     specs = ProductSpec.objects.filter(product=product)
     coupons = product.coupons.filter(
-        start_date__lte=timezone.now(), end_date__gte=timezone.now()
+        is_active=True
     )
 
     related_products = Product.objects.filter(category=product.category).exclude(
