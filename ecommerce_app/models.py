@@ -158,6 +158,12 @@ class Coupon(models.Model):
     end_date = models.DateTimeField()
     is_active = models.BooleanField(default=True)
 
+    def save(self, *args, **kwargs):
+        now = timezone.now()
+        if self.start_date > now or self.end_date < now:
+            self.is_active = False
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.code} - {self.discount_percent}%"
 

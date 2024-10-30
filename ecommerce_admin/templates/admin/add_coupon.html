@@ -1,0 +1,10 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h2>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Coupon</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-black">Save Coupon</button>
+</form>
+<a href="{% url 'coupon_list' %}" class="btn btn-secondary mt-3">Back to Coupons List</a>
+{% endblock %}

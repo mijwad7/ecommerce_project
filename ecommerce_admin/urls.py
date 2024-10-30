@@ -38,4 +38,8 @@ urlpatterns = [
     path('tags/add/', views.add_tag, name='add_tag'),
     path('tags/edit/<int:tag_id>/', views.edit_tag, name='edit_tag'),
     path('tags/delete/<int:tag_id>/', views.delete_tag, name='delete_tag'),
+    path('coupons/', views.coupon_list, name='coupon_list'),
+    path('coupons/add/', views.add_coupon, name='add_coupon'),
+    path('coupons/<int:coupon_id>/edit/', views.edit_coupon, name='edit_coupon'),
+    path('coupons/<int:coupon_id>/delete/', views.delete_coupon, name='delete_coupon'),
 ]

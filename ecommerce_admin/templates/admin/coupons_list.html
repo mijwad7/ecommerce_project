@@ -1,0 +1,50 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h2>Coupons</h2>
+<a href="{% url 'add_coupon' %}" class="btn btn-black mb-3">Add Coupon</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Discount (%)</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Active</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for coupon in coupons %}
+        <tr>
+            <td>{{ coupon.code }}</td>
+            <td>{{ coupon.discount_percent }}</td>
+            <td>{{ coupon.start_date }}</td>
+            <td>{{ coupon.end_date }}</td>
+            <td>{% if coupon.is_active %}Yes{% else %}No{% endif %}</td>
+            <td>
+                <a href="{% url 'edit_coupon' coupon.id %}" class="btn btn-outline-dark btn-sm">Edit</a>
+                <button type="button" class="btn btn-black btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="{{ coupon.id }}">Delete</button>
+            </td>
+        </tr>
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete this coupon?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <a href="{% url 'delete_coupon' coupon.id %}" id="confirmDeleteButton" class="btn btn-danger">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Delete Confirmation Modal -->
+{% endblock %}

@@ -1,5 +1,5 @@
 from django import forms
-from ecommerce_app.models import UserProfile, Product, ProductImage, ProductSpec, ProductVariant
+from ecommerce_app.models import UserProfile, Product, ProductImage, ProductSpec, ProductVariant, Coupon
 from django.forms import inlineformset_factory
 
 
@@ -85,3 +85,19 @@ class ProductVariantForm(forms.ModelForm):
             self.add_error('sale_price', 'Sale price must be less than the regular price.')
         
         return cleaned_data
+
+
+class CouponForm(forms.ModelForm):
+    class Meta:
+        model = Coupon
+        fields = ['code', 'discount_percent', 'start_date', 'end_date', 'is_active']
+        widgets = {
+            'start_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CouponForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if not isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'form-control'})
