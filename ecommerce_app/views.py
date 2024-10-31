@@ -661,7 +661,8 @@ def apply_coupon(request):
 
             discount = cart.total_price * (coupon.discount_percent / 100)
             new_total = cart.total_price - discount
-            
+
+            request.session["coupon_code_to_remove"] = coupon.code
             # Optionally, you can also store the original price in session or directly in the cart/order.
             return JsonResponse({"status": "success", "new_total": new_total})
 
@@ -669,6 +670,30 @@ def apply_coupon(request):
 
     return JsonResponse({"status": "error", "message": "Invalid request."})
 
+@login_required
+def remove_coupon(request):
+    if request.method == "POST":
+        coupon_code = request.session.get("coupon_code_to_remove")
+        coupon = None
+
+        if coupon_code:
+            coupon = Coupon.objects.get(code=coupon_code)
+            cart = get_object_or_404(Cart, user=request.user)
+
+        # Clear the applied coupon
+        if coupon:
+            # Recalculate the total price (without discount)
+            new_total = cart.total_price
+
+            return JsonResponse({
+                "status": "success",
+                "new_total": new_total,
+                "message": "Coupon removed successfully."
+            })
+
+        return JsonResponse({"status": "error", "message": "No coupon applied."})
+
+    return JsonResponse({"status": "error", "message": "Invalid request."})
 
 
 @login_required
