@@ -571,6 +571,7 @@ def checkout(request):
             address=address,
             payment_method=payment_method,
             total_price=total_price,
+            original_total_price=cart.total_price if coupon else None,
             applied_coupon=coupon if coupon else None
         )
 
@@ -619,6 +620,7 @@ def payment_complete(request):
             address=address,
             payment_method="ONLINE",
             total_price=total_price,
+            original_total_price=cart.total_price if coupon else None,
             applied_coupon=coupon if coupon else None
         )
 
@@ -638,6 +640,26 @@ def payment_complete(request):
     else:
         messages.error(request, "Payment failed. Please try again.")
         return redirect("app:checkout")
+
+
+@login_required
+def apply_coupon(request):
+    if request.method == "POST":
+        coupon_code = request.POST.get("coupon_code")
+        cart = get_object_or_404(Cart, user=request.user)
+
+        # Check if the coupon exists, is active, and within the validity period
+        coupon = Coupon.objects.filter(
+            code=coupon_code, is_active=True,
+        ).first()
+
+        if coupon:
+            discount = cart.total_price * (coupon.discount_percent / 100)
+            new_total = cart.total_price - discount
+            return JsonResponse({"status": "success", "new_total": new_total})
+        else:
+            return JsonResponse({"status": "error", "message": "Invalid or expired coupon."})
+    return JsonResponse({"status": "error", "message": "Invalid request."})
 
 
 @login_required
