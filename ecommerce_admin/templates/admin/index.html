@@ -1,6 +1,60 @@
-{% extends './base.html' %}
+{% extends "./base.html" %}
+{% load humanize %}
 {% block content %}
 <div class="container mt-4">
-    <h1>Welcome to the Admin Dashboard</h1>
+    <h2>Sales Report</h2>
+    <form method="GET" class="form-inline mb-4">
+        <div class="form-group mr-2">
+            <label for="date_filter" class="mr-2">Filter by:</label>
+            <select name="date_filter" id="date_filter" class="form-control">
+                <option value="daily" {% if request.GET.date_filter == "daily" %}selected{% endif %}>Daily</option>
+                <option value="weekly" {% if request.GET.date_filter == "weekly" %}selected{% endif %}>Weekly</option>
+                <option value="monthly" {% if request.GET.date_filter == "monthly" %}selected{% endif %}>Monthly</option>
+                <option value="yearly" {% if request.GET.date_filter == "yearly" %}selected{% endif %}>Yearly</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Generate Report</button>
+    </form>
+
+    <div class="mt-4">
+        <h4>Report Summary</h4>
+        <p><strong>Total Orders:</strong> {{ total_orders }}</p>
+        <p><strong>Total Sales Amount:</strong> ₹{{ total_sales|floatformat:2|intcomma }}</p>
+        <p><strong>Total Discount Given:</strong> ₹{{ total_discount|floatformat:2|intcomma }}</p>
+    </div>
+
+    <h4 class="mt-4">Order Details</h4>
+{% if orders %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Order Date</th>
+                <th>Total Amount</th>
+                <th>Discount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.created_at|date:"Y-m-d H:i:s" }}</td>
+                <td>₹{{ order.total_price|floatformat:2 }}</td>
+                <td>
+                    {% if order.original_total_price %}
+                        ₹{{ order.original_total_price|floatformat:2 }}
+                    {% else %}
+                        ₹0.00
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No orders found for the selected date range.</p>
+{% endif %}
+
 </div>
 {% endblock %}
+

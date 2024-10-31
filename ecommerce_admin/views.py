@@ -24,8 +24,9 @@ from .forms import (
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
-from django.db.models import Q
-
+from django.db.models import Q, Sum, Count
+from django.utils import timezone
+from datetime import timedelta
 
 def superuser_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
@@ -69,10 +70,6 @@ def demo_login(request):
         return redirect("login")
 
 
-@login_required
-@superuser_required
-def index(request):
-    return render(request, "admin/index.html")
 
 
 @login_required
@@ -667,3 +664,51 @@ def delete_coupon(request, coupon_id):
     coupon.delete()
     messages.success(request, "Coupon deleted successfully.")
     return redirect('coupon_list')
+
+
+
+def calculate_date_range(date_filter):
+    today = timezone.now()
+    
+    if date_filter == 'daily':
+        start_date = today - timedelta(days=1)
+    elif date_filter == 'weekly':
+        start_date = today - timedelta(weeks=1)
+    elif date_filter == 'monthly':
+        start_date = today - timedelta(days=30)
+    elif date_filter == 'yearly':
+        start_date = today - timedelta(days=365)
+    else:
+        # Custom range; if date_filter is custom or invalid, use a default range
+        start_date = today - timedelta(days=7)
+
+    end_date = today
+    return start_date, end_date
+
+
+def generate_sales_report(request):
+    date_filter = request.GET.get('date_filter', 'weekly')  # Default to weekly
+    start_date, end_date = calculate_date_range(date_filter)
+
+    print("Start Date:", start_date)
+    print("End Date:", end_date)
+
+    # Query filtered orders
+    orders = Order.objects.filter(
+        created_at__range=(start_date, end_date),
+    )
+    print("Number of orders found:", orders.count())
+
+    # Aggregate data for the report
+    
+    return render(request, "admin/index.html", {
+        "total_sales": orders.aggregate(total_sales=Sum('total_price'))['total_sales'] or 0,
+        "total_orders": orders.count(),
+        "total_discount": orders.aggregate(
+            total_discount=Sum('original_total_price') - Sum('total_price')
+        )['total_discount'] or 0,
+        "orders": orders,
+        "start_date": start_date,
+        "end_date": end_date,
+        "date_filter": date_filter,
+    })
