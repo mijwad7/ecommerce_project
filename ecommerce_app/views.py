@@ -500,6 +500,9 @@ def checkout(request):
             if not coupon or coupon.start_date > timezone.now() or coupon.end_date < timezone.now():
                 messages.error(request, "Invalid or expired coupon.")
                 coupon = None
+            elif coupon in Order.objects.filter(user=user).values_list('applied_coupon', flat=True):
+                messages.error(request, "You have already used this coupon.")
+                coupon = None
             else:
                 discount = cart.total_price * (coupon.discount_percent / 100)
                 total_price = cart.total_price - discount
@@ -649,17 +652,23 @@ def apply_coupon(request):
         cart = get_object_or_404(Cart, user=request.user)
 
         # Check if the coupon exists, is active, and within the validity period
-        coupon = Coupon.objects.filter(
-            code=coupon_code, is_active=True,
-        ).first()
+        coupon = Coupon.objects.filter(code=coupon_code, is_active=True).first()
 
         if coupon:
+            # Check if the coupon has already been used by the user in any previous orders
+            if Order.objects.filter(user=request.user, applied_coupon=coupon).exists():
+                return JsonResponse({"status": "error", "message": "You have already used this coupon."})
+
             discount = cart.total_price * (coupon.discount_percent / 100)
             new_total = cart.total_price - discount
+            
+            # Optionally, you can also store the original price in session or directly in the cart/order.
             return JsonResponse({"status": "success", "new_total": new_total})
-        else:
-            return JsonResponse({"status": "error", "message": "Invalid or expired coupon."})
+
+        return JsonResponse({"status": "error", "message": "Invalid or expired coupon."})
+
     return JsonResponse({"status": "error", "message": "Invalid request."})
+
 
 
 @login_required
