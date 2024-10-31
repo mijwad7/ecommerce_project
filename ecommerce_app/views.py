@@ -16,7 +16,8 @@ from .models import (
     Order,
     OrderItem,
     Tag,
-    Wishlist
+    Wishlist,
+    Coupon
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
@@ -480,19 +481,32 @@ def change_password(request):
 
     return render(request, "app/change_password.html", {"form": form})
 
-
-import paypalrestsdk
-from django.conf import settings
-
 @login_required
 def checkout(request):
     user = request.user
     cart = get_object_or_404(Cart, user=user)
     addresses = Address.objects.filter(user=user, address_type='shipping')
     c = CurrencyConverter()
-    usd_amount = round(c.convert(cart.total_price, 'INR', 'USD'), 2)
 
     if request.method == "POST":
+        coupon_code = request.POST.get("coupon_code")
+        request.session['coupon_code'] = coupon_code
+
+        coupon = None
+
+        # Validate coupon code
+        if coupon_code:
+            coupon = Coupon.objects.filter(code=coupon_code, is_active=True).first()
+            if not coupon or coupon.start_date > timezone.now() or coupon.end_date < timezone.now():
+                messages.error(request, "Invalid or expired coupon.")
+                coupon = None
+            else:
+                discount = cart.total_price * (coupon.discount_percent / 100)
+                total_price = cart.total_price - discount
+        else:
+            total_price = cart.total_price
+
+        usd_amount = round(c.convert(total_price, 'INR', 'USD'), 2)
         address_id = request.POST.get("address")
         address = get_object_or_404(Address, id=address_id)
         request.session['selected_address_id'] = address_id
@@ -556,7 +570,8 @@ def checkout(request):
             user=user,
             address=address,
             payment_method=payment_method,
-            total_price=cart.total_price,
+            total_price=total_price,
+            applied_coupon=coupon if coupon else None
         )
 
         for item in cart.cart_products.all():
@@ -590,12 +605,21 @@ def payment_complete(request):
         cart = get_object_or_404(Cart, user=user)
         address_id = request.session.get("selected_address_id")
         address = get_object_or_404(Address, id=address_id)
-        
+        coupon_code = request.session.get("coupon_code")
+        coupon = None
+
+        if coupon_code:
+            coupon = Coupon.objects.get(code=coupon_code)
+            total_price = cart.total_price - (cart.total_price * coupon.discount_percent / 100)
+        else:
+            total_price = cart.total_price
+
         order = Order.objects.create(
             user=user,
             address=address,
             payment_method="ONLINE",
-            total_price=cart.total_price,
+            total_price=total_price,
+            applied_coupon=coupon if coupon else None
         )
 
         for item in cart.cart_products.all():
