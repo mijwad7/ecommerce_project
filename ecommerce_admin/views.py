@@ -24,9 +24,9 @@ from .forms import (
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
-from django.db.models import Q, Sum, Count
+from django.db.models import Q, Sum, Count, F, Value, DecimalField, Case, When
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 def superuser_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
@@ -686,27 +686,42 @@ def calculate_date_range(date_filter):
     return start_date, end_date
 
 
+@login_required
+@superuser_required
 def generate_sales_report(request):
+    filter_type = request.GET.get('filter_type', 'predefined')
     date_filter = request.GET.get('date_filter', 'weekly')  # Default to weekly
-    start_date, end_date = calculate_date_range(date_filter)
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
 
-    print("Start Date:", start_date)
-    print("End Date:", end_date)
+    if filter_type == 'custom' and date_from and date_to:
+        start_date = datetime.strptime(date_from, '%Y-%m-%d').date()
+        end_date = datetime.strptime(date_to, '%Y-%m-%d').date()
+    else:
+        start_date, end_date = calculate_date_range(date_filter)
 
     # Query filtered orders
     orders = Order.objects.filter(
         created_at__range=(start_date, end_date),
-    )
-    print("Number of orders found:", orders.count())
+    ).annotate(
+        discount_amount=Case(
+            When(original_total_price__isnull=False,
+                 then=F('original_total_price') - F('total_price')),
+            default=Value(0),
+            output_field=DecimalField()
+        )
+    ).order_by('-created_at')
 
     # Aggregate data for the report
-    
+    discounted_orders = orders.filter(original_total_price__isnull=False)
+    total_discount = discounted_orders.aggregate(
+        total_discount=Sum('original_total_price') - Sum('total_price')
+    )['total_discount'] or 0
+
     return render(request, "admin/index.html", {
         "total_sales": orders.aggregate(total_sales=Sum('total_price'))['total_sales'] or 0,
         "total_orders": orders.count(),
-        "total_discount": orders.aggregate(
-            total_discount=Sum('original_total_price') - Sum('total_price')
-        )['total_discount'] or 0,
+        "total_discount": total_discount,
         "orders": orders,
         "start_date": start_date,
         "end_date": end_date,

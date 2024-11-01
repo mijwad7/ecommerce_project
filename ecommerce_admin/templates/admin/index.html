@@ -1,60 +1,140 @@
 {% extends "./base.html" %}
 {% load humanize %}
 {% block content %}
-<div class="container mt-4">
-    <h2>Sales Report</h2>
-    <form method="GET" class="form-inline mb-4">
-        <div class="form-group mr-2">
-            <label for="date_filter" class="mr-2">Filter by:</label>
-            <select name="date_filter" id="date_filter" class="form-control">
+<div class="container mt-4 p-4 bg-light shadow-sm rounded">
+    <h2 class="text-center mb-4">Sales Report</h2>
+
+    <form method="GET" class="form mb-4 p-3 bg-white shadow rounded">
+        <!-- Radio buttons to select filter type -->
+        <div class="mb-3 d-flex justify-content-center">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="filter_type" id="filter_predefined" value="predefined" checked>
+                <label class="form-check-label font-weight-bold text-secondary" for="filter_predefined">Predefined Filter</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="filter_type" id="filter_custom" value="custom">
+                <label class="form-check-label font-weight-bold text-secondary" for="filter_custom">Custom Date Range</label>
+            </div>
+        </div>
+
+        <!-- Predefined Date Filter Dropdown -->
+        <div id="predefined_filters" class="form-group mb-3">
+            <label for="date_filter" class="font-weight-bold text-secondary">Filter by:</label>
+            <select name="date_filter" id="date_filter" class="form-control border-secondary">
                 <option value="daily" {% if request.GET.date_filter == "daily" %}selected{% endif %}>Daily</option>
                 <option value="weekly" {% if request.GET.date_filter == "weekly" %}selected{% endif %}>Weekly</option>
                 <option value="monthly" {% if request.GET.date_filter == "monthly" %}selected{% endif %}>Monthly</option>
                 <option value="yearly" {% if request.GET.date_filter == "yearly" %}selected{% endif %}>Yearly</option>
             </select>
         </div>
-        <button type="submit" class="btn btn-primary">Generate Report</button>
+
+        <!-- Custom Date Range Inputs -->
+        <div id="custom_date_range" class="form-group mb-3" style="display: none;">
+            <label class="font-weight-bold text-secondary">Date Range:</label>
+            <div class="d-flex">
+                <input type="date" name="date_from" id="date_from" class="form-control border-secondary mr-2" placeholder="From" value="{{ request.GET.date_from }}">
+                <input type="date" name="date_to" id="date_to" class="form-control border-secondary" placeholder="To" value="{{ request.GET.date_to }}">
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end">
+            <button type="button" id="clear_filters" class="btn btn-outline-dark mr-2">Clear Filters</button>
+            <button type="submit" class="btn btn-black">Generate Report</button>
+        </div>
     </form>
 
-    <div class="mt-4">
-        <h4>Report Summary</h4>
+    <!-- Report Summary -->
+    <div class="bg-white p-3 shadow rounded mt-4">
+        <h4 class="text-secondary">Report Summary</h4>
         <p><strong>Total Orders:</strong> {{ total_orders }}</p>
         <p><strong>Total Sales Amount:</strong> ₹{{ total_sales|floatformat:2|intcomma }}</p>
         <p><strong>Total Discount Given:</strong> ₹{{ total_discount|floatformat:2|intcomma }}</p>
     </div>
 
-    <h4 class="mt-4">Order Details</h4>
-{% if orders %}
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Order ID</th>
-                <th>Order Date</th>
-                <th>Total Amount</th>
-                <th>Discount</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for order in orders %}
-            <tr>
-                <td>{{ order.id }}</td>
-                <td>{{ order.created_at|date:"Y-m-d H:i:s" }}</td>
-                <td>₹{{ order.total_price|floatformat:2 }}</td>
-                <td>
-                    {% if order.original_total_price %}
-                        ₹{{ order.original_total_price|floatformat:2 }}
-                    {% else %}
-                        ₹0.00
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <p>No orders found for the selected date range.</p>
-{% endif %}
-
+    <!-- Order Details Table -->
+    <h4 class="text-secondary mt-4">Order Details</h4>
+    {% if orders %}
+    <div class="table-responsive bg-white p-3 shadow rounded">
+        <table class="table table-hover table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Order ID</th>
+                    <th>Order Date</th>
+                    <th>Total Amount</th>
+                    <th>Discount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.id }}</td>
+                    <td>{{ order.created_at|date:"Y-m-d H:i:s" }}</td>
+                    <td>₹{{ order.total_price|floatformat:2|intcomma }}</td>
+                    <td>₹{{ order.discount_amount|floatformat:2|intcomma }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">No orders found for the selected date range.</p>
+    {% endif %}
 </div>
 {% endblock %}
 
+{% block script %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const filterPredefined = document.getElementById("filter_predefined");
+        const filterCustom = document.getElementById("filter_custom");
+        const predefinedFilters = document.getElementById("predefined_filters");
+        const customDateRange = document.getElementById("custom_date_range");
+        const dateToInput = document.getElementById("date_to");
+        const dateFromInput = document.getElementById("date_from");
+
+        // Retrieve query parameters to check which filter type was previously selected
+        const urlParams = new URLSearchParams(window.location.search);
+        const filterType = urlParams.get("filter_type");
+        const dateFrom = urlParams.get("date_from");
+        const dateTo = urlParams.get("date_to");
+
+        function toggleFilters() {
+            if (filterCustom.checked) {
+                predefinedFilters.style.display = "none";
+                customDateRange.style.display = "block";
+                dateToInput.setAttribute('required', true);
+                dateFromInput.setAttribute('required', true);
+            } else {
+                predefinedFilters.style.display = "block";
+                customDateRange.style.display = "none";
+                dateToInput.removeAttribute('required');
+                dateFromInput.removeAttribute('required');
+            }
+        }
+
+        // Set filter selection based on URL parameters
+        if (filterType === "custom") {
+            filterCustom.checked = true;
+        } else {
+            filterPredefined.checked = true;
+        }
+
+        // Initial toggle state based on selected filter type
+        toggleFilters();
+
+        // Event listeners for toggle change
+        filterPredefined.addEventListener("change", toggleFilters);
+        filterCustom.addEventListener("change", toggleFilters);
+
+        // Clear filters button functionality
+        const clearFiltersBtn = document.getElementById("clear_filters");
+        clearFiltersBtn.addEventListener("click", function() {
+            document.getElementById("date_filter").selectedIndex = 0;
+            document.getElementById("date_from").value = "";
+            document.getElementById("date_to").value = "";
+            document.getElementById("filter_predefined").checked = true;
+            toggleFilters();
+        });
+    });
+</script>
+{% endblock %}
