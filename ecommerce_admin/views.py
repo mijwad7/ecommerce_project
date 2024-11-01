@@ -31,6 +31,7 @@ from django.http import HttpResponse
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import io
+from openpyxl import Workbook
 
 
 def superuser_required(view_func):
@@ -783,17 +784,19 @@ def generate_sales_report_pdf(request):
 
     # Add table headers
     p.drawString(100, height - 180, "Order ID")
-    p.drawString(200, height - 180, "Order Date")
-    p.drawString(350, height - 180, "Total Amount")
-    p.drawString(450, height - 180, "Discount")
+    p.drawString(150, height - 180, "Order Date")
+    p.drawString(300, height - 180, "Made by")
+    p.drawString(400, height - 180, "Total Amount")
+    p.drawString(500, height - 180, "Discount")
 
     # Draw table rows
     y_position = height - 200
     for order in orders:
         p.drawString(100, y_position, str(order.id))
-        p.drawString(200, y_position, order.created_at.strftime("%Y-%m-%d %H:%M:%S"))
-        p.drawString(350, y_position, f"{order.total_price:.2f}")
-        p.drawString(450, y_position, f"{order.discount_amount:.2f}")
+        p.drawString(150, y_position, order.created_at.strftime("%Y-%m-%d %H:%M:%S"))
+        p.drawString(300, y_position, order.user.username)
+        p.drawString(400, y_position, f"{order.total_price:.2f}")
+        p.drawString(500, y_position, f"{order.discount_amount:.2f}")
         y_position -= 20  # Move down for the next row
 
     p.showPage()
@@ -803,9 +806,7 @@ def generate_sales_report_pdf(request):
     return response
 
 
-from django.http import HttpResponse
-from openpyxl import Workbook
-from django.db.models import Sum
+
 
 @login_required
 @superuser_required
@@ -839,7 +840,7 @@ def generate_sales_report_excel(request):
     sheet.title = "Sales Report"
 
     # Add headers to the Excel sheet
-    headers = ["Order ID", "Order Date", "Total Amount", "Discount"]
+    headers = ["Order ID", "Order Date", "Made by", "Total Amount", "Discount"]
     sheet.append(headers)
 
     # Add data rows to the Excel sheet
@@ -847,6 +848,7 @@ def generate_sales_report_excel(request):
         sheet.append([
             order.id,
             order.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            order.user.username,
             order.total_price,
             order.discount_amount
         ])
