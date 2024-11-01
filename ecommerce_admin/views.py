@@ -27,6 +27,11 @@ from django.http import HttpResponseForbidden
 from django.db.models import Q, Sum, Count, F, Value, DecimalField, Case, When
 from django.utils import timezone
 from datetime import timedelta, datetime
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import io
+
 
 def superuser_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
@@ -727,3 +732,72 @@ def generate_sales_report(request):
         "end_date": end_date,
         "date_filter": date_filter,
     })
+
+
+
+@login_required
+@superuser_required
+def generate_sales_report_pdf(request):
+    filter_type = request.GET.get('filter_type', 'predefined')
+    date_filter = request.GET.get('date_filter', 'weekly')  # Default to weekly
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+
+    if filter_type == 'custom' and date_from and date_to:
+        start_date = datetime.strptime(date_from, '%Y-%m-%d').date()
+        end_date = datetime.strptime(date_to, '%Y-%m-%d').date()
+    else:
+        start_date, end_date = calculate_date_range(date_filter)
+
+    # Query filtered orders
+    orders = Order.objects.filter(
+        created_at__range=(start_date, end_date),
+    ).annotate(
+        discount_amount=Case(
+            When(original_total_price__isnull=False,
+                 then=F('original_total_price') - F('total_price')),
+            default=Value(0),
+            output_field=DecimalField()
+        )
+    ).order_by('-created_at')
+
+    # Aggregate data for the report
+    total_discount = orders.filter(original_total_price__isnull=False).aggregate(
+        total_discount=Sum('original_total_price') - Sum('total_price')
+    )['total_discount'] or 0
+
+    # Create the PDF response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="sales_report.pdf"'
+    
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    # Draw PDF content
+    p.drawString(100, height - 50, "Sales Report")
+    p.drawString(100, height - 80, f"Date Range: {start_date} to {end_date}")
+    p.drawString(100, height - 100, f"Total Orders: {orders.count()}")
+    p.drawString(100, height - 120, f"Total Sales Amount: {orders.aggregate(total_sales=Sum('total_price'))['total_sales'] or 0:.2f}")
+    p.drawString(100, height - 140, f"Total Discount Given: {total_discount:.2f}")
+
+    # Add table headers
+    p.drawString(100, height - 180, "Order ID")
+    p.drawString(200, height - 180, "Order Date")
+    p.drawString(350, height - 180, "Total Amount")
+    p.drawString(450, height - 180, "Discount")
+
+    # Draw table rows
+    y_position = height - 200
+    for order in orders:
+        p.drawString(100, y_position, str(order.id))
+        p.drawString(200, y_position, order.created_at.strftime("%Y-%m-%d %H:%M:%S"))
+        p.drawString(350, y_position, f"{order.total_price:.2f}")
+        p.drawString(450, y_position, f"{order.discount_amount:.2f}")
+        y_position -= 20  # Move down for the next row
+
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+    response.write(buffer.read())
+    return response
