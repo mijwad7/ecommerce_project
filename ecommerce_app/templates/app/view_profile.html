@@ -7,6 +7,7 @@
   <div class="mb-3">
       <p><i class="bi bi-envelope-fill me-2"></i> <strong>Email:</strong> {{ profile.email }}</p>
       <p><i class="bi bi-telephone-fill me-2"></i> <strong>Phone Number:</strong> {{ profile.phone_number }}</p>
+      <p><i class="bi bi-wallet me-2"></i> <strong>Wallet Balance:</strong> ₹{{ wallet.balance }}</p>
   </div>
   <div>
       <a href="{% url 'app:edit_profile' %}" class="btn btn-outline-dark">

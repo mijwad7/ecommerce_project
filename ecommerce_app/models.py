@@ -451,3 +451,25 @@ class Wishlist(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s Wishlist"
+
+
+class Wallet(models.Model):
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name="wallet")
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def add_funds(self, amount):
+        """Add funds to the wallet, e.g., on order cancellation refund."""
+        self.balance += amount
+        self.save()
+
+    def deduct_funds(self, amount):
+        """Deduct funds if the user spends wallet balance."""
+        if amount <= self.balance:
+            self.balance -= amount
+            self.save()
+            return True
+        return False
+
+    def __str__(self):
+        return f"{self.user.username}'s Wallet - Balance: ₹{self.balance}"

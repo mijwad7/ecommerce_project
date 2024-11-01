@@ -17,7 +17,8 @@ from .models import (
     OrderItem,
     Tag,
     Wishlist,
-    Coupon
+    Coupon,
+    Wallet
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
@@ -443,8 +444,9 @@ def view_profile(request):
     username = request.user.username
     profile = get_object_or_404(UserProfile, username=username)
     addresses = profile.addresses.all()
+    wallet = Wallet.objects.get_or_create(user=request.user)[0]
     return render(
-        request, "app/view_profile.html", {"profile": profile, "addresses": addresses}
+        request, "app/view_profile.html", {"profile": profile, "addresses": addresses, "wallet": wallet}
     )
 
 
