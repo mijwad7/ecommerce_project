@@ -801,3 +801,60 @@ def generate_sales_report_pdf(request):
     buffer.seek(0)
     response.write(buffer.read())
     return response
+
+
+from django.http import HttpResponse
+from openpyxl import Workbook
+from django.db.models import Sum
+
+@login_required
+@superuser_required
+def generate_sales_report_excel(request):
+    filter_type = request.GET.get('filter_type', 'predefined')
+    date_filter = request.GET.get('date_filter', 'weekly')  # Default to weekly
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+
+    if filter_type == 'custom' and date_from and date_to:
+        start_date = datetime.strptime(date_from, '%Y-%m-%d').date()
+        end_date = datetime.strptime(date_to, '%Y-%m-%d').date()
+    else:
+        start_date, end_date = calculate_date_range(date_filter)
+
+    # Query filtered orders
+    orders = Order.objects.filter(
+        created_at__range=(start_date, end_date),
+    ).annotate(
+        discount_amount=Case(
+            When(original_total_price__isnull=False,
+                 then=F('original_total_price') - F('total_price')),
+            default=Value(0),
+            output_field=DecimalField()
+        )
+    ).order_by('-created_at')
+
+    # Create an Excel workbook and add a worksheet
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Sales Report"
+
+    # Add headers to the Excel sheet
+    headers = ["Order ID", "Order Date", "Total Amount", "Discount"]
+    sheet.append(headers)
+
+    # Add data rows to the Excel sheet
+    for order in orders:
+        sheet.append([
+            order.id,
+            order.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            order.total_price,
+            order.discount_amount
+        ])
+
+    # Create the response
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="sales_report.xlsx"'
+
+    # Save the workbook to the response
+    workbook.save(response)
+    return response
