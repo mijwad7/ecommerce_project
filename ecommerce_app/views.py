@@ -444,7 +444,7 @@ def view_profile(request):
     username = request.user.username
     profile = get_object_or_404(UserProfile, username=username)
     addresses = profile.addresses.all()
-    wallet = Wallet.objects.get_or_create(user=request.user)[0]
+    wallet, created = Wallet.objects.get_or_create(user=request.user)
     return render(
         request, "app/view_profile.html", {"profile": profile, "addresses": addresses, "wallet": wallet}
     )
@@ -723,10 +723,17 @@ def order_detail(request, order_id):
 @login_required
 def cancel_order(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
+    wallet, created = Wallet.objects.get_or_create(user=request.user)
+
     if order.order_status in ["PENDING", "CONFIRMED"]:
         order.order_status = "CANCELLED"
         order.save()
-        messages.success(request, "Order canceled successfully!")
+        if order.payment_method == "ONLINE":
+            wallet.add_funds(order.total_price)
+            wallet.save()
+            messages.success(request, "Order canceled successfully, payment refunded!")
+        else:
+            messages.success(request, "Order canceled successfully!")
     else:
         messages.error(request, "Order cannot be cancelled at this stage.")
 
