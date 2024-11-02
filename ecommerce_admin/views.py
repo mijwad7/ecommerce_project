@@ -32,7 +32,9 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import io
 from openpyxl import Workbook
-
+import plotly.express as px
+import json
+import plotly
 
 def superuser_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
@@ -724,6 +726,13 @@ def generate_sales_report(request):
         total_discount=Sum('original_total_price') - Sum('total_price')
     )['total_discount'] or 0
 
+    dates = [order.created_at.strftime('%Y-%m-%d') for order in orders]
+    sales_data = [order.total_price for order in orders]
+
+    fig = px.line(x=dates, y=sales_data, labels={'x': 'Date', 'y': 'Total Sales'},
+                  title="Sales Report")
+    fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
     return render(request, "admin/index.html", {
         "total_sales": orders.aggregate(total_sales=Sum('total_price'))['total_sales'] or 0,
         "total_orders": orders.count(),
@@ -732,6 +741,7 @@ def generate_sales_report(request):
         "start_date": start_date,
         "end_date": end_date,
         "date_filter": date_filter,
+        'plotly_fig': fig_json,
     })
 
 
@@ -860,3 +870,4 @@ def generate_sales_report_excel(request):
     # Save the workbook to the response
     workbook.save(response)
     return response
+

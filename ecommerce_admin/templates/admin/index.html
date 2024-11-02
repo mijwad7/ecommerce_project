@@ -83,7 +83,13 @@
         <hr class="mt-4 mb-2">
         <p class="text-center text-secondary">Period: {{ start_date }} - {{ end_date }}</p>
     </div>
-    
+    <div id="plotlyChart"></div>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+        const fig = {{ plotly_fig|safe }};
+        Plotly.newPlot('plotlyChart', fig);
+    </script>
+
 
     <!-- Order Details Table -->
     <h4 class="text-secondary mt-4">Order Details</h4>
