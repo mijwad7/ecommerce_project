@@ -11,6 +11,8 @@ import random
 import os
 from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
+from decimal import Decimal, ROUND_DOWN
+
 
 
 
@@ -92,6 +94,39 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+    
+class CategoryOffer(models.Model):
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='offers')
+    discount_percent = models.DecimalField(max_digits=5, decimal_places=2)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        now = timezone.now()
+        if self.start_date > now or self.end_date < now:
+            self.is_active = False
+        super().save(*args, **kwargs)
+        self.apply_discount_to_products()
+
+    def apply_discount_to_products(self):
+        if self.is_active:
+            for product in self.category.products.all():
+                product.is_on_sale = True
+                discount_multiplier = Decimal(1) - (Decimal(self.discount_percent) / Decimal(100))
+                sale_price = product.price * discount_multiplier
+                
+                # Round sale_price to two decimal places
+                product.sale_price = sale_price.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+                product.save()
+        else:
+            for product in self.category.products.all():
+                product.is_on_sale = False
+                product.sale_price = None
+                product.save()
+
+    def __str__(self):
+        return f"{self.category} - {self.discount_percent}%"
 
 
 class BrandQuerySet(models.QuerySet):

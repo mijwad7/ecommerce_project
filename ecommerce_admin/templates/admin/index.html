@@ -56,7 +56,7 @@
     </form>
 
     <!-- Report Summary -->
-    <div class="bg-white p-4 shadow-lg rounded mt-4">
+    <div class="bg-white p-4 shadow rounded mt-4">
         <h4 class="text-secondary text-center font-weight-bold mb-4">📊 Sales Report Summary</h4>
         
         <div class="d-flex justify-content-around text-center">
@@ -83,7 +83,7 @@
         <hr class="mt-4 mb-2">
         <p class="text-center text-secondary">Period: {{ start_date }} - {{ end_date }}</p>
     </div>
-    <div id="plotlyChart"></div>
+    <div class="shadow" id="plotlyChart"></div>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
         const fig = {{ plotly_fig|safe }};
