@@ -11,7 +11,8 @@ from ecommerce_app.models import (
     ProductVariant,
     Order,
     Tag,
-    Coupon
+    Coupon,
+    CategoryOffer
 )
 from .forms import (
     UserProfileForm,
@@ -871,3 +872,20 @@ def generate_sales_report_excel(request):
     workbook.save(response)
     return response
 
+@login_required
+@superuser_required
+def offers_list(request):
+    products = Product.objects.filter(is_on_sale=True)
+    return render(request, "admin/product_offers_list.html", {"products": products})
+
+@login_required
+@superuser_required
+def product_offers_list(request):
+    products = Product.objects.filter(is_on_sale=True)
+    return render(request, "admin/product_offers_list.html", {"products": products})
+
+@login_required
+@superuser_required
+def category_offers_list(request):
+    category_offers = CategoryOffer.objects.all()
+    return render(request, "admin/category_offers_list.html", {"category_offers": category_offers})
