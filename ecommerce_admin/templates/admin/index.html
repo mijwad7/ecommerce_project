@@ -56,12 +56,34 @@
     </form>
 
     <!-- Report Summary -->
-    <div class="bg-white p-3 shadow rounded mt-4">
-        <h4 class="text-secondary">Report Summary</h4>
-        <p><strong>Total Orders:</strong> {{ total_orders }}</p>
-        <p><strong>Total Sales Amount:</strong> ₹{{ total_sales|floatformat:2|intcomma }}</p>
-        <p><strong>Total Discount Given:</strong> ₹{{ total_discount|floatformat:2|intcomma }}</p>
+    <div class="bg-white p-4 shadow-lg rounded mt-4">
+        <h4 class="text-secondary text-center font-weight-bold mb-4">📊 Sales Report Summary</h4>
+        
+        <div class="d-flex justify-content-around text-center">
+            <!-- Total Orders -->
+            <div class="p-3">
+                <span class="badge badge-pill badge-primary display-4">{{ total_orders }}</span>
+                <p class="text-muted font-weight-bold mt-2">Total Orders</p>
+            </div>
+            
+            <!-- Total Sales Amount -->
+            <div class="p-3">
+                <span class="badge badge-pill badge-success display-4">₹{{ total_sales|floatformat:2|intcomma }}</span>
+                <p class="text-muted font-weight-bold mt-2">Total Sales Amount</p>
+            </div>
+            
+            <!-- Total Discount Given -->
+            <div class="p-3">
+                <span class="badge badge-pill badge-danger display-4">₹{{ total_discount|floatformat:2|intcomma }}</span>
+                <p class="text-muted font-weight-bold mt-2">Total Discount Given</p>
+            </div>
+        </div>
+    
+        <!-- Divider Line -->
+        <hr class="mt-4 mb-2">
+        <p class="text-center text-secondary">Period: {{ start_date }} - {{ end_date }}</p>
     </div>
+    
 
     <!-- Order Details Table -->
     <h4 class="text-secondary mt-4">Order Details</h4>
