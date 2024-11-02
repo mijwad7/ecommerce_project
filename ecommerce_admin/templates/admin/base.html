@@ -20,67 +20,75 @@
 
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand" href="{% url 'admin_dashboard' %}">Admin Panel</a>
-      
-      <!-- Toggler button for mobile view -->
-      <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-      aria-controls="navbarNav"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-      >
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    
-    <!-- Navbar links -->
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
-        {% if user.is_authenticated %}
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'user_list' %}">Users</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'products_list' %}">Products</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'categories_list' %}"
-            >Categories</a
-            >
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'brands_list' %}"
-              >Brands</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'tags_list' %}"
-              >Tags</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'coupon_list' %}"
-              >Coupons</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'view_orders' %}"
-              >Orders</a
-              >
-            </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-          </li>
-          {% else %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'login' %}">Login</a>
-          </li>
-          {% endif %}
-        </ul>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light ml-5">
+      <div class="container-fluid">
+          <a class="navbar-brand mr-4" href="{% url 'admin_dashboard' %}">ShopHive Admin</a>
+          <button
+              class="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarNav"
+              aria-controls="navbarNav"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+          >
+              <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav ms-auto">
+                  {% if user.is_authenticated %}
+                      <li class="nav-item">
+                          <a class="nav-link {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}" href="{% url 'user_list' %}">
+                              Users
+                          </a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="nav-link {% if request.resolver_match.url_name == 'products_list' %}active{% endif %}" href="{% url 'products_list' %}">
+                              Products
+                          </a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="nav-link {% if request.resolver_match.url_name == 'categories_list' %}active{% endif %}" href="{% url 'categories_list' %}">
+                              Categories
+                          </a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="nav-link {% if request.resolver_match.url_name == 'brands_list' %}active{% endif %}" href="{% url 'brands_list' %}">
+                              Brands
+                          </a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="nav-link {% if request.resolver_match.url_name == 'tags_list' %}active{% endif %}" href="{% url 'tags_list' %}">
+                              Tags
+                          </a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="nav-link {% if request.resolver_match.url_name == 'coupon_list' %}active{% endif %}" href="{% url 'coupon_list' %}">
+                              Coupons
+                          </a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="nav-link {% if request.resolver_match.url_name == 'view_orders' %}active{% endif %}" href="{% url 'view_orders' %}">
+                              Orders
+                          </a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="nav-link {% if request.resolver_match.url_name == 'logout' %}active{% endif %}" href="{% url 'logout' %}">
+                              Logout
+                          </a>
+                      </li>
+                  {% else %}
+                      <li class="nav-item">
+                          <a class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}" href="{% url 'login' %}">
+                              Login
+                          </a>
+                      </li>
+                  {% endif %}
+              </ul>
+          </div>
       </div>
-    </nav>
+  </nav>
+  
 
     <div class="container mt-4">
       {% if messages %}
