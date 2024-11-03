@@ -93,11 +93,6 @@ class CustomPasswordChangeForm(PasswordChangeForm):
         return new_password
 
 
-class OrderForm(forms.ModelForm):
-    class Meta:
-        model = Order
-        fields = ["payment_method", "address"]
-
 class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review

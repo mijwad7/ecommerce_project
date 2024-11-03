@@ -457,7 +457,6 @@ class Order(models.Model):
         ('ONLINE', 'Online Payment'),
     ]
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    address = models.ForeignKey(Address, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     order_status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='PENDING')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='COD')
@@ -465,6 +464,12 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     applied_coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
     original_total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    address_line_1 = models.TextField()
+    address_line_2 = models.TextField(null=True, blank=True)
+    city = models.CharField(max_length=50)
+    state = models.CharField(max_length=50)
+    post_code = models.CharField(max_length=6)
 
     def __str__(self):
         return f"Order #{self.id} by {self.user.username}"

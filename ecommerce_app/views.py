@@ -577,11 +577,15 @@ def checkout(request):
         # Proceed with Cash on Delivery payment method
         order = Order.objects.create(
             user=user,
-            address=address,
             payment_method=payment_method,
             total_price=total_price,
             original_total_price=cart.total_price if coupon else None,
-            applied_coupon=coupon if coupon else None
+            applied_coupon=coupon if coupon else None,
+            address_line_1=address.line_1,
+            address_line_2=address.line_2,
+            city=address.city,
+            state=address.state,
+            post_code=address.post_code,
         )
 
         for item in cart.cart_products.all():
@@ -626,11 +630,15 @@ def payment_complete(request):
 
         order = Order.objects.create(
             user=user,
-            address=address,
             payment_method="ONLINE",
             total_price=total_price,
             original_total_price=cart.total_price if coupon else None,
-            applied_coupon=coupon if coupon else None
+            applied_coupon=coupon if coupon else None,
+            address_line_1=address.line_1,
+            address_line_2=address.line_2,
+            city=address.city,
+            state=address.state,
+            post_code=address.post_code,
         )
 
         for item in cart.cart_products.all():
