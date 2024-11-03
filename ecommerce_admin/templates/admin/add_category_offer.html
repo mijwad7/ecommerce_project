@@ -1,0 +1,14 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h2>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Category Offer</h2>
+<div class="mb-4">
+    <a href="{% url 'product_offers_list' %}" class="btn btn-outline-dark">Product Offers</a>
+    <a href="{% url 'category_offers_list' %}" class="btn btn-black">Category Offers</a>
+    <a href="{% url 'coupon_list' %}" class="btn btn-outline-dark">Coupons</a>
+</div>
+<form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-black">Save</button>
+</form>
+{% endblock %}

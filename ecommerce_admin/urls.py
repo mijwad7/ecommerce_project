@@ -47,4 +47,8 @@ urlpatterns = [
     path('offers/', views.offers_list, name='offers_list'),
     path('offers/products/', views.product_offers_list, name='product_offers_list'),
     path('offers/categories/', views.category_offers_list, name='category_offers_list'),
+    path('offers/categories/add/', views.add_category_offer, name='add_category_offer'),
+    path('offers/categories/edit/<int:offer_id>/', views.edit_category_offer, name='edit_category_offer'),
+    path('offers/categories/delete/<int:offer_id>/', views.delete_category_offer, name='delete_category_offer'),
+
 ]

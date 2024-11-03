@@ -20,7 +20,8 @@ from .forms import (
     ProductForm,
     ProductSpecFormSet,
     ProductVariantForm,
-    CouponForm
+    CouponForm,
+    CategoryOfferForm
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -889,3 +890,42 @@ def product_offers_list(request):
 def category_offers_list(request):
     category_offers = CategoryOffer.objects.all()
     return render(request, "admin/category_offers_list.html", {"category_offers": category_offers})
+
+@login_required
+@superuser_required
+def add_category_offer(request):
+    if request.method == 'POST':
+        form = CategoryOfferForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Category Offer added successfully!")
+            return redirect('category_offers_list')
+        else:
+            messages.error(request, "There was an error adding the category offer.")
+    else:
+        form = CategoryOfferForm()
+    return render(request, 'admin/add_category_offer.html', {'form': form})
+
+@login_required
+@superuser_required
+def edit_category_offer(request, offer_id):
+    category_offer = get_object_or_404(CategoryOffer, id=offer_id)
+    if request.method == 'POST':
+        form = CategoryOfferForm(request.POST, instance=category_offer)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Category Offer updated successfully!")
+            return redirect('category_offers_list')
+        else:
+            messages.error(request, "There was an error updating the category offer.")
+    else:
+        form = CategoryOfferForm(instance=category_offer)
+    return render(request, 'admin/add_category_offer.html', {'form': form})
+
+@login_required
+@superuser_required
+def delete_category_offer(request, offer_id):
+    category_offer = get_object_or_404(CategoryOffer, id=offer_id)
+    category_offer.delete()
+    messages.success(request, "Category Offer deleted successfully.")
+    return redirect('category_offers_list')

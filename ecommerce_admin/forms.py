@@ -1,5 +1,5 @@
 from django import forms
-from ecommerce_app.models import UserProfile, Product, ProductImage, ProductSpec, ProductVariant, Coupon
+from ecommerce_app.models import UserProfile, Product, ProductImage, ProductSpec, ProductVariant, Coupon, CategoryOffer
 from django.forms import inlineformset_factory
 
 
@@ -98,6 +98,22 @@ class CouponForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(CouponForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if not isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'form-control'})
+
+
+class CategoryOfferForm(forms.ModelForm):
+    class Meta:
+        model = CategoryOffer
+        fields = ['category', 'discount_percent', 'start_date', 'end_date', 'is_active']
+        widgets = {
+            'start_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CategoryOfferForm, self).__init__(*args, **kwargs)
         for field in self.fields.values():
             if not isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs.update({'class': 'form-control'})
