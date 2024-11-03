@@ -18,7 +18,8 @@ from .models import (
     Tag,
     Wishlist,
     Coupon,
-    Wallet
+    Wallet,
+    CategoryOffer
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
@@ -167,9 +168,11 @@ def products(request):
         )
 
     # Filter by category (only if valid)
+    offer = None
     if category_id and Category.objects.filter(id=category_id).exists():
         products = products.filter(category_id=category_id)
         tags = Tag.objects.filter(category_id=category_id)  # Only get tags for this category
+        offer = CategoryOffer.objects.filter(category_id=category_id).first()
     else:
         tags = Tag.objects.none()  # No tags if no category is selected
 
@@ -210,7 +213,8 @@ def products(request):
             "categories": categories,
             "brands": brands,
             "tags": tags,
-            "selected_tags": selected_tags
+            "selected_tags": selected_tags,
+            "offer": offer,
         },
     )
 
