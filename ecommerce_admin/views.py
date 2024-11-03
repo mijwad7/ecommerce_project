@@ -713,6 +713,8 @@ def generate_sales_report(request):
     # Query filtered orders
     orders = Order.objects.filter(
         created_at__range=(start_date, end_date),
+    ).exclude(
+        order_status='CANCELLED'
     ).annotate(
         discount_amount=Case(
             When(original_total_price__isnull=False,
