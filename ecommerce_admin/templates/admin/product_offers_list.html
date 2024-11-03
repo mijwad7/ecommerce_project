@@ -1,0 +1,29 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h2>Product Offers</h2>
+<div class="mb-4">
+    <a href="{% url 'product_offers_list' %}" class="btn btn-black active">Product Offers</a>
+    <a href="{% url 'category_offers_list' %}" class="btn btn-outline-dark">Category Offers</a>
+    <a href="{% url 'coupon_list' %}" class="btn btn-outline-dark">Coupons</a>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Original Price</th>
+            <th>Sale Price</th>
+            <th>Is On Sale</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+        <tr>
+            <td>{{ product.name }}</td>
+            <td>{{ product.price }}</td>
+            <td>{{ product.sale_price }}</td>
+            <td>{% if product.is_on_sale %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-x-circle-fill text-danger"></i>{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

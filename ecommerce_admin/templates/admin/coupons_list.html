@@ -1,6 +1,11 @@
 {% extends "admin/base.html" %}
 {% block content %}
 <h2>Coupons</h2>
+<div class="mb-4">
+    <a href="{% url 'product_offers_list' %}" class="btn btn-outline-dark">Product Offers</a>
+    <a href="{% url 'category_offers_list' %}" class="btn btn-outline-dark">Category Offers</a>
+    <a href="{% url 'coupon_list' %}" class="btn btn-black">Coupons</a>
+</div>
 <a href="{% url 'add_coupon' %}" class="btn btn-black mb-3">Add Coupon</a>
 <table class="table">
     <thead>
