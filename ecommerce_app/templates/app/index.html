@@ -1,29 +1,48 @@
 {% extends './base.html' %} {% load static %} {% load humanize %}
 {% block content %}
-<div class="container my-5 banner">
+<div class="container-fluid banner py-5 px-4">
   <div class="row align-items-center">
-    <div class="col-md-6 text-md-start mb-4 mb-md-0">
-      <h1 class="display-3">Welcome to ShopHive</h1>
-      <p class="h4 mb-4">The one-stop shop for all your needs.</p>
+    <div class="col-md-4 text-md-start mb-4 ml-md-5 mb-md-0">
+      <h1 class="display-3 font-weight-bold">Welcome to ShopHive</h1>
+      <p class="h4 mb-4 text-secondary">Your one-stop shop for all your needs.</p>
       <p class="lead">
         Discover a wide range of products tailored to suit your lifestyle. From
         the latest electronics to everyday essentials, we have something for
         everyone. Enjoy exclusive deals and fast shipping right to your
         doorstep.
       </p>
-      <a href="{% url 'app:products' %}" class="btn btn-black btn-lg"
-        >Shop Now</a
-      >
+      <a href="{% url 'app:products' %}" class="btn btn-secondary btn-lg px-4 py-2 shadow">Shop Now</a>
     </div>
-    <div class="col-md-6 text-center">
+    <div class="col-md-7">
       <img
-        src="{% static 'img/banner.png' %}"
+        src="{% static 'img/banner.jpg' %}"
         alt="Banner Image"
-        class="img-fluid"
+        class="img-fluid rounded shadow"
       />
     </div>
   </div>
+  
+  <!-- Categories Section -->
+  <div class="d-none d-md-flex row mt-5 text-center">
+    <div class="col-6 col-md">
+      <a href="http://127.0.0.1:8000/products/?query=&category=Electronics" class="category-link text-white font-weight-bold h4 p-3 rounded border border-light">Electronics</a>
+    </div>
+    <div class="col-6 col-md">
+      <a href="http://127.0.0.1:8000/products/?query=&category=Clothing" class="category-link text-white font-weight-bold h4 p-3 rounded border border-light">Clothing</a>
+    </div>
+    <div class="col-6 col-md">
+      <a href="http://127.0.0.1:8000/products/?query=&category=Sports" class="category-link text-white font-weight-bold h4 p-3 rounded border border-light">Sports</a>
+    </div>
+    <div class="col-6 col-md">
+      <a href="http://127.0.0.1:8000/products/?query=&category=Books" class="category-link text-white font-weight-bold h4 p-3 rounded border border-light">Books</a>
+    </div>
+    <div class="col-6 col-md">
+      <a href="http://127.0.0.1:8000/products/?query=&category=Furniture" class="category-link text-white font-weight-bold h4 p-3 rounded border border-light">Furniture</a>
+    </div>
+  </div>
+  
 </div>
+
 <br>
 <!-- Featured Products Section -->
 <div class="container mt-5">

@@ -68,3 +68,13 @@ body {
 .page-link.bg-black:hover {
   background-color: #000;
 }
+.banner {
+  background-color: black;
+  color: white;
+  height: 95vh;
+}
+.category-link:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Slight background change on hover */
+    text-decoration: none; /* Remove underline on hover */
+
+}

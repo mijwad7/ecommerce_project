@@ -45,7 +45,7 @@
     </div> <!-- End of row -->
     {% else %}
       <p>Your wishlist is empty.</p>
-      <a href="{% url 'app:index' %}" class="btn btn-secondary">Continue Shopping</a>
-    {% endif %}
+      {% endif %}
+      <a class="btn btn-black" href="{% url 'app:products' %}" class="btn btn-secondary">Continue Shopping</a>
 </div>
 {% endblock %}

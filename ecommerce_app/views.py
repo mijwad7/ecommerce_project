@@ -150,7 +150,7 @@ def terms_of_service(request):
 
 def products(request):
     query = request.GET.get("query")
-    category_id = request.GET.get("category")
+    category_name = request.GET.get("category")
     brand_id = request.GET.get("brand")
     sort = request.GET.get("sort", "id")
     selected_tags = request.GET.getlist('tags')
@@ -171,10 +171,10 @@ def products(request):
         )
 
     offer = None
-    if category_id and Category.objects.filter(id=category_id).exists():
-        products = products.filter(category_id=category_id)
-        tags = Tag.objects.filter(category_id=category_id)
-        offer = CategoryOffer.objects.filter(category_id=category_id).first()
+    if category_name and Category.objects.filter(name=category_name).exists():
+        products = products.filter(category__name=category_name)
+        tags = Tag.objects.filter(category__name=category_name)
+        offer = CategoryOffer.objects.filter(category__name=category_name).first()
     else:
         tags = Tag.objects.none()
 
