@@ -530,7 +530,6 @@ def checkout(request):
                 total_price -= wallet_deduction
                 wallet.balance = 0
 
-        wallet.save()
 
         usd_amount = round(c.convert(total_price, 'INR', 'USD'), 2)
         address_id = request.POST.get("address")
@@ -572,6 +571,7 @@ def checkout(request):
                         quantity=item.quantity,
                     )
 
+                wallet.save()
                 cart.cart_products.all().delete()
                 messages.success(request, "Order placed successfully using wallet balance!")
                 return redirect("app:order_confirmation", order_id=order.id)
@@ -644,6 +644,7 @@ def checkout(request):
                 quantity=item.quantity,
             )
 
+        wallet.save()
         cart.cart_products.all().delete()
         messages.success(request, "Order placed successfully!")
         return redirect("app:order_confirmation", order_id=order.id)
