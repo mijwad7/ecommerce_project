@@ -116,10 +116,9 @@
 
                             {% if order.wallet_deduction > 0 %}
                             <small class="text-muted">
-                                - Wallet Deduction: ₹{{ order.wallet_deduction|floatformat:2|intcomma }}
+                                - ₹{{ order.wallet_deduction|floatformat:2|intcomma }} (Wallet)
                             </small>
                             {% endif %}
-                        
                     </td>
                     <td class="d-none d-md-block">₹{{ order.discount_amount|floatformat:2|intcomma }}</td>
                 </tr>
