@@ -39,13 +39,13 @@
               <i class="bi bi-trash"></i> Remove
             </a>
           </div>
-        </div> <!-- End of card -->
-      </div> <!-- End of column -->
+        </div>
+      </div>
       {% endfor %}
-    </div> <!-- End of row -->
+    </div>
     {% else %}
       <p>Your wishlist is empty.</p>
       {% endif %}
-      <a class="btn btn-black" href="{% url 'app:products' %}" class="btn btn-secondary">Continue Shopping</a>
+      <a class="btn btn-black" href="{% url 'app:products' %}">Continue Shopping</a>
 </div>
 {% endblock %}

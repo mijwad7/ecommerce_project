@@ -9,6 +9,8 @@
     <p>Order ID: {{ order.id }}</p>
     <p>Shipping Address: {{ order.address_line_1 }}, {% if order.address_line_2 %} {{ order.address_line_2 }}, {% endif %} {{ order.city }}, {{ order.post_code }}</p>
     <p>Total Price: ₹{{ order.total_price|intcomma }}</p>
+    {% if order.wallet_deduction > 0 %}<p>Wallet Deduction: ₹{{ order.wallet_deduction|intcomma }}</p>{% endif %}
+
     <p>Payment Method: {{ order.get_payment_method_display }}</p>
     
     <h4>Items:</h4>

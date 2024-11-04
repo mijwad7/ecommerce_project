@@ -2,126 +2,133 @@
 {% load humanize %}
 <div class="container mt-5">
   <h2 class="mb-4">Checkout</h2>
-  
-  <form method="post">
-    {% csrf_token %}
-    <div class="mb-4">
-      <h4>Select Payment Method:</h4>
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <div
-            class="card p-3 cursor-pointer js-select-card"
-            data-input-id="payment_method_COD"
-          >
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="radio"
-                name="payment_method"
-                id="payment_method_COD"
-                value="COD"
-                required
-                style="position: absolute; opacity: 0"
-              />
-              <label for="payment_method_COD" class="form-check-label">
-                <i class="bi bi-cash-coin"></i> Cash on Delivery
-              </label>
+  <div class="row">
+    <!-- Left Column: Payment & Address Selection -->
+    <div class="col-md-8">
+      <form method="post">
+        {% csrf_token %}
+        
+        <!-- Payment Method Section -->
+        <div class="mb-4">
+          <h4>Select Payment Method:</h4>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="card p-3 cursor-pointer js-select-card" data-input-id="payment_method_COD">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="payment_method"
+                    id="payment_method_COD"
+                    value="COD"
+                    required
+                    style="position: absolute; opacity: 0"
+                  />
+                  <label for="payment_method_COD" class="form-check-label">
+                    <i class="bi bi-cash-coin"></i> Cash on Delivery
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="card p-3 cursor-pointer js-select-card" data-input-id="payment_method_ONLINE">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="payment_method"
+                    id="payment_method_ONLINE"
+                    value="ONLINE"
+                    style="position: absolute; opacity: 0"
+                  />
+                  <label class="form-check-label" for="payment_method_ONLINE">
+                    <i class="bi bi-credit-card"></i> Online Payment (Paypal)
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div class="col-md-6 mb-3">
-          <div
-            class="card p-3 cursor-pointer js-select-card"
-            data-input-id="payment_method_ONLINE"
-          >
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="radio"
-                name="payment_method"
-                id="payment_method_ONLINE"
-                value="ONLINE"
-                style="position: absolute; opacity: 0"
-              />
-              <label class="form-check-label" for="payment_method_ONLINE">
-                <i class="bi bi-credit-card"></i> Online Payment (Paypal)
-              </label>
+
+        <!-- Address Selection Section -->
+        <div class="mb-4">
+          <h4>Select Shipping Address:</h4>
+          <div class="row">
+            {% for address in addresses %}
+            <div class="col-md-6 mb-3">
+              <div class="card p-3 h-100 cursor-pointer js-select-card" data-input-id="address_{{ address.id }}">
+                <div class="form-check mb-3">
+                  <input
+                      class="form-check-input"
+                      type="radio"
+                      name="address"
+                      id="address_{{ address.id }}"
+                      value="{{ address.id }}"
+                      required
+                      style="position: absolute; opacity: 0"
+                  />
+                  <label for="address_{{ address.id }}" class="form-check-label">
+                      <i class="bi bi-house"></i> <strong>{{ address.line_1 }}</strong>{% if address.line_2 %}, {{ address.line_2 }}{% endif %}, {{ address.city }}, {{ address.post_code }}
+                  </label>
+                  <div class="d-flex justify-content-between align-items-center mt-1">
+                      <span></span>
+                      <a class="text-dark font-weight-bold" href="{% url 'app:edit_address' address.id %}">
+                         Edit Address
+                      </a>
+                  </div>
+                </div>
+              </div>
             </div>
+            {% empty %}
+            <div class="text-center">
+              <p>No addresses found.</p>
+              <a href="{% url 'app:add_address' %}" class="btn btn-black">Please add an address</a>
+            </div>
+            {% endfor %}
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="mb-4">
-      <h4>Select Shipping Address:</h4>
-      <div class="row">
-        {% for address in addresses %}
-        <div class="col-md-6 mb-3">
-          <div
-            class="card p-3 h-100 cursor-pointer js-select-card"
-            data-input-id="address_{{ address.id }}"
-          >
-          <div class="form-check mb-3">
-            <input
-                class="form-check-input"
-                type="radio"
-                name="address"
-                id="address_{{ address.id }}"
-                value="{{ address.id }}"
-                required
-                style="position: absolute; opacity: 0"
-            />
-            <label for="address_{{ address.id }}" class="form-check-label">
-                <i class="bi bi-house"></i> <strong>{{ address.line_1 }}</strong>{% if address.line_2 %}, {{ address.line_2 }}{% endif %}, {{ address.city }}, {{ address.post_code }}
-            </label>
-            <br>
-            <div class="d-flex justify-content-between align-items-center mt-1">
-                <span></span> <!-- Placeholder for spacing -->
-                <a class="text-dark font-weight-bold" href="{% url 'app:edit_address' address.id %}">
-                   Edit Address
-                </a>
-            </div>
+      
+    <!-- Right Column: Order Summary -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Order Summary</h4>
+        
+        <!-- Coupon Code Section -->
+        <div class="form-group row align-items-center mb-3">
+          <label for="coupon_code" class="col-12">Enter Coupon Code:</label>
+          <div class="col-12 mb-2">
+            <input type="text" name="coupon_code" id="coupon_code" class="form-control" placeholder="Coupon Code">
+          </div>
+          <div class="col-auto">
+            <button id="apply_coupon" type="button" class="btn btn-black btn-sm">Apply Coupon</button>
+            <button id="remove_coupon" type="button" class="btn btn-outline-dark btn-sm ml-2">Remove</button>
+          </div>
+        </div>
+        <div id="coupon-message" class="text-success mb-3"></div>
+        
+        <!-- Wallet Balance Section -->
+        <p>Wallet Balance: <span id="wallet-balance">₹{{ request.user.wallet.balance|intcomma }}</span></p>
+        <div class="form-check mb-3">
+          <input type="checkbox" class="form-check-input" id="use_wallet" name="use_wallet">
+          <label class="form-check-label" for="use_wallet">
+            <i class="bi bi-wallet"></i> Use Wallet Balance
+          </label>
         </div>
         
-          </div>
-        </div>
-        {% empty %}
-        <div class="text-center">
-          <p>No addresses found.</p>
-          <a href="{% url 'app:add_address' %}" class="btn btn-black">Please add an address</a>
-        </div>
-        {% endfor %}
+        <!-- Total Price -->
+        <p class="h5">Total Price: <strong id="total-price">₹{{ cart.total_price|intcomma }}</strong></p>
+        
+        <!-- Place Order Button -->
+        <button type="submit" {% if not addresses %} disabled {% endif %} class="btn btn-black btn-lg btn-block mt-3">
+          <i class="bi bi-cart-check"></i> Place Order
+        </button>
       </div>
+    </form>
     </div>
-    <div class="form-group row align-items-center mb-3">
-      <label for="coupon_code" class="col-auto col-form-label">Enter Coupon Code:</label>
-      <div class="col-6">
-        <input type="text" name="coupon_code" id="coupon_code" class="form-control" placeholder="Coupon Code">
-      </div>
-      <div class="col-auto">
-        <button id="apply_coupon" type="button" class="btn btn-black">Apply Coupon</button>
-        <button id="remove_coupon" type="button" class="btn btn-outline-dark ml-2">Remove Coupon</button>
-      </div>
-      <p>Wallet Balance: <strong id="wallet-balance">₹{{ request.user.wallet.balance|intcomma }}</strong></p>
-      <div class="form-check mb-3">
-        <input type="checkbox" class="form-check-input" id="use_wallet" name="use_wallet">
-        <label class="form-check-label" for="use_wallet">
-            <i class="bi bi-wallet"></i> Use Wallet Balance
-        </label>
-      </div>
-    </div>
-    
-    <p>
-      Total Price: <strong id="total-price">₹{{ cart.total_price|intcomma }}</strong>
-    </p>
-    <div id="coupon-message"></div>
-
-    <button type="submit" {% if not addresses %} disabled {% endif %} class="btn btn-black btn-lg mt-3">
-        <i class="bi bi-cart-check"></i> Place Order
-    </button>
-</form>
-
+  </div>
 </div>
+
 {% endblock %} {% block script %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
