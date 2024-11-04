@@ -46,8 +46,8 @@ def user_signup(request):
             user = form.save(commit=False)
             user.is_active = False  # Disable account until OTP is verified
             user.save()
-            send_otp_to_email(user)  # Send OTP
-            request.session["user_id"] = user.id  # Store user ID in session
+            send_otp_to_email(user)
+            request.session["user_id"] = user.id
             messages.success(request, "Please check your email for an OTP.")
             return redirect("app:verify_otp")
         else:
@@ -149,33 +149,28 @@ def products(request):
     sort = request.GET.get("sort", "id")
     selected_tags = request.GET.getlist('tags')
 
-    # Fetch categories and brands as before
     categories = Category.objects.all()
     brands = Brand.objects.all()
 
-    # Pre-select related data to optimize queries
     products = (
         Product.objects.select_related("category").prefetch_related("reviews").all()
     )
 
-    # Filter by brand (only if valid)
     if brand_id and Brand.objects.filter(id=brand_id).exists():
         products = products.filter(brand_id=brand_id)
 
-    # Filter by search query
     if query:
         products = products.filter(
             Q(name__icontains=query) | Q(description__icontains=query)
         )
 
-    # Filter by category (only if valid)
     offer = None
     if category_id and Category.objects.filter(id=category_id).exists():
         products = products.filter(category_id=category_id)
-        tags = Tag.objects.filter(category_id=category_id)  # Only get tags for this category
+        tags = Tag.objects.filter(category_id=category_id)
         offer = CategoryOffer.objects.filter(category_id=category_id).first()
     else:
-        tags = Tag.objects.none()  # No tags if no category is selected
+        tags = Tag.objects.none()
 
     # Annotate with average ratings
     products = products.annotate(average_rating=Avg("reviews__rating"))
@@ -201,7 +196,7 @@ def products(request):
     if selected_tags:
         products = products.filter(tags__name__in=selected_tags).distinct()
 
-    # Pagination (10 products per page)
+    # Pagination (6 products per page)
     paginator = Paginator(products, 6)
     page_number = request.GET.get("page")
     paginated_products = paginator.get_page(page_number)
@@ -223,11 +218,9 @@ def products(request):
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
-    # Fetch reviews and use aggregation for the average rating and review count
     reviews = Review.objects.filter(product=product)
     review_data = reviews.aggregate(avg_rating=Avg("rating"), num_reviews=Count("id"))
 
-    # Safely handle case when there are no reviews
     review_score = (
         review_data["avg_rating"] if review_data["avg_rating"] is not None else 0
     )
@@ -263,7 +256,7 @@ def get_variant_details(request, variant_id):
     variant = ProductVariant.objects.get(id=variant_id)
     images = [
         {"image_url": img.image.url} for img in variant.images.all()
-    ]  # Fetching variant images
+    ]
 
     data = {
         "price": variant.price,
@@ -279,10 +272,8 @@ def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     user = request.user
 
-    # Check if the user has a cart; create one if not
     cart, created = Cart.objects.get_or_create(user=user)
 
-    # Get the quantity and variant ID from the AJAX request
     quantity = int(request.POST.get("quantity", 1))
     variant_id = request.POST.get("variant_id")
 
@@ -290,7 +281,6 @@ def add_to_cart(request, product_id):
     if variant_id:
         variant = get_object_or_404(ProductVariant, id=variant_id)
 
-        # Validate the requested quantity against the variant's stock
         if quantity > variant.stock:
             return JsonResponse(
                 {
@@ -362,11 +352,9 @@ def add_to_cart(request, product_id):
                     }
                 )
 
-        # Update the cart product quantity
         cart_product.quantity = new_quantity
         cart_product.save()
 
-    # Return success response
     return JsonResponse(
         {"success": True, "message": f"Added {product.name} to your cart."}
     )
@@ -376,7 +364,6 @@ def add_to_cart(request, product_id):
 def view_cart(request):
     user = request.user
 
-    # Fetch the user's cart; if no cart exists, it will show an empty cart
     try:
         cart = user.cart
         cart_products = cart.cart_products.all()
@@ -504,7 +491,6 @@ def checkout(request):
 
         coupon = None
 
-        # Validate coupon code
         if coupon_code:
             coupon = Coupon.objects.filter(code=coupon_code, is_active=True).first()
             if not coupon or coupon.start_date > timezone.now() or coupon.end_date < timezone.now():
@@ -582,7 +568,6 @@ def checkout(request):
                     "client_secret": settings.PAYPAL_CLIENT_SECRET
                 })
 
-                # Create the PayPal payment
                 payment = paypalrestsdk.Payment({
                     "intent": "sale",
                     "payer": {
@@ -686,7 +671,6 @@ def payment_complete(request):
             wallet.save()
 
 
-        # Create the order with all necessary details
         order = Order.objects.create(
             user=user,
             payment_method="ONLINE",
@@ -701,7 +685,6 @@ def payment_complete(request):
             wallet_deduction=wallet_deduction
         )
 
-        # Save order items and clear the cart
         for item in cart.cart_products.all():
             item.is_checked_out = True
             item.save()
@@ -736,7 +719,6 @@ def apply_coupon(request):
         coupon = Coupon.objects.filter(code=coupon_code, is_active=True).first()
 
         if coupon:
-            # Check if the coupon has already been used by the user in any previous orders
             if Order.objects.filter(user=request.user, applied_coupon=coupon).exists():
                 return JsonResponse({"status": "error", "message": "You have already used this coupon."})
 
@@ -744,7 +726,6 @@ def apply_coupon(request):
             new_total = cart.total_price - discount
 
             request.session["coupon_code_to_remove"] = coupon.code
-            # Optionally, you can also store the original price in session or directly in the cart/order.
             return JsonResponse({"status": "success", "new_total": new_total})
 
         return JsonResponse({"status": "error", "message": "Invalid or expired coupon."})
@@ -823,7 +804,6 @@ def update_cart_quantity(request, item_id):
     if request.method == "POST":
         item = get_object_or_404(CartProduct, id=item_id)
 
-        # Retrieve the product or variant associated with the cart item
         product = item.product
         variant = item.variant  # May be None if it's a base product
         quantity = int(request.POST.get('quantity'))
@@ -887,7 +867,6 @@ def add_to_wishlist(request):
         product = get_object_or_404(Product, id=product_id)
         wishlist, created = Wishlist.objects.get_or_create(user=request.user)
 
-        # Check if product is already in wishlist
         if wishlist.products.filter(id=product_id).exists():
             return JsonResponse({'status': 'danger', 'message': 'Product is already in your wishlist.'})
         

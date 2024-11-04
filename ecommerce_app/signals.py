@@ -5,9 +5,6 @@ from .models import CartProduct, Product, Order, OrderItem
 
 @receiver(post_save, sender=OrderItem)
 def adjust_stock_on_order(sender, instance, created, **kwargs):
-    """
-    Reduce product stock when a new CartProduct is added.
-    """
     if created:
         # Reduce stock based on the quantity of the new CartProduct
         instance.product.stock -= instance.quantity
@@ -15,9 +12,6 @@ def adjust_stock_on_order(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Order)
 def adjust_stock_on_order_status_change(sender, instance, **kwargs):
-    """
-    Restore product stock when an order is canceled.
-    """
     if instance.order_status == 'CANCELLED':
         for item in instance.items.all():
             item.product.stock += item.quantity
