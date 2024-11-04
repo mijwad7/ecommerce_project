@@ -1,5 +1,5 @@
 {% extends './base.html' %}
-
+{% load humanize %}
 {% block content %}
 <div class="container my-5">
     <h1 class="mb-4">Admin Orders Management</h1>
@@ -23,7 +23,8 @@
 
                         </p>
                         <p class="mb-1"><strong>Payment:</strong> {{ order.payment_method }}</p>
-                        <p class="mb-1"><strong>Total:</strong> ₹{{ order.total_price }}</p>
+                        <p class="mb-1"><strong>Total:</strong> ₹{{ order.total_price|intcomma }}</p>
+                        {% if order.wallet_deduction > 0 %}<p class="mb-1"><strong>Wallet Deduction:</strong> ₹{{ order.wallet_deduction|intcomma }}</p>{% endif %}
                         <p class="mb-1"><strong>Address:</strong> {{ order.address_line_1 }}, {% if order.address_line_2 %}
                             {{ order.address_line_2 }}, {% endif %} {{ order.city }}, {{ order.post_code }}</p>
                         <p class="text-muted mb-1">Placed on: {{ order.created_at }}</p>

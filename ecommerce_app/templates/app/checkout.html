@@ -102,7 +102,13 @@
         <button id="apply_coupon" type="button" class="btn btn-black">Apply Coupon</button>
         <button id="remove_coupon" type="button" class="btn btn-outline-dark ml-2">Remove Coupon</button>
       </div>
-
+      <p>Wallet Balance: <strong id="wallet-balance">₹{{ request.user.wallet.balance|intcomma }}</strong></p>
+      <div class="form-check mb-3">
+        <input type="checkbox" class="form-check-input" id="use_wallet" name="use_wallet">
+        <label class="form-check-label" for="use_wallet">
+            <i class="bi bi-wallet"></i> Use Wallet Balance
+        </label>
+      </div>
     </div>
     
     <p>
@@ -204,6 +210,29 @@
       });
   });
 </script>
-
+<script>
+  $(document).ready(function() {
+      $('#use_wallet').change(function() {
+          let cartTotal = {{ cart.total_price }};
+          let discount = 0; // Replace with your discount logic if applicable
+          let walletBalance = {{ request.user.wallet.balance }};
+          
+          let totalPrice = cartTotal - discount;
+  
+          if (this.checked) {
+              if (walletBalance >= totalPrice) {
+                  walletBalance -= totalPrice;  // Deduct total price from wallet balance
+                  totalPrice = 0;
+              } else {
+                  totalPrice -= walletBalance;  // Deduct all wallet balance from total
+                  walletBalance = 0;
+              }
+          }
+  
+          $('#total-price').text('₹' + totalPrice.toLocaleString());
+          $('#wallet-balance').text('₹' + walletBalance.toLocaleString());
+      });
+  });
+  </script>
 
 {% endblock %}

@@ -35,6 +35,7 @@ import paypalrestsdk
 from django.conf import settings
 from django.urls import reverse
 from currency_converter import CurrencyConverter
+from decimal import Decimal
 
 
 
@@ -493,10 +494,13 @@ def checkout(request):
     cart = get_object_or_404(Cart, user=user)
     addresses = Address.objects.filter(user=user, address_type='shipping')
     c = CurrencyConverter()
+    wallet, created = Wallet.objects.get_or_create(user=user)
 
     if request.method == "POST":
         coupon_code = request.POST.get("coupon_code")
         request.session['coupon_code'] = coupon_code
+        use_wallet = request.POST.get("use_wallet", "off") == "on"
+        wallet_deduction = 0
 
         coupon = None
 
@@ -514,11 +518,25 @@ def checkout(request):
                 total_price = cart.total_price - discount
         else:
             total_price = cart.total_price
+        
+        if use_wallet:
+            wallet_balance = wallet.balance
+            if wallet_balance >= total_price:
+                wallet_deduction = cart.total_price
+                total_price = 0
+                wallet.balance -= wallet_deduction
+            else:
+                wallet_deduction = wallet_balance
+                total_price -= wallet_deduction
+                wallet.balance = 0
+
+        wallet.save()
 
         usd_amount = round(c.convert(total_price, 'INR', 'USD'), 2)
         address_id = request.POST.get("address")
         address = get_object_or_404(Address, id=address_id)
         request.session['selected_address_id'] = address_id
+        request.session['wallet_deduction'] = float(wallet_deduction)
         payment_method = request.POST.get("payment_method")
 
         if not payment_method:
@@ -530,49 +548,76 @@ def checkout(request):
             return redirect("app:checkout")
 
         if payment_method == "ONLINE":
-            # Configure PayPal SDK
-            paypalrestsdk.configure({
-                "mode": settings.PAYPAL_MODE,
-                "client_id": settings.PAYPAL_CLIENT_ID,
-                "client_secret": settings.PAYPAL_CLIENT_SECRET
-            })
+            if total_price == 0:
+                order = Order.objects.create(
+                    user=user,
+                    payment_method="WALLET",
+                    total_price=total_price,
+                    original_total_price=cart.total_price,
+                    wallet_deduction=wallet_deduction,
+                    address_line_1=address.line_1,
+                    address_line_2=address.line_2,
+                    city=address.city,
+                    state=address.state,
+                    post_code=address.post_code,
+                    applied_coupon=coupon if coupon else None,
+                )
+                for item in cart.cart_products.all():
+                    item.is_checked_out = True
+                    item.save()
+                    OrderItem.objects.create(
+                        order=order,
+                        product=item.product,
+                        price=item.total_price,
+                        quantity=item.quantity,
+                    )
 
-            # Create the PayPal payment
-            payment = paypalrestsdk.Payment({
-                "intent": "sale",
-                "payer": {
-                    "payment_method": "paypal"
-                },
-                "redirect_urls": {
-                    "return_url": request.build_absolute_uri(reverse("app:payment_complete")),
-                    "cancel_url": request.build_absolute_uri(reverse("app:checkout")),
-                },
-                "transactions": [{
-                    "item_list": {
-                        "items": [{
-                            "name": "Cart Purchase",
-                            "sku": "001",
-                            "price": str(usd_amount),
-                            "currency": "USD",
-                            "quantity": 1
-                        }]
-                    },
-                    "amount": {
-                        "total": str(usd_amount),
-                        "currency": "USD"
-                    },
-                    "description": "Purchase from My Django Store"
-                }]
-            })
-
-            if payment.create():
-                for link in payment.links:
-                    if link.rel == "approval_url":
-                        approval_url = link.href
-                        return redirect(approval_url)
+                cart.cart_products.all().delete()
+                messages.success(request, "Order placed successfully using wallet balance!")
+                return redirect("app:order_confirmation", order_id=order.id)
             else:
-                messages.error(request, "Error with PayPal payment.")
-                return redirect("app:checkout")
+                paypalrestsdk.configure({
+                    "mode": settings.PAYPAL_MODE,
+                    "client_id": settings.PAYPAL_CLIENT_ID,
+                    "client_secret": settings.PAYPAL_CLIENT_SECRET
+                })
+
+                # Create the PayPal payment
+                payment = paypalrestsdk.Payment({
+                    "intent": "sale",
+                    "payer": {
+                        "payment_method": "paypal"
+                    },
+                    "redirect_urls": {
+                        "return_url": request.build_absolute_uri(reverse("app:payment_complete")),
+                        "cancel_url": request.build_absolute_uri(reverse("app:checkout")),
+                    },
+                    "transactions": [{
+                        "item_list": {
+                            "items": [{
+                                "name": "Cart Purchase",
+                                "sku": "001",
+                                "price": str(usd_amount),
+                                "currency": "USD",
+                                "quantity": 1
+                            }]
+                        },
+                        "amount": {
+                            "total": str(usd_amount),
+                            "currency": "USD"
+                        },
+                        "description": "Purchase from My Django Store"
+                    }]
+                })
+
+                if payment.create():
+                    for link in payment.links:
+                        if link.rel == "approval_url":
+                            approval_url = link.href
+                            return redirect(approval_url)
+                else:
+                    messages.error(request, "Error with PayPal payment.")
+                    return redirect("app:checkout")
 
         # Proceed with Cash on Delivery payment method
         order = Order.objects.create(
@@ -586,6 +631,7 @@ def checkout(request):
             city=address.city,
             state=address.state,
             post_code=address.post_code,
+            wallet_deduction=wallet_deduction
         )
 
         for item in cart.cart_products.all():
@@ -620,14 +666,26 @@ def payment_complete(request):
         address_id = request.session.get("selected_address_id")
         address = get_object_or_404(Address, id=address_id)
         coupon_code = request.session.get("coupon_code")
-        coupon = None
+        wallet_deduction = request.session.get("wallet_deduction", 0)  # Default to 0 if not in session
+        wallet_deduction = Decimal(wallet_deduction)
+        wallet, created = Wallet.objects.get_or_create(user=user)
 
+        coupon = None
         if coupon_code:
             coupon = Coupon.objects.get(code=coupon_code)
-            total_price = cart.total_price - (cart.total_price * coupon.discount_percent / 100)
+            discount = cart.total_price * (coupon.discount_percent / 100)
+            total_price = cart.total_price - discount
         else:
             total_price = cart.total_price
 
+        # Apply wallet deduction
+        if wallet_deduction > 0:
+            total_price -= wallet_deduction
+            wallet.balance -= wallet_deduction
+            wallet.save()
+
+
+        # Create the order with all necessary details
         order = Order.objects.create(
             user=user,
             payment_method="ONLINE",
@@ -639,8 +697,10 @@ def payment_complete(request):
             city=address.city,
             state=address.state,
             post_code=address.post_code,
+            wallet_deduction=wallet_deduction
         )
 
+        # Save order items and clear the cart
         for item in cart.cart_products.all():
             item.is_checked_out = True
             item.save()
@@ -651,12 +711,18 @@ def payment_complete(request):
                 quantity=item.quantity,
             )
 
+        # Clear cart and session data
         cart.cart_products.all().delete()
+        del request.session['selected_address_id']
+        del request.session['coupon_code']
+        del request.session['wallet_deduction']
+
         messages.success(request, "Payment completed successfully! Your order has been placed.")
         return redirect("app:order_confirmation", order_id=order.id)
     else:
         messages.error(request, "Payment failed. Please try again.")
         return redirect("app:checkout")
+
 
 
 @login_required

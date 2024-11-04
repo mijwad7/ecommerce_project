@@ -464,6 +464,7 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     applied_coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
     original_total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    wallet_deduction = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     address_line_1 = models.TextField()
     address_line_2 = models.TextField(null=True, blank=True)

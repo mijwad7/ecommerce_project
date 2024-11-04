@@ -111,11 +111,21 @@
                     <td>{{ order.id }}</td>
                     <td>{{ order.created_at|date:"Y-m-d H:i:s" }}</td>
                     <td class="d-none d-md-block">{{ order.user }}</td>
-                    <td>₹{{ order.total_price|floatformat:2|intcomma }}</td>
+                    <td>
+                        ₹{{ order.total_price|floatformat:2|intcomma }}
+
+                            {% if order.wallet_deduction > 0 %}
+                            <small class="text-muted">
+                                - Wallet Deduction: ₹{{ order.wallet_deduction|floatformat:2|intcomma }}
+                            </small>
+                            {% endif %}
+                        
+                    </td>
                     <td class="d-none d-md-block">₹{{ order.discount_amount|floatformat:2|intcomma }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
+            
         </table>
     </div>
     {% else %}
