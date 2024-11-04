@@ -14,6 +14,8 @@ urlpatterns = [
     path("logout/", views.user_logout, name="user_logout"),
     path("products/", views.products, name="products"),
     path("verify-otp/", views.verify_otp, name="verify_otp"),
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+    path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
     path("products/<int:product_id>/", views.product_detail, name="product_detail"),
     path(
         "get-variant-details/<int:variant_id>/",

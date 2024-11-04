@@ -141,6 +141,12 @@ def index(request):
         },
     )
 
+def privacy_policy(request):
+    return render(request, "app/privacy.html")
+
+def terms_of_service(request):
+    return render(request, "app/terms.html")
+
 
 def products(request):
     query = request.GET.get("query")
