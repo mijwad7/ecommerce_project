@@ -494,6 +494,7 @@ def checkout(request):
         request.session['coupon_code'] = coupon_code
         use_wallet = request.POST.get("use_wallet", "off") == "on"
         wallet_deduction = 0
+        discount = 0
 
         coupon = None
 
@@ -510,7 +511,7 @@ def checkout(request):
                 total_price = cart.total_price - discount
         else:
             total_price = cart.total_price
-        
+
         if use_wallet:
             wallet_balance = wallet.balance
             if wallet_balance >= total_price:
