@@ -764,6 +764,9 @@ def generate_sales_report_pdf(request):
     else:
         start_date, end_date = calculate_date_range(date_filter)
 
+    display_start_date = start_date.strftime('%Y-%m-%d')
+    display_end_date = end_date.strftime('%Y-%m-%d')
+
     # Query filtered orders
     orders = Order.objects.filter(
         created_at__range=(start_date, end_date),
@@ -793,7 +796,7 @@ def generate_sales_report_pdf(request):
 
     # Draw PDF content
     p.drawString(100, height - 50, "Sales Report")
-    p.drawString(100, height - 80, f"Date Range: {start_date} to {end_date}")
+    p.drawString(100, height - 80, f"Date Range: {display_start_date} to {display_end_date}")
     p.drawString(100, height - 100, f"Total Orders: {orders.count()}")
     p.drawString(100, height - 120, f"Total Sales Amount: {orders.aggregate(total_sales=Sum('total_price'))['total_sales'] or 0:.2f}")
     p.drawString(100, height - 140, f"Total Discount Given: {total_discount:.2f}")
