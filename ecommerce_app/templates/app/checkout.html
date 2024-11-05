@@ -170,7 +170,7 @@
             const couponCode = $('#coupon_code').val();
 
             $.ajax({
-                url: "{% url 'app:apply_coupon' %}",  // Update to the correct URL for the coupon view
+                url: "{% url 'app:apply_coupon' %}",
                 type: "POST",
                 data: {
                     coupon_code: couponCode,
@@ -197,7 +197,7 @@
           e.preventDefault();
 
           $.ajax({
-              url: "{% url 'app:remove_coupon' %}",  // Update to the correct URL for the remove coupon view
+              url: "{% url 'app:remove_coupon' %}",
               type: "POST",
               data: {
                   csrfmiddlewaretoken: '{{ csrf_token }}'
@@ -221,17 +221,17 @@
   $(document).ready(function() {
       $('#use_wallet').change(function() {
           let cartTotal = {{ cart.total_price }};
-          let discount = 0; // Replace with your discount logic if applicable
+          let discount = 0;
           let walletBalance = {{ request.user.wallet.balance }};
           
           let totalPrice = cartTotal - discount;
   
           if (this.checked) {
               if (walletBalance >= totalPrice) {
-                  walletBalance -= totalPrice;  // Deduct total price from wallet balance
+                  walletBalance -= totalPrice;
                   totalPrice = 0;
               } else {
-                  totalPrice -= walletBalance;  // Deduct all wallet balance from total
+                  totalPrice -= walletBalance;
                   walletBalance = 0;
               }
           }
