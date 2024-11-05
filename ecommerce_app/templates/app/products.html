@@ -190,10 +190,10 @@
     ></script>
 <script>
     $(document).on('submit', '#add-to-wishlist-form', function (e) {
-        e.preventDefault(); // Prevent the form from submitting normally
+        e.preventDefault();
         
-        const url = $(this).data('url'); // URL from data-url attribute
-        const formData = $(this).serialize(); // Get all form data
+        const url = $(this).data('url');
+        const formData = $(this).serialize();
 
         $.ajax({
             type: 'POST',
@@ -202,11 +202,9 @@
             success: function (response) {
                 let messageContainer = $("#message-container");
 
-                  // Remove existing alerts
                   messageContainer.html("");
 
                   if (response.status === 'success') {
-                      // Show success message
                       messageContainer.append(`
                           <div class="alert alert-success alert-dismissible fade show" role="alert">
                               ${response.message}
@@ -216,7 +214,6 @@
                           </div>
                       `);
                   } else {
-                      // Show error message
                       messageContainer.append(`
                           <div class="alert alert-danger alert-dismissible fade show" role="alert">
                               ${response.message}

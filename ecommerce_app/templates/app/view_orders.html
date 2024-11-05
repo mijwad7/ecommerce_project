@@ -29,6 +29,10 @@
                     </div>
                     {% if order.order_status == 'CANCELLED' %}
                         <p class="text-muted">Cancelled on: {{ order.updated_at }}</p>
+                    {% elif order.order_status == 'DELIVERED' %}
+                    <p class="text-muted">Delivered on: {{ order.updated_at }}</p>
+                    {% elif order.order_status == 'SHIPPED' %}
+                    <p class="text-muted">Shipped on: {{ order.updated_at }}</p>
                     {% else %}
                     <div>
                         <a class="btn btn-outline-dark btn-sm me-2" href="{% url 'app:order_detail' order.id %}">
