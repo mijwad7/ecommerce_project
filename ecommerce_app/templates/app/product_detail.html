@@ -55,7 +55,15 @@
             <span class="badge bg-black text-light">{{ tag.name }}</span>
         {% endfor %}
       </div>
-    
+      {% if request.user.is_authenticated %}
+      <form method="post" class="form-inline" id="add-to-wishlist-form" data-url="{% url 'app:add_to_wishlist' %}">
+        {% csrf_token %}
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <button type="submit" class="btn btn-black">
+            <i class="bi bi-heart"></i> Add to Wishlist
+        </button>
+      </form>
+      {% endif %}
   
       {% if variants %}
       <p class="h5 mt-3"><i class="bi bi-card-list"></i> Variants:</p>
@@ -412,6 +420,47 @@
       updatePrice();
   });
 </script>
+<script>
+  $(document).on('submit', '#add-to-wishlist-form', function (e) {
+      e.preventDefault();
+      
+      const url = $(this).data('url');
+      const formData = $(this).serialize();
 
+      $.ajax({
+          type: 'POST',
+          url: url,
+          data: formData,
+          success: function (response) {
+              let messageContainer = $("#message-container");
+
+                messageContainer.html("");
+
+                if (response.status === 'success') {
+                    messageContainer.append(`
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            ${response.message}
+                            <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    `);
+                } else {
+                    messageContainer.append(`
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            ${response.message}
+                            <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    `);
+                }
+          },
+          error: function () {
+              alert('An error occurred while adding to wishlist.');
+          }
+      });
+  });
+</script>
 
 {% endblock %}
