@@ -500,12 +500,10 @@ class Wallet(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
 
     def add_funds(self, amount):
-        """Add funds to the wallet, e.g., on order cancellation refund."""
         self.balance += amount
         self.save()
 
     def deduct_funds(self, amount):
-        """Deduct funds if the user spends wallet balance."""
         if amount <= self.balance:
             self.balance -= amount
             self.save()

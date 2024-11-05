@@ -679,7 +679,7 @@ def delete_coupon(request, coupon_id):
 
 def calculate_date_range(date_filter):
     today = timezone.now()
-    
+
     if date_filter == 'daily':
         start_date = today - timedelta(days=1)
     elif date_filter == 'weekly':
@@ -789,7 +789,7 @@ def generate_sales_report_pdf(request):
     # Create the PDF response
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="sales_report.pdf"'
-    
+
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter

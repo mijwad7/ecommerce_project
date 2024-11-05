@@ -89,12 +89,10 @@
         </div>
       </div>
       
-    <!-- Right Column: Order Summary -->
     <div class="col-md-4">
       <div class="card p-4">
         <h4 class="mb-3">Order Summary</h4>
         
-        <!-- Coupon Code Section -->
         <div class="form-group row align-items-center mb-3">
           <label for="coupon_code" class="col-12">Enter Coupon Code:</label>
           <div class="col-12 mb-2">
@@ -107,7 +105,6 @@
         </div>
         <div id="coupon-message" class="text-success mb-3"></div>
         
-        <!-- Wallet Balance Section -->
         <p>Wallet Balance: <span id="wallet-balance">₹{{ request.user.wallet.balance|intcomma }}</span></p>
         <div class="form-check mb-3">
           <input type="checkbox" class="form-check-input" id="use_wallet" name="use_wallet">
@@ -142,19 +139,16 @@
         if (input) {
           input.checked = true;
           
-          // Find all cards within the same input group by checking the name attribute of the input
           const inputName = input.getAttribute("name");
           const groupCards = document.querySelectorAll(`input[name="${inputName}"]`);
           
           groupCards.forEach((groupInput) => {
-            // Remove the 'selected-card' class from all cards within the same group
             const parentCard = groupInput.closest('.js-select-card');
             if (parentCard) {
               parentCard.classList.remove("selected-card");
             }
           });
           
-          // Add the 'selected-card' class to the clicked card
           this.classList.add("selected-card");
         }
       });
@@ -180,6 +174,7 @@
                     if (response.status === "success") {
                         $('#total-price').text("₹" + parseFloat(response.new_total).toFixed(2).toLocaleString());
                         $('#coupon-message').html("<div class='alert alert-success'>Coupon applied successfully!</div>");
+                        $('#remove_coupon').prop('disabled', false);
                     } else {
                         $('#coupon-message').html("<div class='alert alert-danger'>" + response.message + "</div>");
                     }
@@ -206,6 +201,7 @@
                   if (response.status === "success") {
                       $('#total-price').text("₹" + parseFloat(response.new_total).toFixed(2).toLocaleString());
                       $('#coupon-message').html("<div class='alert alert-success'>" + response.message + "</div>");
+                      $('#remove_coupon').prop('disabled', true);
                   } else {
                       $('#coupon-message').html("<div class='alert alert-danger'>" + response.message + "</div>");
                   }

@@ -751,7 +751,6 @@ def remove_coupon(request):
 
         # Clear the applied coupon
         if coupon:
-            # Recalculate the total price (without discount)
             new_total = cart.total_price
 
             return JsonResponse({
