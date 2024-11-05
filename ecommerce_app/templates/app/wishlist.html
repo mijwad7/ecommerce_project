@@ -3,9 +3,11 @@
 
 {% block content %}
 <div class="container mt-4">
+  <div id="message-container"></div>
   <h2>Your Wishlist</h2>
 
   <div class="row">
+
     {% if products %}
       {% for product in products %}
       <div class="col-md-4 mb-4">
@@ -35,6 +37,19 @@
                 <span class="h5">₹{{ product.price|floatformat:2|intcomma }}</span>
               {% endif %}
             </p>
+            <form class="add-to-cart-form" data-url="{% url 'app:add_to_cart' product.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="variant_id" class="variant-id" value="">
+              <div class="d-flex align-items-center mb-3 justify-content-between">
+                <label class="me-2 fw-semibold"><i class="bi bi-cart-plus me-1"></i> Quantity:</label>
+                <input type="number" name="quantity" value="1" min="1" class="form-control form-control-sm w-auto text-center quantity" style="max-width: 70px;" />
+                <button type="submit" class="btn btn-black btn-sm ml-auto px-3">
+                  Add to Cart
+                </button>
+              </div>
+              
+          </form>
+          
             <a href="{% url 'app:remove_from_wishlist' product.id %}" class="btn btn-black">
               <i class="bi bi-trash"></i> Remove
             </a>
@@ -48,4 +63,74 @@
       {% endif %}
       <a class="btn btn-black" href="{% url 'app:products' %}">Continue Shopping</a>
 </div>
+{% endblock %}
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script>
+  $(document).ready(function () {
+      $(".add-to-cart-form").on("submit", function (e) {
+          e.preventDefault();
+
+          const form = $(this); // Current form
+          const url = form.data("url");
+          const quantity = form.find('.quantity').val();
+          const variantId = form.find('.variant-id').val();
+          const csrfToken = form.find("input[name='csrfmiddlewaretoken']").val();
+
+          $.ajax({
+              type: "POST",
+              url: url,
+              data: {
+                  quantity: quantity,
+                  variant_id: variantId,
+                  csrfmiddlewaretoken: csrfToken
+              },
+              success: function (response) {
+                  let messageContainer = $("#message-container");
+
+                  // Remove existing alerts
+                  messageContainer.html("");
+
+                  if (response.success) {
+                      // Show success message
+                      messageContainer.append(`
+                          <div class="alert alert-success alert-dismissible fade show" role="alert">
+                              ${response.message}
+                              <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                          </div>
+                      `);
+                  } else {
+                      // Show error message
+                      messageContainer.append(`
+                          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                              ${response.message}
+                              <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                          </div>
+                      `);
+                  }
+              },
+              error: function () {
+                  let messageContainer = $("#message-container");
+                  
+                  // Remove existing alerts
+                  messageContainer.html("");
+
+                  messageContainer.append(`
+                      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                          An error occurred. Please try again.
+                          <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                      </div>
+                  `);
+              }
+          });
+      });
+  });
+</script>
+
 {% endblock %}
