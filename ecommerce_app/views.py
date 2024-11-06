@@ -19,7 +19,8 @@ from .models import (
     Wishlist,
     Coupon,
     Wallet,
-    CategoryOffer
+    CategoryOffer,
+    ReturnRequest
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
@@ -36,7 +37,6 @@ from django.conf import settings
 from django.urls import reverse
 from currency_converter import CurrencyConverter
 from decimal import Decimal
-
 
 
 def user_signup(request):
@@ -715,7 +715,6 @@ def payment_complete(request):
         return redirect("app:checkout")
 
 
-
 @login_required
 def apply_coupon(request):
     if request.method == "POST":
@@ -894,3 +893,18 @@ def wishlist(request):
     products = wishlist.products.all()
 
     return render(request, 'app/wishlist.html', {'wishlist': wishlist, 'products': products})
+
+@login_required
+def return_request(request, order_item_id):
+    if request.method == 'POST':
+        order_item = get_object_or_404(OrderItem, id=order_item_id)
+        product = order_item.product
+        reason = request.POST.get('reason')
+        refund_amount = product.sale_price if product.is_on_sale else product.price
+        return_request = ReturnRequest.objects.create(
+            user=request.user,
+            order_item=order_item,
+            reason=reason,
+            refund_amount=refund_amount,
+        )
+        return redirect('order_details', order_item.order.id)
