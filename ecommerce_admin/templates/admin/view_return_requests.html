@@ -1,0 +1,29 @@
+{% extends './base.html' %}
+
+{% block content %}
+<h2>Return Requests</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Refund Amount</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for request in return_requests %}
+        <tr>
+            <td>{{ request.order_item.product.name }}</td>
+            <td>{{ request.refund_amount }}</td>
+            <td>{{ request.reason }}</td>
+            <td>{{ request.status }}</td>
+            <td>
+                <a href="{% url 'approve_request' request.id %}" class="btn btn-black">Approve</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+{% endblock %}

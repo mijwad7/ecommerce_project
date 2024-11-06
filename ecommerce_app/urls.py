@@ -84,4 +84,5 @@ urlpatterns = [
     path('wishlist/remove/<int:product_id>', views.remove_from_wishlist, name='remove_from_wishlist'),
     path('apply_coupon/', views.apply_coupon, name='apply_coupon'),
     path('remove_coupon/', views.remove_coupon, name='remove_coupon'),
+    path('return-request/<int:order_item_id>/', views.return_request, name='return_request'),
 ]

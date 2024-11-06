@@ -514,7 +514,8 @@ class Wallet(models.Model):
         return f"{self.user.username}'s Wallet - Balance: ₹{self.balance}"
 
 
-class ReturnRequest(models.Model):
+
+class ProductReturnRequest(models.Model):
     RETURN_STATUS_CHOICES = [
         ('PENDING', 'Pending'),
         ('APPROVED', 'Approved'),
@@ -524,9 +525,8 @@ class ReturnRequest(models.Model):
     order_item = models.ForeignKey(OrderItem, on_delete=models.CASCADE)
     reason = models.TextField()
     refund_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=20, choices=RETURN_STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=RETURN_STATUS_CHOICES, default='PENDING')
     requested_at = models.DateTimeField(auto_now_add=True)
-    processed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"Return Request for {self.product.name} by {self.user.username}"
+        return f"Return Request for {self.order_item.product.name} by {self.user.username}"

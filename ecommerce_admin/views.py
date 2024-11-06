@@ -12,7 +12,8 @@ from ecommerce_app.models import (
     Order,
     Tag,
     Coupon,
-    CategoryOffer
+    CategoryOffer,
+    ProductReturnRequest
 )
 from .forms import (
     UserProfileForm,
@@ -938,3 +939,16 @@ def delete_category_offer(request, offer_id):
     category_offer.delete()
     messages.success(request, "Category Offer deleted successfully.")
     return redirect('category_offers_list')
+
+def view_return_requests(request):
+    return_requests = ProductReturnRequest.objects.all()
+    return render(request, "admin/view_return_requests.html", {
+        "return_requests": return_requests
+    })
+
+def approve_request(request, request_id):
+    return_request = get_object_or_404(ProductReturnRequest, id=request_id)
+    return_request.status = 'APPROVED'
+    return_request.save()
+    messages.success(request, "Request approved successfully.")
+    return redirect('view_return_requests')
