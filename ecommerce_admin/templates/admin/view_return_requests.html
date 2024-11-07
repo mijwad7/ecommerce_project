@@ -1,5 +1,5 @@
 {% extends './base.html' %}
-
+{% load humanize %}
 {% block content %}
 <h2>Return Requests</h2>
 {% if not return_requests %} <p>No return requests found</p> {% endif %}
@@ -17,7 +17,7 @@
         {% for request in return_requests %}
         <tr>
             <td>{{ request.order_item.product.name }}</td>
-            <td>{{ request.refund_amount }}</td>
+            <td>₹{{ request.refund_amount|intcomma }}</td>
             <td>{{ request.reason }}</td>
             <td>{{ request.status }}</td>
             <td>
