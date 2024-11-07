@@ -950,5 +950,8 @@ def approve_request(request, request_id):
     return_request = get_object_or_404(ProductReturnRequest, id=request_id)
     return_request.status = 'APPROVED'
     return_request.save()
+    user = return_request.user
+    user.wallet.add_funds(return_request.refund_amount)
+    user.wallet.save()
     messages.success(request, "Request approved successfully.")
     return redirect('view_return_requests')
