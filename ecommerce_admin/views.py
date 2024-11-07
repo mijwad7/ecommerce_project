@@ -953,5 +953,5 @@ def approve_request(request, request_id):
     user = return_request.user
     user.wallet.add_funds(return_request.refund_amount)
     user.wallet.save()
-    messages.success(request, "Request approved successfully.")
+    messages.success(request, "Request approved successfully. Refund added to user's wallet.")
     return redirect('view_return_requests')
