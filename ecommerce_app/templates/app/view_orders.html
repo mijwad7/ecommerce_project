@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container my-5">
     <h1 class="mb-4">Order History</h1>
-
+    <a href="{% url 'app:return_request_list' %}" class="btn btn-black">Return Requests</a>
     {% for order in orders %}
         <div class="card mb-4 shadow-sm">
             <div class="card-body">

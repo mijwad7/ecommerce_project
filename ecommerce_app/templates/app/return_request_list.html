@@ -1,0 +1,44 @@
+{% extends './base.html' %}
+{% load humanize %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Your Return Requests</h2>
+    {% if not return_requests %}
+        <p>You have no return requests.</p>
+    {% else %}
+        <div class="row">
+            {% for request in return_requests %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-sm">
+                    <!-- Product Image -->
+                    <img 
+                        src="{{ request.order_item.product.images.first.image.url }}" 
+                        class="card-img-top" 
+                        alt="{{ request.order_item.product.name }}" 
+                        style="object-fit: contain; height: 200px; width: 100%;"
+                    />
+                    <div class="card-body">
+                        <h5 class="card-title">{{ request.order_item.product.name }}</h5>
+                        <p class="card-text">
+                            <strong>Order Id:</strong> {{ request.order_item.order.id }}<br>
+                            <strong>Quantity:</strong> {{  request.order_item.quantity }}<br>
+                            <strong>Refund Amount:</strong> ₹{{ request.refund_amount|floatformat:2|intcomma }}<br>
+                            <strong>Reason:</strong> {{ request.reason }}<br>
+                            <strong>Requested At:</strong> {{ request.requested_at|date:"d M Y, H:i" }}<br>
+                            <strong>Status:</strong> 
+                            {% if request.status == 'PENDING' %}
+                                <span class="badge bg-warning text-dark">{{ request.status }}</span>
+                            {% elif request.status == 'APPROVED' %}
+                                <span class="badge bg-success">{{ request.status }}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ request.status }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

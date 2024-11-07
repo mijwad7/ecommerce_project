@@ -920,3 +920,8 @@ def return_request(request, order_item_id):
     # In case the view is accessed via GET, redirect to the order details
     return redirect('app:order_detail', order_id=order_item.order.id)
 
+
+@login_required
+def return_request_list(request):
+    return_requests = ProductReturnRequest.objects.filter(user=request.user)
+    return render(request, 'app/return_request_list.html', {'return_requests': return_requests})

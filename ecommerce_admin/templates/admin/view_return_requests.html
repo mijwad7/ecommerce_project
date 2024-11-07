@@ -2,7 +2,7 @@
 
 {% block content %}
 <h2>Return Requests</h2>
-
+{% if not return_requests %} <p>No return requests found</p> {% endif %}
 <table class="table">
     <thead>
         <tr>
