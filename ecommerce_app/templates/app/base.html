@@ -22,8 +22,8 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg {% block navbar_class %}navbar-light bg-light{% endblock %} pl-5">
-        <div class="container-fluid">
+    <nav class="navbar navbar-expand-lg {% block navbar_class %}navbar-light bg-light{% endblock %}">
+        <div class="container">
           <a class="navbar-brand mr-4" href="{% url 'app:index' %}">ShopHive</a>
           <button
               class="navbar-toggler"

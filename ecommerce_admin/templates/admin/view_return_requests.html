@@ -7,6 +7,7 @@
     <thead>
         <tr>
             <th>Product</th>
+            <th>Order ID</th>
             <th>Refund Amount</th>
             <th>Reason</th>
             <th>Status</th>
@@ -16,7 +17,8 @@
     <tbody>
         {% for request in return_requests %}
         <tr>
-            <td>{{ request.order_item.product.name }}</td>
+            <td><a class="text-dark font-weight-bold" href="{% url 'product_detail' request.order_item.product.id %}">{{ request.order_item.product.name }}</a></td>
+            <td>{{ request.order_item.order.id }}</td>
             <td>₹{{ request.refund_amount|intcomma }}</td>
             <td>{{ request.reason }}</td>
             <td>{{ request.status }}</td>
