@@ -39,12 +39,13 @@
             <div class="mt-auto">
               <p>Quantity: {{ item.quantity }}</p>
               <p>Total: ₹{{ item.price|floatformat:2|intcomma }}</p>
+              {% if order.order_status == 'DELIVERED' %}
               <form action="{% url 'app:return_request' item.id %}" method="post">
                 {% csrf_token %}
                 <textarea name="reason" class="form-control" placeholder="Enter return reason" required></textarea>
                 <button type="submit" class="btn btn-sm btn-danger mt-2">Return</button>
-            </form>
-            
+              </form>
+              {% endif %}
             </div>
           </div>
         </div>
