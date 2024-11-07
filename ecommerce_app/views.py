@@ -895,29 +895,38 @@ def wishlist(request):
     return render(request, 'app/wishlist.html', {'wishlist': wishlist, 'products': products})
 
 
+
+
 @login_required
 def return_request(request, order_item_id):
     order_item = get_object_or_404(OrderItem, id=order_item_id)
+    
     if request.method == 'POST':
+        order = order_item.order
         product = order_item.product
         reason = request.POST.get('reason')
-        refund_amount = product.sale_price if product.is_on_sale else product.price
-        
-        # Create the return request
+
+        # Calculate refund amount based on any order discount
+        if order.original_total_price and order.original_total_price > 0:
+            discount_ratio = order.total_price / order.original_total_price
+        else:
+            discount_ratio = Decimal(1)  # No discount
+
+        # Adjust the item's price with the discount ratio
+        item_price_after_discount = order_item.price * discount_ratio
+        refund_amount = item_price_after_discount * order_item.quantity
+
         ProductReturnRequest.objects.create(
             user=request.user,
             order_item=order_item,
             reason=reason,
-            refund_amount=refund_amount
+            refund_amount=refund_amount,
         )
-        
-        # Add success message
+
         messages.success(request, "Your return request has been submitted.")
-        
-        # Redirect to order details page or the user's order history
+
         return redirect('app:order_detail', order_id=order_item.order.id)
 
-    # In case the view is accessed via GET, redirect to the order details
     return redirect('app:order_detail', order_id=order_item.order.id)
 
 
