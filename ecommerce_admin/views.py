@@ -958,3 +958,13 @@ def approve_request(request, request_id):
     user.wallet.save()
     messages.success(request, "Request approved successfully. Refund added to user's wallet.")
     return redirect('view_return_requests')
+
+def reject_request(request, request_id):
+    return_request = get_object_or_404(ProductReturnRequest, id=request_id)
+    if return_request.status == 'REJECTED':
+        messages.error(request, "Request has already been rejected.")
+        return redirect('view_return_requests')
+    return_request.status = 'REJECTED'
+    return_request.save()
+    messages.success(request, "Request rejected successfully.")
+    return redirect('view_return_requests')

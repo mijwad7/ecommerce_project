@@ -52,4 +52,5 @@ urlpatterns = [
     path('offers/categories/delete/<int:offer_id>/', views.delete_category_offer, name='delete_category_offer'),
     path('return-requests/', views.view_return_requests, name='view_return_requests'),
     path('approve-request/<int:request_id>/', views.approve_request, name='approve_request'),
+    path('reject-request/<int:request_id>/', views.reject_request, name='reject_request'),
 ]
