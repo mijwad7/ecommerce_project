@@ -41,7 +41,7 @@
               <p>Total: ₹{{ item.price|floatformat:2|intcomma }}</p>
               {% if order.order_status == 'DELIVERED' %}
               <!-- Button to trigger modal -->
-              <button type="button" class="btn btn-sm btn-danger mt-2" 
+              <button type="button" class="btn btn-black"
                       data-bs-toggle="modal" data-bs-target="#returnModal" 
                       data-item-url="{% url 'app:return_request' item.id %}">
                 Return
@@ -99,7 +99,6 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="returnModalLabel">Return Item</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="post">
         {% csrf_token %}

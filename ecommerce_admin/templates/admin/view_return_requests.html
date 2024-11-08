@@ -22,9 +22,14 @@
             <td>₹{{ request.refund_amount|intcomma }}</td>
             <td>{{ request.reason }}</td>
             <td>{{ request.status }}</td>
+            {% if request.status == 'PENDING' %}
             <td>
                 <a href="{% url 'approve_request' request.id %}" class="btn btn-black">Approve</a>
+                <a href="#" class="btn btn-black">Reject</a>
             </td>
+            {% else %}
+            <td>No actions available</td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>

@@ -948,6 +948,9 @@ def view_return_requests(request):
 
 def approve_request(request, request_id):
     return_request = get_object_or_404(ProductReturnRequest, id=request_id)
+    if return_request.status == 'APPROVED':
+        messages.error(request, "Request has already been approved.")
+        return redirect('view_return_requests')
     return_request.status = 'APPROVED'
     return_request.save()
     user = return_request.user
