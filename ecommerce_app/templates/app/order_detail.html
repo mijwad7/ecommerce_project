@@ -39,13 +39,15 @@
             <div class="mt-auto">
               <p>Quantity: {{ item.quantity }}</p>
               <p>Total: ₹{{ item.price|floatformat:2|intcomma }}</p>
-              {% if order.order_status == 'DELIVERED' %}
-              <!-- Button to trigger modal -->
-              <button type="button" class="btn btn-black"
-                      data-bs-toggle="modal" data-bs-target="#returnModal" 
-                      data-item-url="{% url 'app:return_request' item.id %}">
-                Return
-              </button>
+              {% if order.order_status == 'DELIVERED' and item.id not in existing_requests %}
+                <!-- Button to trigger modal -->
+                <button type="button" class="btn btn-black"
+                        data-bs-toggle="modal" data-bs-target="#returnModal" 
+                        data-item-url="{% url 'app:return_request' item.id %}">
+                  Return
+                </button>
+              {% else %}
+                <p><em>Return request already submitted</em></p>
               {% endif %}
             </div>
           </div>

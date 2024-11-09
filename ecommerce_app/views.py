@@ -782,7 +782,9 @@ def order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     items = order.items.all()
 
-    return render(request, "app/order_detail.html", {"order": order, "items": items})
+    existing_requests = ProductReturnRequest.objects.filter(order_item__in=items).values_list('order_item_id', flat=True)
+
+    return render(request, "app/order_detail.html", {"order": order, "items": items, "existing_requests": existing_requests})
 
 
 @login_required
