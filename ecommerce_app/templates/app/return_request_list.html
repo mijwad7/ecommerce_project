@@ -27,11 +27,14 @@
                             <strong>Requested At:</strong> {{ request.requested_at|date:"d M Y, H:i" }}<br>
                             <strong>Status:</strong> 
                             {% if request.status == 'PENDING' %}
-                                <span class="badge bg-warning text-dark">{{ request.status }}</span>
+                                <span class="badge bg-warning text-dark">{{ request.status }}</span> <br>
                             {% elif request.status == 'APPROVED' %}
-                                <span class="badge bg-success">{{ request.status }}</span>
+                                <span class="badge bg-success">{{ request.status }}</span> <br>
                             {% else %}
-                                <span class="badge bg-danger">{{ request.status }}</span>
+                                <span class="badge bg-danger">{{ request.status }}</span> <br>
+                            {% endif %}
+                            {% if request.message %}
+                            <strong>Message:</strong> {{ request.message }}
                             {% endif %}
                         </p>
                     </div>

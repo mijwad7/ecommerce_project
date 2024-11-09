@@ -951,6 +951,9 @@ def approve_request(request, request_id):
     if return_request.status == 'APPROVED':
         messages.error(request, "Request has already been approved.")
         return redirect('view_return_requests')
+    message = request.POST.get('return-message')
+    if message:
+        return_request.message = message
     return_request.status = 'APPROVED'
     return_request.save()
     user = return_request.user
@@ -964,6 +967,9 @@ def reject_request(request, request_id):
     if return_request.status == 'REJECTED':
         messages.error(request, "Request has already been rejected.")
         return redirect('view_return_requests')
+    message = request.POST.get('return-message')
+    if message:
+        return_request.message = message
     return_request.status = 'REJECTED'
     return_request.save()
     messages.success(request, "Request rejected successfully.")

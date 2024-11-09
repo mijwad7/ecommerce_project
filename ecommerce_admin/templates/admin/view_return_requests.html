@@ -24,13 +24,67 @@
             <td>{{ request.status }}</td>
             {% if request.status == 'PENDING' %}
             <td>
-                <a href="{% url 'approve_request' request.id %}" class="btn btn-black">Approve</a>
-                <a href="{% url 'reject_request' request.id %}" class="btn btn-black">Reject</a>
+                <!-- Approve Button Trigger Modal -->
+                <button type="button" class="btn btn-black" data-bs-toggle="modal" data-bs-target="#approveModal{{ request.id }}">
+                    Approve
+                </button>
+                
+                <!-- Reject Button Trigger Modal -->
+                <button type="button" class="btn btn-black" data-bs-toggle="modal" data-bs-target="#rejectModal{{ request.id }}">
+                    Reject
+                </button>
             </td>
             {% else %}
             <td>No actions available</td>
             {% endif %}
         </tr>
+
+        <!-- Approve Modal -->
+        <div class="modal fade" id="approveModal{{ request.id }}" tabindex="-1" aria-labelledby="approveModalLabel{{ request.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="POST" action="{% url 'approve_request' request.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="approveModalLabel{{ request.id }}">Approve Return Request</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <label for="approve-message-{{ request.id }}">Optional Message:</label>
+                            <textarea name="return-message" id="approve-message-{{ request.id }}" class="form-control" rows="3" placeholder="Add a message (optional)"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-black">Confirm Approval</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reject Modal -->
+        <div class="modal fade" id="rejectModal{{ request.id }}" tabindex="-1" aria-labelledby="rejectModalLabel{{ request.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="POST" action="{% url 'reject_request' request.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="rejectModalLabel{{ request.id }}">Reject Return Request</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <label for="reject-message-{{ request.id }}">Optional Message:</label>
+                            <textarea name="return-message" id="reject-message-{{ request.id }}" class="form-control" rows="3" placeholder="Add a message (optional)"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-black">Confirm Rejection</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         {% endfor %}
     </tbody>
+</table>
 {% endblock %}
