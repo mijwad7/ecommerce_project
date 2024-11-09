@@ -1,42 +1,51 @@
 {% extends './base.html' %}
 {% load humanize %}
 {% block content %}
-<div class="container mt-4">
-    <h2>Your Return Requests</h2>
+<div class="container my-4">
+    <h2 class="mb-4">Your Return Requests</h2>
     {% if not return_requests %}
-        <p>You have no return requests.</p>
+        <p class="text-muted">You have no return requests.</p>
     {% else %}
-        <div class="row">
+        <div class="row g-3">
             {% for request in return_requests %}
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card shadow-sm">
-                    <!-- Product Image -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm mb-3">
+                    <a href="{% url 'app:product_detail' request.order_item.product.id %}">
                     <img 
                         src="{{ request.order_item.product.images.first.image.url }}" 
                         class="card-img-top" 
                         alt="{{ request.order_item.product.name }}" 
-                        style="object-fit: contain; height: 200px; width: 100%;"
+                        style="object-fit: contain; height: 200px; width: 100%; border-radius: 0.5rem 0.5rem 0 0;"
                     />
+                    </a>
+                    <!-- Card Body with Product and Request Details -->
                     <div class="card-body">
-                        <h5 class="card-title">{{ request.order_item.product.name }}</h5>
-                        <p class="card-text">
-                            <strong>Order Id:</strong> {{ request.order_item.order.id }}<br>
-                            <strong>Quantity:</strong> {{  request.order_item.quantity }}<br>
-                            <strong>Refund Amount:</strong> ₹{{ request.refund_amount|floatformat:2|intcomma }}<br>
-                            <strong>Reason:</strong> {{ request.reason }}<br>
-                            <strong>Requested At:</strong> {{ request.requested_at|date:"d M Y, H:i" }}<br>
-                            <strong>Status:</strong> 
-                            {% if request.status == 'PENDING' %}
-                                <span class="badge bg-warning text-dark">{{ request.status }}</span> <br>
-                            {% elif request.status == 'APPROVED' %}
-                                <span class="badge bg-success">{{ request.status }}</span> <br>
-                            {% else %}
-                                <span class="badge bg-danger">{{ request.status }}</span> <br>
-                            {% endif %}
+                        <h5 class="card-title fw-bold">{{ request.order_item.product.name }}</h5>
+                        <p class="text-muted small mb-2">{{ request.order_item.product.category.name }}</p>
+                        
+                        <!-- Order and Refund Details -->
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Order ID:</strong> {{ request.order_item.order.id }}</p>
+                            <p class="mb-1"><strong>Quantity:</strong> {{ request.order_item.quantity }}</p>
+                            <p class="mb-1"><strong>Refund Amount:</strong> ₹{{ request.refund_amount|floatformat:2|intcomma }}</p>
+                            <p class="mb-1"><strong>Requested At:</strong> {{ request.requested_at|date:"d M Y, H:i" }}</p>
+                        </div>
+
+                        <!-- Status and Message Section -->
+                        <div class="border-top pt-3">
+                            <p class="mb-1"><strong>Status:</strong> 
+                                {% if request.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> {{ request.status }}</span>
+                                {% elif request.status == 'APPROVED' %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> {{ request.status }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle"></i> {{ request.status }}</span>
+                                {% endif %}
+                            </p>
                             {% if request.message %}
-                            <strong>Message:</strong> {{ request.message }}
+                                <p class="mb-0"><strong>Admin Message:</strong> {{ request.message }}</p>
                             {% endif %}
-                        </p>
+                        </div>
                     </div>
                 </div>
             </div>
