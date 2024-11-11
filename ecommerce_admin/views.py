@@ -640,7 +640,7 @@ def delete_tag(request, tag_id):
 @login_required
 @superuser_required
 def coupon_list(request):
-    coupons = Coupon.objects.all()
+    coupons = Coupon.objects.all().order_by('-id')
     return render(request, 'admin/coupons_list.html', {'coupons': coupons})
 
 @login_required
@@ -892,19 +892,19 @@ def generate_sales_report_excel(request):
 @login_required
 @superuser_required
 def offers_list(request):
-    products = Product.objects.filter(is_on_sale=True)
+    products = Product.objects.filter(is_on_sale=True).order_by('-id')
     return render(request, "admin/product_offers_list.html", {"products": products})
 
 @login_required
 @superuser_required
 def product_offers_list(request):
-    products = Product.objects.filter(is_on_sale=True)
+    products = Product.objects.filter(is_on_sale=True).order_by('-id')
     return render(request, "admin/product_offers_list.html", {"products": products})
 
 @login_required
 @superuser_required
 def category_offers_list(request):
-    category_offers = CategoryOffer.objects.all()
+    category_offers = CategoryOffer.objects.all().order_by('-id')
     return render(request, "admin/category_offers_list.html", {"category_offers": category_offers})
 
 @login_required
@@ -947,7 +947,7 @@ def delete_category_offer(request, offer_id):
     return redirect('category_offers_list')
 
 def view_return_requests(request):
-    return_requests = ProductReturnRequest.objects.all()
+    return_requests = ProductReturnRequest.objects.all().order_by('-id')
     return render(request, "admin/view_return_requests.html", {
         "return_requests": return_requests
     })
