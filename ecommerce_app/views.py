@@ -935,7 +935,7 @@ def return_request(request, order_item_id):
 
 @login_required
 def return_request_list(request):
-    return_requests = ProductReturnRequest.objects.filter(user=request.user)
+    return_requests = ProductReturnRequest.objects.filter(user=request.user).order_by('-requested_at')
     return render(request, 'app/return_request_list.html', {'return_requests': return_requests})
 
 @login_required
@@ -943,3 +943,10 @@ def user_notifications(request):
     user = request.user
     notifications = Notification.objects.filter(user=user, is_read=False).values('id', 'message', 'created_at', 'action_url')
     return JsonResponse(list(notifications), safe=False)
+
+@login_required
+def mark_notification_as_read(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id)
+    notification.is_read = True
+    notification.save()
+    return JsonResponse({'success': True})

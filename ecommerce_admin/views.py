@@ -962,6 +962,11 @@ def approve_request(request, request_id):
         return_request.message = message
     return_request.status = 'APPROVED'
     return_request.save()
+    Notification.objects.create(
+        user=return_request.user,
+        message=f"Your return request for order #{return_request.order_item.order.id} has been approved.",
+        action_url="/return-request-list",
+    )
     user = return_request.user
     user.wallet.add_funds(return_request.refund_amount)
     user.wallet.save()
@@ -978,5 +983,10 @@ def reject_request(request, request_id):
         return_request.message = message
     return_request.status = 'REJECTED'
     return_request.save()
+    Notification.objects.create(
+        user=return_request.user,
+        message=f"Your return request for order #{return_request.order_item.order.id} has been rejected.",
+        action_url="/return-request-list",
+    )
     messages.success(request, "Request rejected successfully.")
     return redirect('view_return_requests')
