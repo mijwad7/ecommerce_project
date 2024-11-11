@@ -11,6 +11,7 @@ from .models import (
     ProductVariant,
     Cart,
     CartProduct,
+    Notification,
     Address,
     Brand,
     Order,
@@ -936,3 +937,9 @@ def return_request(request, order_item_id):
 def return_request_list(request):
     return_requests = ProductReturnRequest.objects.filter(user=request.user)
     return render(request, 'app/return_request_list.html', {'return_requests': return_requests})
+
+@login_required
+def user_notifications(request):
+    user = request.user
+    notifications = Notification.objects.filter(user=user, is_read=False).values('id', 'message', 'created_at', 'action_url')
+    return JsonResponse(list(notifications), safe=False)

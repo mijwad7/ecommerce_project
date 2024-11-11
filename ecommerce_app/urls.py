@@ -86,4 +86,5 @@ urlpatterns = [
     path('remove_coupon/', views.remove_coupon, name='remove_coupon'),
     path('return-request/<int:order_item_id>/', views.return_request, name='return_request'),
     path('return-request-list', views.return_request_list, name='return_request_list'),
+    path('notifications/', views.user_notifications, name='notifications'),
 ]

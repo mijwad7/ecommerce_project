@@ -531,3 +531,13 @@ class ProductReturnRequest(models.Model):
 
     def __str__(self):
         return f"Return Request for {self.order_item.product.name} by {self.user.username}"
+    
+class Notification(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+    action_url = models.URLField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Notification for {self.user.username}"

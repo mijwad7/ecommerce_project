@@ -13,7 +13,8 @@ from ecommerce_app.models import (
     Tag,
     Coupon,
     CategoryOffer,
-    ProductReturnRequest
+    ProductReturnRequest,
+    Notification
 )
 from .forms import (
     UserProfileForm,
@@ -559,13 +560,18 @@ def cancel_order(request, order_id):
 @login_required
 @superuser_required
 def change_order_status(request, order_id):
-    order = get_object_or_404(Order, id=order_id)  # Remove user restriction
+    order = get_object_or_404(Order, id=order_id)
     new_status = request.POST.get(
         "status"
-    )  # Ensure you retrieve the correct field name
-    if new_status in dict(Order.ORDER_STATUS_CHOICES):  # Validate against choices
+    )
+    if new_status in dict(Order.ORDER_STATUS_CHOICES):
         order.order_status = new_status
         order.save()
+        Notification.objects.create(
+            user=order.user,
+            message=f"Your order status for order #{order.id} has been changed to {order.order_status}",
+            action_url=f"/order/{order.id}",
+        )
         messages.success(request, "Order status changed successfully!")
     else:
         messages.error(request, "Invalid status selected.")

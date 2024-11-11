@@ -1,0 +1,17 @@
+{% extends "./base.html" %}
+{% block content %}
+<div class="container">
+    <h4>Your Notifications</h4>
+    <ul>
+      {% for notification in notifications %}
+      <li>
+        <div>
+          <p>{{ notification.message }}</p>
+          <p><a href="{{ notification.action_url }}">View</a></p>
+          <small>{{ notification.created_at|date:"d M Y, H:i" }}</small>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}
