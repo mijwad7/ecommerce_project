@@ -499,6 +499,7 @@ def checkout(request):
 
         coupon = None
 
+        # Step 1: Check for coupon validity and calculate discount
         if coupon_code:
             coupon = Coupon.objects.filter(code=coupon_code, is_active=True).first()
             if not coupon or coupon.start_date > timezone.now() or coupon.end_date < timezone.now():
@@ -509,20 +510,24 @@ def checkout(request):
                 coupon = None
             else:
                 discount = cart.total_price * (coupon.discount_percent / 100)
-                total_price = cart.total_price - discount
-        else:
-            total_price = cart.total_price
 
+        # Calculate the discounted total after applying the coupon
+        discounted_total = cart.total_price - discount
+
+        # Step 2: Apply wallet deduction if opted
         if use_wallet:
             wallet_balance = wallet.balance
-            if wallet_balance >= total_price:
-                wallet_deduction = cart.total_price
-                total_price = 0
+            if wallet_balance >= discounted_total:
+                wallet_deduction = discounted_total
+                discounted_total = 0
                 wallet.balance -= wallet_deduction
             else:
                 wallet_deduction = wallet_balance
-                total_price -= wallet_deduction
+                discounted_total -= wallet_deduction
                 wallet.balance = 0
+
+        # Final amount to be paid
+        total_price = discounted_total
 
 
         usd_amount = round(c.convert(total_price, 'INR', 'USD'), 2)
@@ -733,7 +738,7 @@ def apply_coupon(request):
             new_total = cart.total_price - discount
 
             request.session["coupon_code_to_remove"] = coupon.code
-            return JsonResponse({"status": "success", "new_total": new_total})
+            return JsonResponse({"status": "success", "new_total": new_total, "discount": discount})
 
         return JsonResponse({"status": "error", "message": "Invalid or expired coupon."})
 

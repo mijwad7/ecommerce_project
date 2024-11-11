@@ -162,39 +162,43 @@
 </script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script>
-    $(document).ready(function() {
-        $('#apply_coupon').click(function(e) {
-            e.preventDefault();
-            const couponCode = $('#coupon_code').val();
-
-            $.ajax({
-                url: "{% url 'app:apply_coupon' %}",
-                type: "POST",
-                data: {
-                    coupon_code: couponCode,
-                    csrfmiddlewaretoken: '{{ csrf_token }}'
-                },
-                success: function(response) {
-                    if (response.status === "success") {
-                        $('#total-price').text("₹" + parseFloat(response.new_total).toFixed(2).toLocaleString());
-                        $('#coupon-message').html("<div class='alert alert-success'>Coupon applied successfully!</div>");
-                        $('#remove_coupon').prop('disabled', false);
-                    } else {
-                        $('#coupon-message').html("<div class='alert alert-danger'>" + response.message + "</div>");
-                    }
-                },
-                error: function() {
-                    $('#coupon-message').html("<div class='alert alert-danger'>An error occurred. Please try again.</div>");
-                }
-            });
-        });
-    });
-</script>
-<script>
   $(document).ready(function() {
+      const initialCartTotal = {{ cart.total_price }};
+      let discount = 0;
+      let walletBalance = {{ request.user.wallet.balance }};
+      
+      // Apply coupon functionality
+      $('#apply_coupon').click(function(e) {
+          e.preventDefault();
+          const couponCode = $('#coupon_code').val();
+          
+          $.ajax({
+              url: "{% url 'app:apply_coupon' %}",
+              type: "POST",
+              data: {
+                  coupon_code: couponCode,
+                  csrfmiddlewaretoken: '{{ csrf_token }}'
+              },
+              success: function(response) {
+                  if (response.status === "success") {
+                      discount = response.discount;
+                      updateTotal();
+                      $('#coupon-message').html("<div class='alert alert-success'>Coupon applied successfully!</div>");
+                      $('#remove_coupon').prop('disabled', false);
+                  } else {
+                      $('#coupon-message').html("<div class='alert alert-danger'>" + response.message + "</div>");
+                  }
+              },
+              error: function() {
+                  $('#coupon-message').html("<div class='alert alert-danger'>An error occurred. Please try again.</div>");
+              }
+          });
+      });
+
+      // Remove coupon functionality
       $('#remove_coupon').click(function(e) {
           e.preventDefault();
-
+          
           $.ajax({
               url: "{% url 'app:remove_coupon' %}",
               type: "POST",
@@ -203,7 +207,8 @@
               },
               success: function(response) {
                   if (response.status === "success") {
-                      $('#total-price').text("₹" + parseFloat(response.new_total).toFixed(2).toLocaleString());
+                      discount = 0;
+                      updateTotal();
                       $('#coupon-message').html("<div class='alert alert-success'>" + response.message + "</div>");
                       $('#remove_coupon').prop('disabled', true);
                   } else {
@@ -215,31 +220,33 @@
               }
           });
       });
-  });
-</script>
-<script>
-  $(document).ready(function() {
+
+      // Wallet deduction functionality
       $('#use_wallet').change(function() {
-          let cartTotal = {{ cart.total_price }};
-          let discount = 0;
-          let walletBalance = {{ request.user.wallet.balance }};
+          updateTotal();
+      });
+
+      // Function to update the total amount after applying coupon and wallet deduction
+      function updateTotal() {
+          let totalPrice = initialCartTotal - discount;
+          let updatedWalletBalance = walletBalance;
           
-          let totalPrice = cartTotal - discount;
-  
-          if (this.checked) {
-              if (walletBalance >= totalPrice) {
-                  walletBalance -= totalPrice;
+          if ($('#use_wallet').is(':checked')) {
+              if (updatedWalletBalance >= totalPrice) {
+                  updatedWalletBalance -= totalPrice;
                   totalPrice = 0;
               } else {
-                  totalPrice -= walletBalance;
-                  walletBalance = 0;
+                  totalPrice -= updatedWalletBalance;
+                  updatedWalletBalance = 0;
               }
           }
-  
+
+          // Update displayed values for total and wallet balance
           $('#total-price').text('₹' + totalPrice.toLocaleString());
-          $('#wallet-balance').text('₹' + walletBalance.toLocaleString());
-      });
+          $('#wallet-balance').text('₹' + updatedWalletBalance.toLocaleString());
+      }
   });
-  </script>
+</script>
+
 
 {% endblock %}
