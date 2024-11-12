@@ -237,9 +237,24 @@ def product_detail(request, product_id):
         is_active=True
     )
 
-    related_products = Product.objects.filter(category=product.category).exclude(
-        id=product.id
-    )[:4]
+    related_products = Product.objects.filter(
+        tags__in=product.tags.all()
+    ).exclude(id=product.id).distinct()[:4]
+
+    if related_products.count() < 4:
+        additional_needed = 4 - related_products.count()
+        additional_products = Product.objects.filter(
+            category=product.category
+        ).exclude(
+            id__in=related_products.values_list('id', flat=True)
+        ).exclude(
+            id=product.id
+        )[:additional_needed]
+
+        related_products = list(related_products) + list(additional_products)
+
+
+
 
     variants = ProductVariant.objects.filter(product=product)
 

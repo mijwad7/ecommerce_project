@@ -71,7 +71,6 @@ body {
 .banner {
   background-color: black;
   color: white;
-  height: 95vh;
 }
 .category-link:hover {
     background-color: rgba(255, 255, 255, 0.1); /* Slight background change on hover */

@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container-fluid banner py-5 px-4">
   <div class="row align-items-center">
-    <div class="col-md-4 text-md-start mb-4 ml-md-5 mb-md-0">
+    <div class="col-md-4 text-md-start pb-5 mb-4 ml-md-5 mb-md-0">
       <h1 class="display-3 font-weight-bold">Welcome to ShopHive</h1>
       <p class="h4 mb-4 text-secondary">Your one-stop shop for all your needs.</p>
       <p class="lead">
@@ -15,7 +15,7 @@
       </p>
       <a href="{% url 'app:products' %}" class="btn btn-black border-white btn-lg px-4 py-2 shadow">Shop Now</a>
     </div>
-    <div class="col-md-7">
+    <div class="col-md-7 d-md-block d-none">
       <img
         src="{% static 'img/banner.jpg' %}"
         alt="Banner Image"
@@ -25,7 +25,7 @@
   </div>
   
   <!-- Categories Section -->
-  <div class="d-none d-md-flex row mt-5 text-center">
+  <div class="d-none d-md-flex row mt-5 mb-5 text-center">
     <div class="col-6 col-md">
       <a href="http://127.0.0.1:8000/products/?query=&category=Electronics" class="category-link text-white h5 p-3 rounded border border-light">Electronics</a>
     </div>
