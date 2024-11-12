@@ -5,7 +5,6 @@
     <h2 class="text-center mb-4">Sales Report</h2>
 
     <form method="GET" class="form mb-4 p-3 bg-white shadow rounded">
-        <!-- Radio buttons to select filter type -->
         <div class="mb-3 d-flex justify-content-center">
             <div class="form-check form-check-inline">
                 <input class="form-check-input" type="radio" name="filter_type" id="filter_predefined" value="predefined" checked>
@@ -17,7 +16,6 @@
             </div>
         </div>
 
-        <!-- Predefined Date Filter Dropdown -->
         <div id="predefined_filters" class="form-group mb-3">
             <label for="date_filter" class="font-weight-bold text-secondary">Filter by:</label>
             <select name="date_filter" id="date_filter" class="form-control border-secondary">
@@ -28,7 +26,6 @@
             </select>
         </div>
 
-        <!-- Custom Date Range Inputs -->
         <div id="custom_date_range" class="form-group mb-3" style="display: none;">
             <label class="font-weight-bold text-secondary">Date Range:</label>
             <div class="d-flex">
@@ -39,13 +36,11 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-                <!-- Filter and generate buttons -->
                 <button type="button" id="clear_filters" class="btn btn-outline-dark mr-2">Clear Filters</button>
                 <button type="submit" class="btn btn-black">Generate Report</button>
             </div>
         
             <div>
-                <!-- Export options -->
                 <a href="{% url 'generate_sales_report_pdf' %}?filter_type={{ request.GET.filter_type }}&date_filter={{ request.GET.date_filter }}&date_from={{ request.GET.date_from }}&date_to={{ request.GET.date_to }}" 
                    class="btn btn-outline-danger ml-2">Export as PDF</a>
                 <a href="{% url 'generate_sales_report_excel' %}?filter_type={{ request.GET.filter_type }}&date_filter={{ request.GET.date_filter }}&date_from={{ request.GET.date_from }}&date_to={{ request.GET.date_to }}" 
@@ -55,31 +50,48 @@
         
     </form>
 
-    <!-- Report Summary -->
     <div class="bg-white p-4 shadow rounded mt-4">
         <h4 class="text-secondary text-center font-weight-bold mb-4">📊 Sales Report Summary</h4>
         
-        <div class="d-flex justify-content-around text-center">
+        <div class="row text-center">
             <!-- Total Orders -->
-            <div class="p-3">
-                <span class="badge badge-pill badge-primary display-4">{{ total_orders }}</span>
+            <div class="col-12 col-md-4 p-3">
+                <span class="badge badge-pill badge-primary">{{ total_orders }}</span>
                 <p class="text-muted font-weight-bold mt-2">Total Orders</p>
             </div>
-            
+        
+            <!-- Active Orders -->
+            <div class="col-12 col-md-4 p-3">
+                <span class="badge badge-pill badge-warning">{{ active_orders }}</span>
+                <p class="text-muted font-weight-bold mt-2">Active Orders</p>
+            </div>
+        
             <!-- Total Sales Amount -->
-            <div class="p-3">
-                <span class="badge badge-pill badge-success display-4">₹{{ total_sales|floatformat:2|intcomma }}</span>
+            <div class="col-12 col-md-4 p-3">
+                <span class="badge badge-pill badge-success">₹{{ total_sales|floatformat:2|intcomma }}</span>
                 <p class="text-muted font-weight-bold mt-2">Total Sales Amount</p>
             </div>
-            
+        
             <!-- Total Discount Given -->
-            <div class="p-3">
-                <span class="badge badge-pill badge-danger display-4">₹{{ total_discount|floatformat:2|intcomma }}</span>
+            <div class="col-12 col-md-4 p-3">
+                <span class="badge badge-pill badge-info">₹{{ total_discount|floatformat:2|intcomma }}</span>
                 <p class="text-muted font-weight-bold mt-2">Total Discount Given</p>
             </div>
+        
+            <!-- Total Refunds -->
+            <div class="col-12 col-md-4 p-3">
+                <span class="badge badge-pill badge-danger">₹{{ total_refunds|floatformat:2|intcomma }}</span>
+                <p class="text-muted font-weight-bold mt-2">Total Refunds</p>
+            </div>
+        
+            <!-- Net Sales -->
+            <div class="col-12 col-md-4 p-3">
+                <span class="badge badge-pill badge-dark">₹{{ net_sales|floatformat:2|intcomma }}</span>
+                <p class="text-muted font-weight-bold mt-2">Net Sales</p>
+            </div>
         </div>
+        
     
-        <!-- Divider Line -->
         <hr class="mt-4 mb-2">
         <p class="text-center text-secondary">Period: {{ start_date }} - {{ end_date }}</p>
     </div>
@@ -91,7 +103,6 @@
     </script>
 
 
-    <!-- Order Details Table -->
     <h4 class="text-secondary mt-4">Order Details</h4>
     {% if orders %}
     <div class="table-responsive bg-white p-3 shadow rounded">
@@ -143,7 +154,6 @@
         const dateToInput = document.getElementById("date_to");
         const dateFromInput = document.getElementById("date_from");
 
-        // Retrieve query parameters to check which filter type was previously selected
         const urlParams = new URLSearchParams(window.location.search);
         const filterType = urlParams.get("filter_type");
         const dateFrom = urlParams.get("date_from");
@@ -163,21 +173,17 @@
             }
         }
 
-        // Set filter selection based on URL parameters
         if (filterType === "custom") {
             filterCustom.checked = true;
         } else {
             filterPredefined.checked = true;
         }
 
-        // Initial toggle state based on selected filter type
         toggleFilters();
 
-        // Event listeners for toggle change
         filterPredefined.addEventListener("change", toggleFilters);
         filterCustom.addEventListener("change", toggleFilters);
 
-        // Clear filters button functionality
         const clearFiltersBtn = document.getElementById("clear_filters");
         clearFiltersBtn.addEventListener("click", function() {
             document.getElementById("date_filter").selectedIndex = 0;

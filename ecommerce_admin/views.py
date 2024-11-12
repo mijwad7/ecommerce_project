@@ -14,7 +14,8 @@ from ecommerce_app.models import (
     Coupon,
     CategoryOffer,
     ProductReturnRequest,
-    Notification
+    Notification,
+    OrderItem
 )
 from .forms import (
     UserProfileForm,
@@ -739,15 +740,24 @@ def generate_sales_report(request):
 
     dates = [order.created_at.strftime('%Y-%m-%d') for order in orders]
     sales_data = [order.total_price for order in orders]
+    total_sales = orders.aggregate(total_sales=Sum('total_price'))['total_sales'] or 0
+    active_orders = orders.filter(order_status='CONFIRMED').count()
+    total_returns = ProductReturnRequest.objects.filter(status='APPROVED').count()
+    total_refunds = ProductReturnRequest.objects.filter(status='APPROVED').aggregate(Sum('refund_amount'))['refund_amount__sum']
+    net_sales = total_sales - total_discount - total_refunds
 
     fig = px.line(x=dates, y=sales_data, labels={'x': 'Date', 'y': 'Total Sales'},
                   title="Sales Report")
     fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
     return render(request, "admin/index.html", {
-        "total_sales": orders.aggregate(total_sales=Sum('total_price'))['total_sales'] or 0,
+        "total_sales": total_sales,
         "total_orders": orders.count(),
         "total_discount": total_discount,
+        "total_returns": total_returns,
+        "total_refunds": total_refunds,
+        "net_sales": net_sales,
+        'active_orders': active_orders,
         "orders": orders,
         "start_date": start_date,
         "end_date": end_date,
