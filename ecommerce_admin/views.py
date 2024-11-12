@@ -40,6 +40,7 @@ from openpyxl import Workbook
 import plotly.express as px
 import json
 import plotly
+from django.core.paginator import Paginator
 
 def superuser_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
@@ -218,6 +219,7 @@ def delete_brand(request, brand_id):
     return render(request, "admin/delete_brand.html", {"brand": brand})
 
 
+
 @login_required
 @superuser_required
 def products_list(request):
@@ -242,12 +244,17 @@ def products_list(request):
         products = products.order_by("category__name")
     else:
         products = products.order_by("-id")
+    
+    # Paginate the products
+    paginator = Paginator(products, 10)  # 10 products per page
+    page_number = request.GET.get('page')
+    products_page = paginator.get_page(page_number)
 
     return render(
         request,
         "admin/products_list.html",
         {
-            "products": products,
+            "products": products_page,
             "categories": Category.objects.all(),
         },
     )
@@ -542,8 +549,19 @@ def restore_brand(request, brand_id):
 @superuser_required
 def view_orders(request):
     orders = Order.objects.all().order_by("-id")
-    return render(request, "admin/view_orders.html", {"orders": orders})
+    
+    # Paginate the orders
+    paginator = Paginator(orders, 10)  # 10 orders per page
+    page_number = request.GET.get('page')
+    orders_page = paginator.get_page(page_number)
 
+    return render(
+        request,
+        "admin/view_orders.html",
+        {
+            "orders": orders_page,
+        },
+    )
 
 @login_required
 @superuser_required
@@ -956,11 +974,18 @@ def delete_category_offer(request, offer_id):
     messages.success(request, "Category Offer deleted successfully.")
     return redirect('category_offers_list')
 
+@login_required
+@superuser_required
 def view_return_requests(request):
     return_requests = ProductReturnRequest.objects.all().order_by('-id')
+    paginator = Paginator(return_requests, 9)  # 10 return requests per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "admin/view_return_requests.html", {
-        "return_requests": return_requests
+        "return_requests": page_obj,
     })
+
 
 def approve_request(request, request_id):
     return_request = get_object_or_404(ProductReturnRequest, id=request_id)
