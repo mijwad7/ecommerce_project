@@ -182,7 +182,6 @@ def products(request):
     # Annotate with average ratings
     products = products.annotate(average_rating=Avg("reviews__rating"))
 
-    # Handle sorting
     if sort == "A-Z":
         products = products.order_by("name")
     elif sort == "available":
@@ -203,7 +202,6 @@ def products(request):
     if selected_tags:
         products = products.filter(tags__name__in=selected_tags).distinct()
 
-    # Pagination (6 products per page)
     paginator = Paginator(products, 6)
     page_number = request.GET.get("page")
     paginated_products = paginator.get_page(page_number)
@@ -316,7 +314,6 @@ def add_to_cart(request, product_id):
             cart=cart, product=product, variant=variant, defaults={"quantity": quantity}
         )
     else:
-        # Validate the requested quantity against the base product's stock
         if quantity > product.stock:
             return JsonResponse(
                 {
@@ -332,7 +329,6 @@ def add_to_cart(request, product_id):
                 }
             )
 
-        # Check if the base product is already in the cart
         cart_product, created = CartProduct.objects.get_or_create(
             cart=cart, product=product, variant=None, defaults={"quantity": quantity}
         )
@@ -514,7 +510,6 @@ def checkout(request):
 
         coupon = None
 
-        # Step 1: Check for coupon validity and calculate discount
         if coupon_code:
             coupon = Coupon.objects.filter(code=coupon_code, is_active=True).first()
             if not coupon or coupon.start_date > timezone.now() or coupon.end_date < timezone.now():
@@ -529,7 +524,6 @@ def checkout(request):
         # Calculate the discounted total after applying the coupon
         discounted_total = cart.total_price - discount
 
-        # Step 2: Apply wallet deduction if opted
         if use_wallet:
             wallet_balance = wallet.balance
             if wallet_balance >= discounted_total:
@@ -541,7 +535,6 @@ def checkout(request):
                 discounted_total -= wallet_deduction
                 wallet.balance = 0
 
-        # Final amount to be paid
         total_price = discounted_total
 
 
@@ -692,7 +685,6 @@ def payment_complete(request):
         else:
             total_price = cart.total_price
 
-        # Apply wallet deduction
         if wallet_deduction > 0:
             total_price -= wallet_deduction
             wallet.balance -= wallet_deduction
@@ -723,7 +715,6 @@ def payment_complete(request):
                 quantity=item.quantity,
             )
 
-        # Clear cart and session data
         cart.cart_products.all().delete()
         del request.session['selected_address_id']
         del request.session['coupon_code']
@@ -769,7 +760,6 @@ def remove_coupon(request):
             coupon = Coupon.objects.get(code=coupon_code)
             cart = get_object_or_404(Cart, user=request.user)
 
-        # Clear the applied coupon
         if coupon:
             new_total = cart.total_price
 
@@ -836,7 +826,6 @@ def update_cart_quantity(request, item_id):
         variant = item.variant  # May be None if it's a base product
         quantity = int(request.POST.get('quantity'))
 
-        # Validate the requested quantity against the stock
         if variant:
             if quantity > variant.stock:
                 return JsonResponse(

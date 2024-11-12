@@ -78,9 +78,8 @@ def demo_login(request):
     user = authenticate(username="mijwad", password="1234")
     if user is not None:
         login(request, user)
-        return redirect("admin_dashboard")  # Redirect to the main page after login
+        return redirect("admin_dashboard")
     else:
-        # Handle case where demo user is not set up properly
         return redirect("login")
 
 
@@ -245,8 +244,7 @@ def products_list(request):
     else:
         products = products.order_by("-id")
     
-    # Paginate the products
-    paginator = Paginator(products, 10)  # 10 products per page
+    paginator = Paginator(products, 10)
     page_number = request.GET.get('page')
     products_page = paginator.get_page(page_number)
 
@@ -407,19 +405,9 @@ def add_product_variant(request, product_id):
     )
 
 
-# @login_required
-# @superuser_required
-# def view_product_variants(request, product_id):
-#     product = get_object_or_404(Product, id=product_id)
-#     variants = ProductVariant.objects.filter(product=product)
-#     return render(request, 'admin/view_product_variants.html', {'product': product, 'variants': variants})
-
-
 def product_variant_detail(request, variant_id):
-    # Fetch the product variant using the ID
     variant = get_object_or_404(ProductVariant, id=variant_id)
 
-    # Pass the variant details to the template
     context = {
         "variant": variant,
         "images": variant.images.all(),
@@ -549,9 +537,7 @@ def restore_brand(request, brand_id):
 @superuser_required
 def view_orders(request):
     orders = Order.objects.all().order_by("-id")
-    
-    # Paginate the orders
-    paginator = Paginator(orders, 10)  # 10 orders per page
+    paginator = Paginator(orders, 10)
     page_number = request.GET.get('page')
     orders_page = paginator.get_page(page_number)
 
@@ -566,7 +552,7 @@ def view_orders(request):
 @login_required
 @superuser_required
 def cancel_order(request, order_id):
-    order = get_object_or_404(Order, id=order_id)  # Remove user restriction
+    order = get_object_or_404(Order, id=order_id)
     if order.order_status in ["PENDING", "CONFIRMED"]:
         order.order_status = "CANCELLED"
         order.save()
@@ -978,7 +964,7 @@ def delete_category_offer(request, offer_id):
 @superuser_required
 def view_return_requests(request):
     return_requests = ProductReturnRequest.objects.all().order_by('-id')
-    paginator = Paginator(return_requests, 9)  # 10 return requests per page
+    paginator = Paginator(return_requests, 9)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
