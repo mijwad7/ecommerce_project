@@ -48,6 +48,7 @@
 <br>
 <!-- Featured Products Section -->
 <div class="container mt-5">
+  <div id="message-container"></div>
   <h2 class="text-center mb-4">Featured Products</h2>
   <div class="row">
     {% for product in featured_products %}
@@ -80,6 +81,13 @@
             <span class="h5">₹{{ product.price|floatformat:2|intcomma }}</span>
             {% endif %}
           </p>
+          <form method="post" id="add-to-wishlist-form" data-url="{% url 'app:add_to_wishlist' %}">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <button type="submit" class="btn btn-black">
+                <i class="bi bi-heart"></i> Add to Wishlist
+            </button>
+        </form>
         </div>
       </div>
     </div>
@@ -117,6 +125,13 @@
             >
             <span class="h5">₹{{ product.sale_price|floatformat:2|intcomma }}</span>
           </p>
+          <form method="post" id="add-to-wishlist-form" data-url="{% url 'app:add_to_wishlist' %}">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <button type="submit" class="btn btn-black">
+                <i class="bi bi-heart"></i> Add to Wishlist
+            </button>
+        </form>
         </div>
       </div>
     </div>
@@ -158,11 +173,69 @@
             <span class="h5">₹{{ product.price|floatformat:2|intcomma }}</span>
             {% endif %}
           </p>
+          <form method="post" id="add-to-wishlist-form" data-url="{% url 'app:add_to_wishlist' %}">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <button type="submit" class="btn btn-black">
+                <i class="bi bi-heart"></i> Add to Wishlist
+            </button>
+        </form>
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
 </div>
+
+{% endblock %}
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+<script>
+    $(document).on('submit', '#add-to-wishlist-form', function (e) {
+        e.preventDefault();
+        
+        const url = $(this).data('url');
+        const formData = $(this).serialize();
+
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: formData,
+            success: function (response) {
+                let messageContainer = $("#message-container");
+
+                  messageContainer.html("");
+
+                  if (response.status === 'success') {
+                      messageContainer.append(`
+                          <div class="alert alert-success alert-dismissible fade show" role="alert">
+                              ${response.message}
+                              <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                          </div>
+                      `);
+                  } else {
+                      messageContainer.append(`
+                          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                              ${response.message}
+                              <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                          </div>
+                      `);
+                  }
+            },
+            error: function () {
+                alert('An error occurred while adding to wishlist.');
+            }
+        });
+    });
+</script>
 
 {% endblock %}

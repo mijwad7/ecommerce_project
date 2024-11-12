@@ -946,7 +946,7 @@ def return_request_list(request):
 @login_required
 def user_notifications(request):
     user = request.user
-    notifications = Notification.objects.filter(user=user, is_read=False).values('id', 'message', 'created_at', 'action_url')
+    notifications = Notification.objects.filter(user=user, is_read=False).order_by('-created_at').values('id', 'message', 'created_at', 'action_url')
     return JsonResponse(list(notifications), safe=False)
 
 @login_required
