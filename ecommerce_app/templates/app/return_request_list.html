@@ -18,12 +18,10 @@
                         style="object-fit: contain; height: 200px; width: 100%; border-radius: 0.5rem 0.5rem 0 0;"
                     />
                     </a>
-                    <!-- Card Body with Product and Request Details -->
                     <div class="card-body">
                         <h5 class="card-title fw-bold">{{ request.order_item.product.name }}</h5>
                         <p class="text-muted small mb-2">{{ request.order_item.product.category.name }}</p>
                         
-                        <!-- Order and Refund Details -->
                         <div class="mb-3">
                             <p class="mb-1"><strong>Order ID:</strong> {{ request.order_item.order.id }}</p>
                             <p class="mb-1"><strong>Quantity:</strong> {{ request.order_item.quantity }}</p>
@@ -31,7 +29,6 @@
                             <p class="mb-1"><strong>Requested At:</strong> {{ request.requested_at|date:"d M Y, H:i" }}</p>
                         </div>
 
-                        <!-- Status and Message Section -->
                         <div class="border-top pt-3">
                             <p class="mb-1"><strong>Status:</strong> 
                                 {% if request.status == 'PENDING' %}

@@ -49,14 +49,8 @@
       {% if product.brand %}
       <p><i class="bi bi-building"></i> From {{ product.brand }}</p>
       {% endif %}
-
-      <div class="tags">
-        {% for tag in product.tags.all %}
-            <span class="badge bg-black text-light">{{ tag.name }}</span>
-        {% endfor %}
-      </div>
       {% if request.user.is_authenticated %}
-      <form method="post" class="form-inline" id="add-to-wishlist-form" data-url="{% url 'app:add_to_wishlist' %}">
+      <form method="post" class="form-inline mb-3" id="add-to-wishlist-form" data-url="{% url 'app:add_to_wishlist' %}">
         {% csrf_token %}
         <input type="hidden" name="product_id" value="{{ product.id }}">
         <button type="submit" class="btn btn-black">
@@ -64,9 +58,9 @@
         </button>
       </form>
       {% endif %}
-  
+      
       {% if variants %}
-      <p class="h5 mt-3"><i class="bi bi-card-list"></i> Variants:</p>
+      <p class="h5"><i class="bi bi-card-list"></i> Variants:</p>
       <div id="variant-list" class="d-flex flex-wrap">
           {% for variant in variants %}
           <button
@@ -275,11 +269,9 @@
       button.addEventListener("click", function () {
         const variantId = this.getAttribute("data-variant-id");
   
-        // Make an AJAX request to fetch the variant details
         fetch(`/get-variant-details/${variantId}/`)
           .then((response) => response.json())
           .then((data) => {
-            // Update the price and stock details
             const productPrice = document.getElementById("product-price");
             const productStock = document.getElementById("product-stock");
             const cartBtn = document.getElementById("cart-btn");
@@ -294,16 +286,14 @@
   
             productStock.textContent = `${data.stock} left in stock`;
   
-            // Update the main image with the first variant image
             const mainImage = document.getElementById("mainProductImage");
-            mainImage.src = data.images[0].image_url; // Ensure you have a field for the main image
+            mainImage.src = data.images[0].image_url;
   
-            // Update the thumbnail images
             const thumbnails = document.querySelectorAll('.thumbnail');
             thumbnails.forEach((thumbnail, index) => {
               if (data.images[index]) {
-                thumbnail.src = data.images[index].image_url; // Update thumbnail src
-                thumbnail.setAttribute('onclick', `changeMainImage('${data.images[index].image_url}')`); // Update onclick for each thumbnail
+                thumbnail.src = data.images[index].image_url;
+                thumbnail.setAttribute('onclick', `changeMainImage('${data.images[index].image_url}')`);
               }
             });
           });
@@ -319,10 +309,8 @@
 
       variantButtons.forEach(button => {
           button.addEventListener("click", function() {
-              // Remove 'active-variant' class from all buttons
               variantButtons.forEach(btn => btn.classList.remove("btn-black"));
               
-              // Add 'active-variant' class to the clicked button
               this.classList.add("btn-black");
 
               const variantId = this.getAttribute("data-variant-id");
@@ -354,11 +342,9 @@
               success: function (response) {
                   let messageContainer = $("#message-container");
 
-                  // Remove existing alerts
                   messageContainer.html("");
 
                   if (response.success) {
-                      // Show success message
                       messageContainer.append(`
                           <div class="alert alert-success alert-dismissible fade show" role="alert">
                               ${response.message}
@@ -368,7 +354,6 @@
                           </div>
                       `);
                   } else {
-                      // Show error message
                       messageContainer.append(`
                           <div class="alert alert-danger alert-dismissible fade show" role="alert">
                               ${response.message}

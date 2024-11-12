@@ -71,7 +71,7 @@
       $(".add-to-cart-form").on("submit", function (e) {
           e.preventDefault();
 
-          const form = $(this); // Current form
+          const form = $(this);
           const url = form.data("url");
           const quantity = form.find('.quantity').val();
           const variantId = form.find('.variant-id').val();
@@ -88,11 +88,9 @@
               success: function (response) {
                   let messageContainer = $("#message-container");
 
-                  // Remove existing alerts
                   messageContainer.html("");
 
                   if (response.success) {
-                      // Show success message
                       messageContainer.append(`
                           <div class="alert alert-success alert-dismissible fade show" role="alert">
                               ${response.message}
@@ -102,7 +100,6 @@
                           </div>
                       `);
                   } else {
-                      // Show error message
                       messageContainer.append(`
                           <div class="alert alert-danger alert-dismissible fade show" role="alert">
                               ${response.message}
@@ -116,7 +113,6 @@
               error: function () {
                   let messageContainer = $("#message-container");
                   
-                  // Remove existing alerts
                   messageContainer.html("");
 
                   messageContainer.append(`
