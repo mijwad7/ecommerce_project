@@ -54,7 +54,7 @@
         <div class="mb-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h4>Select Shipping Address:</h4>
-            <a href="{% url 'app:add_address' %}" class="btn btn-black">Add New Address</a>
+            <a href="{% url 'app:add_address' %}?next={% url 'app:checkout' %}" class="btn btn-black">Add New Address</a>
         </div>
         
           <div class="row">
@@ -86,7 +86,7 @@
             {% empty %}
             <div class="text-center">
               <p>No addresses found.</p>
-              <a href="{% url 'app:add_address' %}" class="btn btn-black">Please add an address</a>
+              <a href="{% url 'app:add_address' %}?next={% url 'app:checkout' %}" class="btn btn-black">Please add an address</a>
             </div>
             {% endfor %}
           </div>
