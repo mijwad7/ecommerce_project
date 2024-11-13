@@ -21,12 +21,18 @@ from .models import (
     Coupon,
     Wallet,
     CategoryOffer,
-    ProductReturnRequest
+    ProductReturnRequest,
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from .forms import UserSignUpForm, AddressForm, UserEditForm, CustomPasswordChangeForm, ReviewForm
+from .forms import (
+    UserSignUpForm,
+    AddressForm,
+    UserEditForm,
+    CustomPasswordChangeForm,
+    ReviewForm,
+)
 from .otp_utils import send_otp_to_email
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
@@ -39,6 +45,7 @@ from django.urls import reverse
 from currency_converter import CurrencyConverter
 from decimal import Decimal
 from django.views.decorators.cache import never_cache
+
 
 @never_cache
 def user_signup(request):
@@ -94,6 +101,7 @@ def verify_otp(request):
 
     return render(request, "app/verify_otp.html")
 
+
 @never_cache
 def user_login(request):
     if request.user.is_authenticated:
@@ -113,6 +121,7 @@ def user_login(request):
             messages.error(request, "Invalid username or password.")
     return render(request, "app/login.html")
 
+
 @never_cache
 def user_logout(request):
     logout(request)
@@ -126,6 +135,7 @@ def demo_login(request):
         return redirect("app:index")
     else:
         return redirect("login")
+
 
 @never_cache
 def index(request):
@@ -143,11 +153,14 @@ def index(request):
         },
     )
 
+
 def privacy_policy(request):
     return render(request, "app/privacy.html")
 
+
 def terms_of_service(request):
     return render(request, "app/terms.html")
+
 
 @never_cache
 def products(request):
@@ -155,7 +168,7 @@ def products(request):
     category_name = request.GET.get("category")
     brand_id = request.GET.get("brand")
     sort = request.GET.get("sort", "id")
-    selected_tags = request.GET.getlist('tags')
+    selected_tags = request.GET.getlist("tags")
 
     categories = Category.objects.all()
     brands = Brand.objects.all()
@@ -176,7 +189,7 @@ def products(request):
     if category_name and Category.objects.filter(name=category_name).exists():
         products = products.filter(category__name=category_name)
         tags = Tag.objects.filter(category__name=category_name)
-        offer = CategoryOffer.objects.filter(category__name=category_name).first()
+        offer = CategoryOffer.objects.filter(category__name=category_name, is_active=True).first()
     else:
         tags = Tag.objects.none()
 
@@ -220,6 +233,7 @@ def products(request):
         },
     )
 
+
 @never_cache
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -232,28 +246,23 @@ def product_detail(request, product_id):
     )
 
     specs = ProductSpec.objects.filter(product=product)
-    coupons = product.coupons.filter(
-        is_active=True
-    )
+    coupons = product.coupons.filter(is_active=True)
 
-    related_products = Product.objects.filter(
-        tags__in=product.tags.all()
-    ).exclude(id=product.id).distinct()[:4]
+    related_products = (
+        Product.objects.filter(tags__in=product.tags.all())
+        .exclude(id=product.id)
+        .distinct()[:4]
+    )
 
     if related_products.count() < 4:
         additional_needed = 4 - related_products.count()
-        additional_products = Product.objects.filter(
-            category=product.category
-        ).exclude(
-            id__in=related_products.values_list('id', flat=True)
-        ).exclude(
-            id=product.id
-        )[:additional_needed]
+        additional_products = (
+            Product.objects.filter(category=product.category)
+            .exclude(id__in=related_products.values_list("id", flat=True))
+            .exclude(id=product.id)[:additional_needed]
+        )
 
         related_products = list(related_products) + list(additional_products)
-
-
-
 
     variants = ProductVariant.objects.filter(product=product)
 
@@ -275,9 +284,7 @@ def product_detail(request, product_id):
 
 def get_variant_details(request, variant_id):
     variant = ProductVariant.objects.get(id=variant_id)
-    images = [
-        {"image_url": img.image.url} for img in variant.images.all()
-    ]
+    images = [{"image_url": img.image.url} for img in variant.images.all()]
 
     data = {
         "price": variant.price,
@@ -326,7 +333,9 @@ def add_to_cart(request, product_id):
             return JsonResponse(
                 {
                     "success": False,
-                    "message": "You can only add up to " + str(product.max_per_user) + " items to your cart.",
+                    "message": "You can only add up to "
+                    + str(product.max_per_user)
+                    + " items to your cart.",
                 }
             )
 
@@ -351,7 +360,9 @@ def add_to_cart(request, product_id):
                 return JsonResponse(
                     {
                         "success": False,
-                        "message": "You can only add up to " + str(product.max_per_user) + " items to your cart.",
+                        "message": "You can only add up to "
+                        + str(product.max_per_user)
+                        + " items to your cart.",
                     }
                 )
         else:
@@ -362,12 +373,14 @@ def add_to_cart(request, product_id):
                         "message": "Not enough stock available for this product.",
                     }
                 )
-            
+
             if new_quantity > product.max_per_user:
                 return JsonResponse(
                     {
                         "success": False,
-                        "message": "You can only add up to " + str(product.max_per_user) + " items to your cart.",
+                        "message": "You can only add up to "
+                        + str(product.max_per_user)
+                        + " items to your cart.",
                     }
                 )
 
@@ -377,6 +390,7 @@ def add_to_cart(request, product_id):
     return JsonResponse(
         {"success": True, "message": f"Added {product.name} to your cart."}
     )
+
 
 @login_required
 @never_cache
@@ -449,6 +463,7 @@ def delete_address(request, address_id):
     messages.success(request, "Address deleted successfully!")
     return redirect("app:view_profile")
 
+
 @never_cache
 @login_required
 def view_profile(request):
@@ -457,7 +472,9 @@ def view_profile(request):
     addresses = profile.addresses.all()
     wallet, created = Wallet.objects.get_or_create(user=request.user)
     return render(
-        request, "app/view_profile.html", {"profile": profile, "addresses": addresses, "wallet": wallet}
+        request,
+        "app/view_profile.html",
+        {"profile": profile, "addresses": addresses, "wallet": wallet},
     )
 
 
@@ -494,17 +511,18 @@ def change_password(request):
 
     return render(request, "app/change_password.html", {"form": form})
 
+
 @login_required
 def checkout(request):
     user = request.user
     cart = get_object_or_404(Cart, user=user)
-    addresses = Address.objects.filter(user=user, address_type='shipping')
+    addresses = Address.objects.filter(user=user, address_type="shipping")
     c = CurrencyConverter()
     wallet, created = Wallet.objects.get_or_create(user=user)
 
     if request.method == "POST":
         coupon_code = request.POST.get("coupon_code")
-        request.session['coupon_code'] = coupon_code
+        request.session["coupon_code"] = coupon_code
         use_wallet = request.POST.get("use_wallet", "off") == "on"
         wallet_deduction = 0
         discount = 0
@@ -513,10 +531,16 @@ def checkout(request):
 
         if coupon_code:
             coupon = Coupon.objects.filter(code=coupon_code, is_active=True).first()
-            if not coupon or coupon.start_date > timezone.now() or coupon.end_date < timezone.now():
+            if (
+                not coupon
+                or coupon.start_date > timezone.now()
+                or coupon.end_date < timezone.now()
+            ):
                 messages.error(request, "Invalid or expired coupon.")
                 coupon = None
-            elif coupon in Order.objects.filter(user=user).values_list('applied_coupon', flat=True):
+            elif coupon in Order.objects.filter(user=user).values_list(
+                "applied_coupon", flat=True
+            ):
                 messages.error(request, "You have already used this coupon.")
                 coupon = None
             else:
@@ -538,12 +562,11 @@ def checkout(request):
 
         total_price = discounted_total
 
-
-        usd_amount = round(c.convert(total_price, 'INR', 'USD'), 2)
+        usd_amount = round(c.convert(total_price, "INR", "USD"), 2)
         address_id = request.POST.get("address")
         address = get_object_or_404(Address, id=address_id)
-        request.session['selected_address_id'] = address_id
-        request.session['wallet_deduction'] = float(wallet_deduction)
+        request.session["selected_address_id"] = address_id
+        request.session["wallet_deduction"] = float(wallet_deduction)
         payment_method = request.POST.get("payment_method")
 
         if not payment_method:
@@ -581,41 +604,50 @@ def checkout(request):
 
                 wallet.save()
                 cart.cart_products.all().delete()
-                messages.success(request, "Order placed successfully using wallet balance!")
+                messages.success(
+                    request, "Order placed successfully using wallet balance!"
+                )
                 return redirect("app:order_confirmation", order_id=order.id)
             else:
-                paypalrestsdk.configure({
-                    "mode": settings.PAYPAL_MODE,
-                    "client_id": settings.PAYPAL_CLIENT_ID,
-                    "client_secret": settings.PAYPAL_CLIENT_SECRET
-                })
+                paypalrestsdk.configure(
+                    {
+                        "mode": settings.PAYPAL_MODE,
+                        "client_id": settings.PAYPAL_CLIENT_ID,
+                        "client_secret": settings.PAYPAL_CLIENT_SECRET,
+                    }
+                )
 
-                payment = paypalrestsdk.Payment({
-                    "intent": "sale",
-                    "payer": {
-                        "payment_method": "paypal"
-                    },
-                    "redirect_urls": {
-                        "return_url": request.build_absolute_uri(reverse("app:payment_complete")),
-                        "cancel_url": request.build_absolute_uri(reverse("app:checkout")),
-                    },
-                    "transactions": [{
-                        "item_list": {
-                            "items": [{
-                                "name": "Cart Purchase",
-                                "sku": "001",
-                                "price": str(usd_amount),
-                                "currency": "USD",
-                                "quantity": 1
-                            }]
+                payment = paypalrestsdk.Payment(
+                    {
+                        "intent": "sale",
+                        "payer": {"payment_method": "paypal"},
+                        "redirect_urls": {
+                            "return_url": request.build_absolute_uri(
+                                reverse("app:payment_complete")
+                            ),
+                            "cancel_url": request.build_absolute_uri(
+                                reverse("app:checkout")
+                            ),
                         },
-                        "amount": {
-                            "total": str(usd_amount),
-                            "currency": "USD"
-                        },
-                        "description": "Purchase from My Django Store"
-                    }]
-                })
+                        "transactions": [
+                            {
+                                "item_list": {
+                                    "items": [
+                                        {
+                                            "name": "Cart Purchase",
+                                            "sku": "001",
+                                            "price": str(usd_amount),
+                                            "currency": "USD",
+                                            "quantity": 1,
+                                        }
+                                    ]
+                                },
+                                "amount": {"total": str(usd_amount), "currency": "USD"},
+                                "description": "Purchase from My Django Store",
+                            }
+                        ],
+                    }
+                )
 
                 if payment.create():
                     for link in payment.links:
@@ -638,7 +670,7 @@ def checkout(request):
             city=address.city,
             state=address.state,
             post_code=address.post_code,
-            wallet_deduction=wallet_deduction
+            wallet_deduction=wallet_deduction,
         )
 
         for item in cart.cart_products.all():
@@ -658,6 +690,7 @@ def checkout(request):
 
     return render(request, "app/checkout.html", {"cart": cart, "addresses": addresses})
 
+
 @login_required
 def payment_complete(request):
     payment_id = request.GET.get("paymentId")
@@ -674,7 +707,9 @@ def payment_complete(request):
         address_id = request.session.get("selected_address_id")
         address = get_object_or_404(Address, id=address_id)
         coupon_code = request.session.get("coupon_code")
-        wallet_deduction = request.session.get("wallet_deduction", 0)  # Default to 0 if not in session
+        wallet_deduction = request.session.get(
+            "wallet_deduction", 0
+        )  # Default to 0 if not in session
         wallet_deduction = Decimal(wallet_deduction)
         wallet, created = Wallet.objects.get_or_create(user=user)
 
@@ -691,7 +726,6 @@ def payment_complete(request):
             wallet.balance -= wallet_deduction
             wallet.save()
 
-
         order = Order.objects.create(
             user=user,
             payment_method="ONLINE",
@@ -703,7 +737,7 @@ def payment_complete(request):
             city=address.city,
             state=address.state,
             post_code=address.post_code,
-            wallet_deduction=wallet_deduction
+            wallet_deduction=wallet_deduction,
         )
 
         for item in cart.cart_products.all():
@@ -717,11 +751,13 @@ def payment_complete(request):
             )
 
         cart.cart_products.all().delete()
-        del request.session['selected_address_id']
-        del request.session['coupon_code']
-        del request.session['wallet_deduction']
+        del request.session["selected_address_id"]
+        del request.session["coupon_code"]
+        del request.session["wallet_deduction"]
 
-        messages.success(request, "Payment completed successfully! Your order has been placed.")
+        messages.success(
+            request, "Payment completed successfully! Your order has been placed."
+        )
         return redirect("app:order_confirmation", order_id=order.id)
     else:
         messages.error(request, "Payment failed. Please try again.")
@@ -739,17 +775,24 @@ def apply_coupon(request):
 
         if coupon:
             if Order.objects.filter(user=request.user, applied_coupon=coupon).exists():
-                return JsonResponse({"status": "error", "message": "You have already used this coupon."})
+                return JsonResponse(
+                    {"status": "error", "message": "You have already used this coupon."}
+                )
 
             discount = cart.total_price * (coupon.discount_percent / 100)
             new_total = cart.total_price - discount
 
             request.session["coupon_code_to_remove"] = coupon.code
-            return JsonResponse({"status": "success", "new_total": new_total, "discount": discount})
+            return JsonResponse(
+                {"status": "success", "new_total": new_total, "discount": discount}
+            )
 
-        return JsonResponse({"status": "error", "message": "Invalid or expired coupon."})
+        return JsonResponse(
+            {"status": "error", "message": "Invalid or expired coupon."}
+        )
 
     return JsonResponse({"status": "error", "message": "Invalid request."})
+
 
 @login_required
 def remove_coupon(request):
@@ -764,11 +807,13 @@ def remove_coupon(request):
         if coupon:
             new_total = cart.total_price
 
-            return JsonResponse({
-                "status": "success",
-                "new_total": new_total,
-                "message": "Coupon removed successfully."
-            })
+            return JsonResponse(
+                {
+                    "status": "success",
+                    "new_total": new_total,
+                    "message": "Coupon removed successfully.",
+                }
+            )
 
         return JsonResponse({"status": "error", "message": "No coupon applied."})
 
@@ -781,10 +826,11 @@ def order_confirmation(request, order_id):
 
     return render(request, "app/order_confirmation.html", {"order": order})
 
+
 @never_cache
 @login_required
 def view_orders(request):
-    orders = Order.objects.filter(user=request.user).order_by('-id')
+    orders = Order.objects.filter(user=request.user).order_by("-id")
 
     return render(request, "app/view_orders.html", {"orders": orders})
 
@@ -794,9 +840,15 @@ def order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     items = order.items.all()
 
-    existing_requests = ProductReturnRequest.objects.filter(order_item__in=items).values_list('order_item_id', flat=True)
+    existing_requests = ProductReturnRequest.objects.filter(
+        order_item__in=items
+    ).values_list("order_item_id", flat=True)
 
-    return render(request, "app/order_detail.html", {"order": order, "items": items, "existing_requests": existing_requests})
+    return render(
+        request,
+        "app/order_detail.html",
+        {"order": order, "items": items, "existing_requests": existing_requests},
+    )
 
 
 @login_required
@@ -818,6 +870,7 @@ def cancel_order(request, order_id):
 
     return redirect("app:view_orders")
 
+
 @login_required
 def update_cart_quantity(request, item_id):
     if request.method == "POST":
@@ -825,7 +878,7 @@ def update_cart_quantity(request, item_id):
 
         product = item.product
         variant = item.variant  # May be None if it's a base product
-        quantity = int(request.POST.get('quantity'))
+        quantity = int(request.POST.get("quantity"))
 
         if variant:
             if quantity > variant.stock:
@@ -847,7 +900,9 @@ def update_cart_quantity(request, item_id):
                 return JsonResponse(
                     {
                         "success": False,
-                        "message": "You can only add up to " + str(product.max_per_user) + " items to your cart.",
+                        "message": "You can only add up to "
+                        + str(product.max_per_user)
+                        + " items to your cart.",
                     }
                 )
 
@@ -856,9 +911,10 @@ def update_cart_quantity(request, item_id):
         item.save()
 
         # You may want to return the updated total price or any other info
-        return JsonResponse({'success': True, 'total_price': item.total_price})
+        return JsonResponse({"success": True, "total_price": item.total_price})
 
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
 
 @login_required
 def add_review(request, product_id):
@@ -875,21 +931,28 @@ def add_review(request, product_id):
     else:
         messages.error(request, "Failed to add review. Please try again.")
 
-    return render(request, "app/product_detail.html", {"product": product, "form": form})
+    return render(
+        request, "app/product_detail.html", {"product": product, "form": form}
+    )
 
 
 @login_required
 def add_to_wishlist(request):
-    if request.method == 'POST':
-        product_id = request.POST.get('product_id')
+    if request.method == "POST":
+        product_id = request.POST.get("product_id")
         product = get_object_or_404(Product, id=product_id)
         wishlist, created = Wishlist.objects.get_or_create(user=request.user)
 
         if wishlist.products.filter(id=product_id).exists():
-            return JsonResponse({'status': 'danger', 'message': 'Product is already in your wishlist.'})
-        
+            return JsonResponse(
+                {"status": "danger", "message": "Product is already in your wishlist."}
+            )
+
         wishlist.products.add(product)
-        return JsonResponse({'status': 'success', 'message': 'Product added to wishlist!'})
+        return JsonResponse(
+            {"status": "success", "message": "Product added to wishlist!"}
+        )
+
 
 @login_required
 def remove_from_wishlist(request, product_id):
@@ -897,7 +960,8 @@ def remove_from_wishlist(request, product_id):
     wishlist = Wishlist.objects.get(user=request.user)
     wishlist.products.remove(product)
 
-    return redirect('app:wishlist')
+    return redirect("app:wishlist")
+
 
 @never_cache
 @login_required
@@ -905,19 +969,19 @@ def wishlist(request):
     wishlist = Wishlist.objects.get(user=request.user)
     products = wishlist.products.all()
 
-    return render(request, 'app/wishlist.html', {'wishlist': wishlist, 'products': products})
-
-
+    return render(
+        request, "app/wishlist.html", {"wishlist": wishlist, "products": products}
+    )
 
 
 @login_required
 def return_request(request, order_item_id):
     order_item = get_object_or_404(OrderItem, id=order_item_id)
-    
-    if request.method == 'POST':
+
+    if request.method == "POST":
         order = order_item.order
         product = order_item.product
-        reason = request.POST.get('reason')
+        reason = request.POST.get("reason")
 
         # Calculate refund amount based on any order discount
         if order.original_total_price and order.original_total_price > 0:
@@ -938,25 +1002,35 @@ def return_request(request, order_item_id):
 
         messages.success(request, "Your return request has been submitted.")
 
-        return redirect('app:order_detail', order_id=order_item.order.id)
+        return redirect("app:order_detail", order_id=order_item.order.id)
 
-    return redirect('app:order_detail', order_id=order_item.order.id)
+    return redirect("app:order_detail", order_id=order_item.order.id)
 
 
 @login_required
 def return_request_list(request):
-    return_requests = ProductReturnRequest.objects.filter(user=request.user).order_by('-requested_at')
-    return render(request, 'app/return_request_list.html', {'return_requests': return_requests})
+    return_requests = ProductReturnRequest.objects.filter(user=request.user).order_by(
+        "-requested_at"
+    )
+    return render(
+        request, "app/return_request_list.html", {"return_requests": return_requests}
+    )
+
 
 @login_required
 def user_notifications(request):
     user = request.user
-    notifications = Notification.objects.filter(user=user, is_read=False).order_by('-created_at').values('id', 'message', 'created_at', 'action_url')
+    notifications = (
+        Notification.objects.filter(user=user, is_read=False)
+        .order_by("-created_at")
+        .values("id", "message", "created_at", "action_url")
+    )
     return JsonResponse(list(notifications), safe=False)
+
 
 @login_required
 def mark_notification_as_read(request, notification_id):
     notification = get_object_or_404(Notification, id=notification_id)
     notification.is_read = True
     notification.save()
-    return JsonResponse({'success': True})
+    return JsonResponse({"success": True})

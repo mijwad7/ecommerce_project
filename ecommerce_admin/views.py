@@ -15,7 +15,7 @@ from ecommerce_app.models import (
     CategoryOffer,
     ProductReturnRequest,
     Notification,
-    OrderItem
+    OrderItem,
 )
 from .forms import (
     UserProfileForm,
@@ -24,7 +24,7 @@ from .forms import (
     ProductSpecFormSet,
     ProductVariantForm,
     CouponForm,
-    CategoryOfferForm
+    CategoryOfferForm,
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -41,6 +41,7 @@ import plotly.express as px
 import json
 import plotly
 from django.core.paginator import Paginator
+
 
 def superuser_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
@@ -81,8 +82,6 @@ def demo_login(request):
         return redirect("admin_dashboard")
     else:
         return redirect("login")
-
-
 
 
 @login_required
@@ -218,7 +217,6 @@ def delete_brand(request, brand_id):
     return render(request, "admin/delete_brand.html", {"brand": brand})
 
 
-
 @login_required
 @superuser_required
 def products_list(request):
@@ -243,9 +241,9 @@ def products_list(request):
         products = products.order_by("category__name")
     else:
         products = products.order_by("-id")
-    
+
     paginator = Paginator(products, 10)
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     products_page = paginator.get_page(page_number)
 
     return render(
@@ -538,7 +536,7 @@ def restore_brand(request, brand_id):
 def view_orders(request):
     orders = Order.objects.all().order_by("-id")
     paginator = Paginator(orders, 10)
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     orders_page = paginator.get_page(page_number)
 
     return render(
@@ -548,6 +546,7 @@ def view_orders(request):
             "orders": orders_page,
         },
     )
+
 
 @login_required
 @superuser_required
@@ -566,9 +565,7 @@ def cancel_order(request, order_id):
 @superuser_required
 def change_order_status(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    new_status = request.POST.get(
-        "status"
-    )
+    new_status = request.POST.get("status")
     if new_status in dict(Order.ORDER_STATUS_CHOICES):
         order.order_status = new_status
         order.save()
@@ -645,39 +642,42 @@ def delete_tag(request, tag_id):
 @login_required
 @superuser_required
 def coupon_list(request):
-    coupons = Coupon.objects.all().order_by('-id')
-    return render(request, 'admin/coupons_list.html', {'coupons': coupons})
+    coupons = Coupon.objects.all().order_by("-id")
+    return render(request, "admin/coupons_list.html", {"coupons": coupons})
+
 
 @login_required
 @superuser_required
 def add_coupon(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = CouponForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Coupon added successfully!")
-            return redirect('coupon_list')
+            return redirect("coupon_list")
         else:
             messages.error(request, "There was an error adding the coupon.")
     else:
         form = CouponForm()
-    return render(request, 'admin/add_coupon.html', {'form': form})
+    return render(request, "admin/add_coupon.html", {"form": form})
+
 
 @login_required
 @superuser_required
 def edit_coupon(request, coupon_id):
     coupon = get_object_or_404(Coupon, id=coupon_id)
-    if request.method == 'POST':
+    if request.method == "POST":
         form = CouponForm(request.POST, instance=coupon)
         if form.is_valid():
             form.save()
             messages.success(request, "Coupon updated successfully!")
-            return redirect('coupon_list')
+            return redirect("coupon_list")
         else:
             messages.error(request, "There was an error updating the coupon.")
     else:
         form = CouponForm(instance=coupon)
-    return render(request, 'admin/add_coupon.html', {'form': form})
+    return render(request, "admin/add_coupon.html", {"form": form})
+
 
 @login_required
 @superuser_required
@@ -685,20 +685,19 @@ def delete_coupon(request, coupon_id):
     coupon = get_object_or_404(Coupon, id=coupon_id)
     coupon.delete()
     messages.success(request, "Coupon deleted successfully.")
-    return redirect('coupon_list')
-
+    return redirect("coupon_list")
 
 
 def calculate_date_range(date_filter):
     today = timezone.now()
 
-    if date_filter == 'daily':
+    if date_filter == "daily":
         start_date = today - timedelta(days=1)
-    elif date_filter == 'weekly':
+    elif date_filter == "weekly":
         start_date = today - timedelta(weeks=1)
-    elif date_filter == 'monthly':
+    elif date_filter == "monthly":
         start_date = today - timedelta(days=30)
-    elif date_filter == 'yearly':
+    elif date_filter == "yearly":
         start_date = today - timedelta(days=365)
     else:
         # Custom range; if date_filter is custom or invalid, use a default range
@@ -711,105 +710,130 @@ def calculate_date_range(date_filter):
 @login_required
 @superuser_required
 def generate_sales_report(request):
-    filter_type = request.GET.get('filter_type', 'predefined')
-    date_filter = request.GET.get('date_filter', 'weekly')  # Default to weekly
-    date_from = request.GET.get('date_from')
-    date_to = request.GET.get('date_to')
+    filter_type = request.GET.get("filter_type", "predefined")
+    date_filter = request.GET.get("date_filter", "weekly")  # Default to weekly
+    date_from = request.GET.get("date_from")
+    date_to = request.GET.get("date_to")
 
-    if filter_type == 'custom' and date_from and date_to:
-        start_date = datetime.strptime(date_from, '%Y-%m-%d').date()
-        end_date = datetime.strptime(date_to, '%Y-%m-%d').date()
+    if filter_type == "custom" and date_from and date_to:
+        start_date = datetime.strptime(date_from, "%Y-%m-%d").date()
+        end_date = datetime.strptime(date_to, "%Y-%m-%d").date()
     else:
         start_date, end_date = calculate_date_range(date_filter)
 
     # Query filtered orders
-    orders = Order.objects.filter(
-        created_at__range=(start_date, end_date),
-    ).exclude(
-        order_status='CANCELLED'
-    ).annotate(
-        discount_amount=Case(
-            When(original_total_price__isnull=False,
-                 then=F('original_total_price') - F('total_price')),
-            default=Value(0),
-            output_field=DecimalField()
+    orders = (
+        Order.objects.filter(
+            created_at__range=(start_date, end_date),
         )
-    ).order_by('-created_at')
+        .exclude(order_status="CANCELLED")
+        .annotate(
+            discount_amount=Case(
+                When(
+                    original_total_price__isnull=False,
+                    then=F("original_total_price") - F("total_price"),
+                ),
+                default=Value(0),
+                output_field=DecimalField(),
+            )
+        )
+        .order_by("-created_at")
+    )
 
     # Aggregate data for the report
     discounted_orders = orders.filter(original_total_price__isnull=False)
-    total_discount = discounted_orders.aggregate(
-        total_discount=Sum('original_total_price') - Sum('total_price')
-    )['total_discount'] or 0
+    total_discount = (
+        discounted_orders.aggregate(
+            total_discount=Sum("original_total_price") - Sum("total_price")
+        )["total_discount"]
+        or 0
+    )
 
-    dates = [order.created_at.strftime('%Y-%m-%d') for order in orders]
+    dates = [order.created_at.strftime("%Y-%m-%d") for order in orders]
     sales_data = [order.total_price for order in orders]
-    total_sales = orders.aggregate(total_sales=Sum('total_price'))['total_sales'] or 0
-    active_orders = orders.filter(order_status='CONFIRMED').count()
-    total_returns = ProductReturnRequest.objects.filter(status='APPROVED').count()
-    total_refunds = ProductReturnRequest.objects.filter(status='APPROVED').aggregate(Sum('refund_amount'))['refund_amount__sum']
+    total_sales = orders.aggregate(total_sales=Sum("total_price"))["total_sales"] or 0
+    active_orders = orders.filter(order_status="CONFIRMED").count()
+    total_returns = ProductReturnRequest.objects.filter(status="APPROVED").count()
+    total_refunds = ProductReturnRequest.objects.filter(status="APPROVED").aggregate(
+        Sum("refund_amount")
+    )["refund_amount__sum"]
     net_sales = total_sales - total_discount - total_refunds
 
-    fig = px.line(x=dates, y=sales_data, labels={'x': 'Date', 'y': 'Total Sales'},
-                  title="Sales Report")
+    fig = px.line(
+        x=dates,
+        y=sales_data,
+        labels={"x": "Date", "y": "Total Sales"},
+        title="Sales Report",
+    )
     fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
-    return render(request, "admin/index.html", {
-        "total_sales": total_sales,
-        "total_orders": orders.count(),
-        "total_discount": total_discount,
-        "total_returns": total_returns,
-        "total_refunds": total_refunds,
-        "net_sales": net_sales,
-        'active_orders': active_orders,
-        "orders": orders,
-        "start_date": start_date,
-        "end_date": end_date,
-        "date_filter": date_filter,
-        'plotly_fig': fig_json,
-    })
-
+    return render(
+        request,
+        "admin/index.html",
+        {
+            "total_sales": total_sales,
+            "total_orders": orders.count(),
+            "total_discount": total_discount,
+            "total_returns": total_returns,
+            "total_refunds": total_refunds,
+            "net_sales": net_sales,
+            "active_orders": active_orders,
+            "orders": orders,
+            "start_date": start_date,
+            "end_date": end_date,
+            "date_filter": date_filter,
+            "plotly_fig": fig_json,
+        },
+    )
 
 
 @login_required
 @superuser_required
 def generate_sales_report_pdf(request):
-    filter_type = request.GET.get('filter_type', 'predefined')
-    date_filter = request.GET.get('date_filter', 'weekly')  # Default to weekly
-    date_from = request.GET.get('date_from')
-    date_to = request.GET.get('date_to')
+    filter_type = request.GET.get("filter_type", "predefined")
+    date_filter = request.GET.get("date_filter", "weekly")  # Default to weekly
+    date_from = request.GET.get("date_from")
+    date_to = request.GET.get("date_to")
 
-    if filter_type == 'custom' and date_from and date_to:
-        start_date = datetime.strptime(date_from, '%Y-%m-%d').date()
-        end_date = datetime.strptime(date_to, '%Y-%m-%d').date()
+    if filter_type == "custom" and date_from and date_to:
+        start_date = datetime.strptime(date_from, "%Y-%m-%d").date()
+        end_date = datetime.strptime(date_to, "%Y-%m-%d").date()
     else:
         start_date, end_date = calculate_date_range(date_filter)
 
-    display_start_date = start_date.strftime('%Y-%m-%d')
-    display_end_date = end_date.strftime('%Y-%m-%d')
+    display_start_date = start_date.strftime("%Y-%m-%d")
+    display_end_date = end_date.strftime("%Y-%m-%d")
 
     # Query filtered orders
-    orders = Order.objects.filter(
-        created_at__range=(start_date, end_date),
-    ).exclude(
-        order_status='CANCELLED'
-    ).annotate(
-        discount_amount=Case(
-            When(original_total_price__isnull=False,
-                 then=F('original_total_price') - F('total_price')),
-            default=Value(0),
-            output_field=DecimalField()
+    orders = (
+        Order.objects.filter(
+            created_at__range=(start_date, end_date),
         )
-    ).order_by('-created_at')
+        .exclude(order_status="CANCELLED")
+        .annotate(
+            discount_amount=Case(
+                When(
+                    original_total_price__isnull=False,
+                    then=F("original_total_price") - F("total_price"),
+                ),
+                default=Value(0),
+                output_field=DecimalField(),
+            )
+        )
+        .order_by("-created_at")
+    )
 
     # Aggregate data for the report
-    total_discount = orders.filter(original_total_price__isnull=False).aggregate(
-        total_discount=Sum('original_total_price') - Sum('total_price')
-    )['total_discount'] or 0
+    total_discount = (
+        orders.filter(original_total_price__isnull=False).aggregate(
+            total_discount=Sum("original_total_price") - Sum("total_price")
+        )["total_discount"]
+        or 0
+    )
 
     # Create the PDF response
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="sales_report.pdf"'
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="sales_report.pdf"'
 
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
@@ -817,9 +841,15 @@ def generate_sales_report_pdf(request):
 
     # Draw PDF content
     p.drawString(100, height - 50, "Sales Report")
-    p.drawString(100, height - 80, f"Date Range: {display_start_date} to {display_end_date}")
+    p.drawString(
+        100, height - 80, f"Date Range: {display_start_date} to {display_end_date}"
+    )
     p.drawString(100, height - 100, f"Total Orders: {orders.count()}")
-    p.drawString(100, height - 120, f"Total Sales Amount: {orders.aggregate(total_sales=Sum('total_price'))['total_sales'] or 0:.2f}")
+    p.drawString(
+        100,
+        height - 120,
+        f"Total Sales Amount: {orders.aggregate(total_sales=Sum('total_price'))['total_sales'] or 0:.2f}",
+    )
     p.drawString(100, height - 140, f"Total Discount Given: {total_discount:.2f}")
 
     # Add table headers
@@ -846,35 +876,38 @@ def generate_sales_report_pdf(request):
     return response
 
 
-
-
 @login_required
 @superuser_required
 def generate_sales_report_excel(request):
-    filter_type = request.GET.get('filter_type', 'predefined')
-    date_filter = request.GET.get('date_filter', 'weekly')  # Default to weekly
-    date_from = request.GET.get('date_from')
-    date_to = request.GET.get('date_to')
+    filter_type = request.GET.get("filter_type", "predefined")
+    date_filter = request.GET.get("date_filter", "weekly")  # Default to weekly
+    date_from = request.GET.get("date_from")
+    date_to = request.GET.get("date_to")
 
-    if filter_type == 'custom' and date_from and date_to:
-        start_date = datetime.strptime(date_from, '%Y-%m-%d').date()
-        end_date = datetime.strptime(date_to, '%Y-%m-%d').date()
+    if filter_type == "custom" and date_from and date_to:
+        start_date = datetime.strptime(date_from, "%Y-%m-%d").date()
+        end_date = datetime.strptime(date_to, "%Y-%m-%d").date()
     else:
         start_date, end_date = calculate_date_range(date_filter)
 
     # Query filtered orders
-    orders = Order.objects.filter(
-        created_at__range=(start_date, end_date),
-    ).exclude(
-        order_status='CANCELLED'
-    ).annotate(
-        discount_amount=Case(
-            When(original_total_price__isnull=False,
-                 then=F('original_total_price') - F('total_price')),
-            default=Value(0),
-            output_field=DecimalField()
+    orders = (
+        Order.objects.filter(
+            created_at__range=(start_date, end_date),
         )
-    ).order_by('-created_at')
+        .exclude(order_status="CANCELLED")
+        .annotate(
+            discount_amount=Case(
+                When(
+                    original_total_price__isnull=False,
+                    then=F("original_total_price") - F("total_price"),
+                ),
+                default=Value(0),
+                output_field=DecimalField(),
+            )
+        )
+        .order_by("-created_at")
+    )
 
     # Create an Excel workbook and add a worksheet
     workbook = Workbook()
@@ -887,70 +920,82 @@ def generate_sales_report_excel(request):
 
     # Add data rows to the Excel sheet
     for order in orders:
-        sheet.append([
-            order.id,
-            order.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            order.user.username,
-            order.total_price,
-            order.discount_amount
-        ])
+        sheet.append(
+            [
+                order.id,
+                order.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                order.user.username,
+                order.total_price,
+                order.discount_amount,
+            ]
+        )
 
     # Create the response
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="sales_report.xlsx"'
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = 'attachment; filename="sales_report.xlsx"'
 
     # Save the workbook to the response
     workbook.save(response)
     return response
 
+
 @login_required
 @superuser_required
 def offers_list(request):
-    products = Product.objects.filter(is_on_sale=True).order_by('-id')
+    products = Product.objects.filter(is_on_sale=True).order_by("-id")
     return render(request, "admin/product_offers_list.html", {"products": products})
+
 
 @login_required
 @superuser_required
 def product_offers_list(request):
-    products = Product.objects.filter(is_on_sale=True).order_by('-id')
+    products = Product.objects.filter(is_on_sale=True).order_by("-id")
     return render(request, "admin/product_offers_list.html", {"products": products})
+
 
 @login_required
 @superuser_required
 def category_offers_list(request):
-    category_offers = CategoryOffer.objects.all().order_by('-id')
-    return render(request, "admin/category_offers_list.html", {"category_offers": category_offers})
+    category_offers = CategoryOffer.objects.all().order_by("-id")
+    return render(
+        request, "admin/category_offers_list.html", {"category_offers": category_offers}
+    )
+
 
 @login_required
 @superuser_required
 def add_category_offer(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = CategoryOfferForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Category Offer added successfully!")
-            return redirect('category_offers_list')
+            return redirect("category_offers_list")
         else:
             messages.error(request, "There was an error adding the category offer.")
     else:
         form = CategoryOfferForm()
-    return render(request, 'admin/add_category_offer.html', {'form': form})
+    return render(request, "admin/add_category_offer.html", {"form": form})
+
 
 @login_required
 @superuser_required
 def edit_category_offer(request, offer_id):
     category_offer = get_object_or_404(CategoryOffer, id=offer_id)
-    if request.method == 'POST':
+    if request.method == "POST":
         form = CategoryOfferForm(request.POST, instance=category_offer)
         if form.is_valid():
             form.save()
             messages.success(request, "Category Offer updated successfully!")
-            return redirect('category_offers_list')
+            return redirect("category_offers_list")
         else:
             messages.error(request, "There was an error updating the category offer.")
     else:
         form = CategoryOfferForm(instance=category_offer)
-    return render(request, 'admin/add_category_offer.html', {'form': form})
+    return render(request, "admin/add_category_offer.html", {"form": form})
+
 
 @login_required
 @superuser_required
@@ -958,30 +1003,35 @@ def delete_category_offer(request, offer_id):
     category_offer = get_object_or_404(CategoryOffer, id=offer_id)
     category_offer.delete()
     messages.success(request, "Category Offer deleted successfully.")
-    return redirect('category_offers_list')
+    return redirect("category_offers_list")
+
 
 @login_required
 @superuser_required
 def view_return_requests(request):
-    return_requests = ProductReturnRequest.objects.all().order_by('-id')
+    return_requests = ProductReturnRequest.objects.all().order_by("-id")
     paginator = Paginator(return_requests, 9)
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "admin/view_return_requests.html", {
-        "return_requests": page_obj,
-    })
+    return render(
+        request,
+        "admin/view_return_requests.html",
+        {
+            "return_requests": page_obj,
+        },
+    )
 
 
 def approve_request(request, request_id):
     return_request = get_object_or_404(ProductReturnRequest, id=request_id)
-    if return_request.status == 'APPROVED':
+    if return_request.status == "APPROVED":
         messages.error(request, "Request has already been approved.")
-        return redirect('view_return_requests')
-    message = request.POST.get('return-message')
+        return redirect("view_return_requests")
+    message = request.POST.get("return-message")
     if message:
         return_request.message = message
-    return_request.status = 'APPROVED'
+    return_request.status = "APPROVED"
     return_request.save()
     Notification.objects.create(
         user=return_request.user,
@@ -991,18 +1041,21 @@ def approve_request(request, request_id):
     user = return_request.user
     user.wallet.add_funds(return_request.refund_amount)
     user.wallet.save()
-    messages.success(request, "Request approved successfully. Refund added to user's wallet.")
-    return redirect('view_return_requests')
+    messages.success(
+        request, "Request approved successfully. Refund added to user's wallet."
+    )
+    return redirect("view_return_requests")
+
 
 def reject_request(request, request_id):
     return_request = get_object_or_404(ProductReturnRequest, id=request_id)
-    if return_request.status == 'REJECTED':
+    if return_request.status == "REJECTED":
         messages.error(request, "Request has already been rejected.")
-        return redirect('view_return_requests')
-    message = request.POST.get('return-message')
+        return redirect("view_return_requests")
+    message = request.POST.get("return-message")
     if message:
         return_request.message = message
-    return_request.status = 'REJECTED'
+    return_request.status = "REJECTED"
     return_request.save()
     Notification.objects.create(
         user=return_request.user,
@@ -1010,4 +1063,4 @@ def reject_request(request, request_id):
         action_url="/return-request-list",
     )
     messages.success(request, "Request rejected successfully.")
-    return redirect('view_return_requests')
+    return redirect("view_return_requests")

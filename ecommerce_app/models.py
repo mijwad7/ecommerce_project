@@ -14,8 +14,6 @@ from phonenumber_field.modelfields import PhoneNumberField
 from decimal import Decimal, ROUND_DOWN
 
 
-
-
 class UserProfile(AbstractUser):
     email = models.EmailField(unique=True, null=True, blank=True)
     is_blocked = models.BooleanField(default=False)
@@ -27,13 +25,15 @@ class UserProfile(AbstractUser):
 
 class Address(models.Model):
     ADDRESS_TYPES = [
-        ('billing', 'Billing'),
-        ('shipping', 'Shipping'),
-        ('office', 'Office'),
-        ('home', 'Home'),
+        ("billing", "Billing"),
+        ("shipping", "Shipping"),
+        ("office", "Office"),
+        ("home", "Home"),
     ]
-    
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='addresses')
+
+    user = models.ForeignKey(
+        UserProfile, on_delete=models.CASCADE, related_name="addresses"
+    )
     line_1 = models.TextField()
     line_2 = models.TextField(null=True, blank=True)
     city = models.CharField(max_length=50)
@@ -43,13 +43,18 @@ class Address(models.Model):
     address_type = models.CharField(max_length=20, choices=ADDRESS_TYPES)
 
     def __str__(self):
-        return f"{self.user.username} - {self.get_address_type_display()} - {self.line_1}"
-    
+        return (
+            f"{self.user.username} - {self.get_address_type_display()} - {self.line_1}"
+        )
+
     def save(self, *args, **kwargs):
         if self.is_primary:
             # Make sure no other addresses are marked as primary for this user
-            Address.objects.filter(user=self.user, is_primary=True).update(is_primary=False)
+            Address.objects.filter(user=self.user, is_primary=True).update(
+                is_primary=False
+            )
         super(Address, self).save(*args, **kwargs)
+
 
 class CategoryQuerySet(models.QuerySet):
     def active(self):
@@ -88,15 +93,18 @@ class Category(models.Model):
         # Proceed to soft delete the category
         self.is_deleted = True
         self.save()
-        
+
         # Optionally, also delist the products if required
         products.update(is_deleted=True)
 
     def __str__(self):
         return self.name
-    
+
+
 class CategoryOffer(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='offers')
+    category = models.ForeignKey(
+        Category, on_delete=models.CASCADE, related_name="offers"
+    )
     discount_percent = models.DecimalField(max_digits=5, decimal_places=2)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
@@ -113,11 +121,15 @@ class CategoryOffer(models.Model):
         if self.is_active:
             for product in self.category.products.all():
                 product.is_on_sale = True
-                discount_multiplier = Decimal(1) - (Decimal(self.discount_percent) / Decimal(100))
+                discount_multiplier = Decimal(1) - (
+                    Decimal(self.discount_percent) / Decimal(100)
+                )
                 sale_price = product.price * discount_multiplier
-                
+
                 # Round sale_price to two decimal places
-                product.sale_price = sale_price.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+                product.sale_price = sale_price.quantize(
+                    Decimal("0.01"), rounding=ROUND_DOWN
+                )
                 product.save()
         else:
             for product in self.category.products.all():
@@ -165,10 +177,13 @@ class Brand(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(max_length=20)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='tags')
+    category = models.ForeignKey(
+        Category, on_delete=models.CASCADE, related_name="tags"
+    )
 
     def __str__(self):
         return self.name
+
 
 class ProductQuerySet(models.QuerySet):
     def active(self):
@@ -213,7 +228,9 @@ class Product(models.Model):
     sale_price = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
+    category = models.ForeignKey(
+        Category, on_delete=models.CASCADE, related_name="products"
+    )
     brand = models.ForeignKey(
         Brand, on_delete=models.CASCADE, related_name="products", blank=True, null=True
     )
@@ -388,7 +405,9 @@ class Review(models.Model):
 
 
 class Cart(models.Model):
-    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name="cart")
+    user = models.OneToOneField(
+        UserProfile, on_delete=models.CASCADE, related_name="cart"
+    )
 
     def __str__(self):
         return f"{self.user.username} - {self.total_price}"
@@ -407,7 +426,9 @@ class CartProduct(models.Model):
     )
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
-    variant = models.ForeignKey(ProductVariant, null=True, blank=True, on_delete=models.SET_NULL)
+    variant = models.ForeignKey(
+        ProductVariant, null=True, blank=True, on_delete=models.SET_NULL
+    )
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
     is_checked_out = models.BooleanField(default=False)
 
@@ -431,13 +452,17 @@ class CartProduct(models.Model):
         # Determine the price based on variant or base product
         if self.variant:
             price = (
-                self.variant.sale_price if self.variant.is_on_sale else self.variant.price
+                self.variant.sale_price
+                if self.variant.is_on_sale
+                else self.variant.price
             )
         else:
             price = (
-                self.product.sale_price if self.product.is_on_sale else self.product.price
+                self.product.sale_price
+                if self.product.is_on_sale
+                else self.product.price
             )
-        
+
         # Automatically set the total price based on the determined price and quantity
         self.total_price = price * self.quantity
         super().save(*args, **kwargs)
@@ -445,26 +470,36 @@ class CartProduct(models.Model):
 
 class Order(models.Model):
     ORDER_STATUS_CHOICES = [
-        ('PENDING', 'Pending'),
-        ('CONFIRMED', 'Confirmed'),
-        ('SHIPPED', 'Shipped'),
-        ('DELIVERED', 'Delivered'),
-        ('CANCELLED', 'Cancelled'),
+        ("PENDING", "Pending"),
+        ("CONFIRMED", "Confirmed"),
+        ("SHIPPED", "Shipped"),
+        ("DELIVERED", "Delivered"),
+        ("CANCELLED", "Cancelled"),
     ]
 
     PAYMENT_METHOD_CHOICES = [
-        ('COD', 'Cash on Delivery'),
-        ('ONLINE', 'Online Payment'),
+        ("COD", "Cash on Delivery"),
+        ("ONLINE", "Online Payment"),
     ]
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    order_status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='PENDING')
-    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='COD')
+    order_status = models.CharField(
+        max_length=20, choices=ORDER_STATUS_CHOICES, default="PENDING"
+    )
+    payment_method = models.CharField(
+        max_length=20, choices=PAYMENT_METHOD_CHOICES, default="COD"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    applied_coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
-    original_total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    wallet_deduction = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    applied_coupon = models.ForeignKey(
+        Coupon, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    original_total_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    wallet_deduction = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
 
     address_line_1 = models.TextField()
     address_line_2 = models.TextField(null=True, blank=True)
@@ -477,25 +512,30 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True, blank=True)
+    variant = models.ForeignKey(
+        ProductVariant, on_delete=models.SET_NULL, null=True, blank=True
+    )
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
 
+
 class Wishlist(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    products = models.ManyToManyField(Product, related_name='wishlisted_by', blank=True)
+    products = models.ManyToManyField(Product, related_name="wishlisted_by", blank=True)
 
     def __str__(self):
         return f"{self.user.username}'s Wishlist"
 
 
 class Wallet(models.Model):
-    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name="wallet")
+    user = models.OneToOneField(
+        UserProfile, on_delete=models.CASCADE, related_name="wallet"
+    )
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     last_updated = models.DateTimeField(auto_now=True)
 
@@ -514,24 +554,32 @@ class Wallet(models.Model):
         return f"{self.user.username}'s Wallet - Balance: ₹{self.balance}"
 
 
-
 class ProductReturnRequest(models.Model):
     RETURN_STATUS_CHOICES = [
-        ('PENDING', 'Pending'),
-        ('APPROVED', 'Approved'),
-        ('REJECTED', 'Rejected'),
+        ("PENDING", "Pending"),
+        ("APPROVED", "Approved"),
+        ("REJECTED", "Rejected"),
     ]
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    order_item = models.OneToOneField(OrderItem, on_delete=models.CASCADE, null=True, blank=True)
+    order_item = models.OneToOneField(
+        OrderItem, on_delete=models.CASCADE, null=True, blank=True
+    )
     reason = models.TextField()
-    refund_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    status = models.CharField(max_length=20, choices=RETURN_STATUS_CHOICES, default='PENDING')
+    refund_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    status = models.CharField(
+        max_length=20, choices=RETURN_STATUS_CHOICES, default="PENDING"
+    )
     requested_at = models.DateTimeField(auto_now_add=True)
     message = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"Return Request for {self.order_item.product.name} by {self.user.username}"
-    
+        return (
+            f"Return Request for {self.order_item.product.name} by {self.user.username}"
+        )
+
+
 class Notification(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     message = models.TextField()

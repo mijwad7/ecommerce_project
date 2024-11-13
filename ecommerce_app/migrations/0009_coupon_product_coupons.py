@@ -6,24 +6,37 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ecommerce_app', '0008_alter_review_comment_alter_review_rating_productspec'),
+        ("ecommerce_app", "0008_alter_review_comment_alter_review_rating_productspec"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Coupon',
+            name="Coupon",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.CharField(max_length=20)),
-                ('discount_percent', models.DecimalField(decimal_places=2, max_digits=5)),
-                ('star_date', models.DateTimeField()),
-                ('end_date', models.DateTimeField()),
-                ('is_active', models.BooleanField(default=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("code", models.CharField(max_length=20)),
+                (
+                    "discount_percent",
+                    models.DecimalField(decimal_places=2, max_digits=5),
+                ),
+                ("star_date", models.DateTimeField()),
+                ("end_date", models.DateTimeField()),
+                ("is_active", models.BooleanField(default=True)),
             ],
         ),
         migrations.AddField(
-            model_name='product',
-            name='coupons',
-            field=models.ManyToManyField(blank=True, related_name='products', to='ecommerce_app.coupon'),
+            model_name="product",
+            name="coupons",
+            field=models.ManyToManyField(
+                blank=True, related_name="products", to="ecommerce_app.coupon"
+            ),
         ),
     ]

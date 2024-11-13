@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ecommerce_app', '0033_remove_order_address_alter_order_address_line_1_and_more'),
+        (
+            "ecommerce_app",
+            "0033_remove_order_address_alter_order_address_line_1_and_more",
+        ),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='order',
-            name='wallet_deduction',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True),
+            model_name="order",
+            name="wallet_deduction",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=10, null=True
+            ),
         ),
     ]

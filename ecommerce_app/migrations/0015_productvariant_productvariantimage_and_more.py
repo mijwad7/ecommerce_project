@@ -7,34 +7,89 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ecommerce_app', '0014_brand_product_brand'),
+        ("ecommerce_app", "0014_brand_product_brand"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ProductVariant',
+            name="ProductVariant",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text='Variant name (e.g., iPhone 15 Pro, Blue)', max_length=100)),
-                ('variant_type', models.CharField(help_text='Type of variant (e.g., model, color, size)', max_length=50)),
-                ('value', models.CharField(help_text='Specific variant value (e.g., Blue, 128GB)', max_length=50)),
-                ('stock', models.PositiveIntegerField()),
-                ('price', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('is_on_sale', models.BooleanField(default=False)),
-                ('sale_price', models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True)),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='variants', to='ecommerce_app.product')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Variant name (e.g., iPhone 15 Pro, Blue)",
+                        max_length=100,
+                    ),
+                ),
+                (
+                    "variant_type",
+                    models.CharField(
+                        help_text="Type of variant (e.g., model, color, size)",
+                        max_length=50,
+                    ),
+                ),
+                (
+                    "value",
+                    models.CharField(
+                        help_text="Specific variant value (e.g., Blue, 128GB)",
+                        max_length=50,
+                    ),
+                ),
+                ("stock", models.PositiveIntegerField()),
+                ("price", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("is_on_sale", models.BooleanField(default=False)),
+                (
+                    "sale_price",
+                    models.DecimalField(
+                        blank=True, decimal_places=2, max_digits=10, null=True
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="variants",
+                        to="ecommerce_app.product",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ProductVariantImage',
+            name="ProductVariantImage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('image', models.ImageField(upload_to='variant_images/')),
-                ('variant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='images', to='ecommerce_app.productvariant')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("image", models.ImageField(upload_to="variant_images/")),
+                (
+                    "variant",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="images",
+                        to="ecommerce_app.productvariant",
+                    ),
+                ),
             ],
         ),
         migrations.AddConstraint(
-            model_name='productvariant',
-            constraint=models.UniqueConstraint(fields=('product', 'variant_type', 'value'), name='unique_variant'),
+            model_name="productvariant",
+            constraint=models.UniqueConstraint(
+                fields=("product", "variant_type", "value"), name="unique_variant"
+            ),
         ),
     ]

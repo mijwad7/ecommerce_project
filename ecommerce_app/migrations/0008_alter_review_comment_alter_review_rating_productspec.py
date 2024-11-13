@@ -8,27 +8,47 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ecommerce_app', '0007_review'),
+        ("ecommerce_app", "0007_review"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='review',
-            name='comment',
+            model_name="review",
+            name="comment",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='review',
-            name='rating',
-            field=models.IntegerField(validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(5)]),
+            model_name="review",
+            name="rating",
+            field=models.IntegerField(
+                validators=[
+                    django.core.validators.MinValueValidator(1),
+                    django.core.validators.MaxValueValidator(5),
+                ]
+            ),
         ),
         migrations.CreateModel(
-            name='ProductSpec',
+            name="ProductSpec",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('key', models.CharField(max_length=50)),
-                ('value', models.CharField(max_length=100)),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='specs', to='ecommerce_app.product')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("key", models.CharField(max_length=50)),
+                ("value", models.CharField(max_length=100)),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="specs",
+                        to="ecommerce_app.product",
+                    ),
+                ),
             ],
         ),
     ]

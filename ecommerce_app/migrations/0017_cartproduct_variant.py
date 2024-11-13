@@ -7,13 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ecommerce_app', '0016_product_max_per_user_cart_cartproduct'),
+        ("ecommerce_app", "0016_product_max_per_user_cart_cartproduct"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='cartproduct',
-            name='variant',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='ecommerce_app.productvariant'),
+            model_name="cartproduct",
+            name="variant",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="ecommerce_app.productvariant",
+            ),
         ),
     ]

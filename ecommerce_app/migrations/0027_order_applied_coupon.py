@@ -7,13 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ecommerce_app', '0026_wishlist'),
+        ("ecommerce_app", "0026_wishlist"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='order',
-            name='applied_coupon',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='ecommerce_app.coupon'),
+            model_name="order",
+            name="applied_coupon",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="ecommerce_app.coupon",
+            ),
         ),
     ]

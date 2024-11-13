@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ecommerce_app', '0020_order_orderitem'),
+        ("ecommerce_app", "0020_order_orderitem"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='cartproduct',
-            name='is_checked_out',
+            model_name="cartproduct",
+            name="is_checked_out",
             field=models.BooleanField(default=False),
         ),
     ]

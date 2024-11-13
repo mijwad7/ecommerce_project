@@ -10,9 +10,10 @@ def adjust_stock_on_order(sender, instance, created, **kwargs):
         instance.product.stock -= instance.quantity
         instance.product.save()
 
+
 @receiver(post_save, sender=Order)
 def adjust_stock_on_order_status_change(sender, instance, **kwargs):
-    if instance.order_status == 'CANCELLED':
+    if instance.order_status == "CANCELLED":
         for item in instance.items.all():
             item.product.stock += item.quantity
             item.product.save()
@@ -21,6 +22,6 @@ def adjust_stock_on_order_status_change(sender, instance, **kwargs):
 @receiver(post_save, sender=ProductReturnRequest)
 def update_stock_on_return_request(sender, instance, **kwargs):
     # Increase stock based on the quantity of the returned ProductReturnRequest
-    if instance.status == 'APPROVED':
+    if instance.status == "APPROVED":
         instance.order_item.product.stock += instance.order_item.quantity
         instance.order_item.product.save()

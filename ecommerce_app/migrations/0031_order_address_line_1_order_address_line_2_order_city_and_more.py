@@ -6,33 +6,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ecommerce_app', '0030_categoryoffer'),
+        ("ecommerce_app", "0030_categoryoffer"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='order',
-            name='address_line_1',
-            field=models.TextField(default='Unknown'),
+            model_name="order",
+            name="address_line_1",
+            field=models.TextField(default="Unknown"),
         ),
         migrations.AddField(
-            model_name='order',
-            name='address_line_2',
+            model_name="order",
+            name="address_line_2",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='order',
-            name='city',
-            field=models.CharField(default='Unknown', max_length=50),
+            model_name="order",
+            name="city",
+            field=models.CharField(default="Unknown", max_length=50),
         ),
         migrations.AddField(
-            model_name='order',
-            name='post_code',
-            field=models.CharField(default='0', max_length=6),
+            model_name="order",
+            name="post_code",
+            field=models.CharField(default="0", max_length=6),
         ),
         migrations.AddField(
-            model_name='order',
-            name='state',
-            field=models.CharField(default='Unknown', max_length=50),
+            model_name="order",
+            name="state",
+            field=models.CharField(default="Unknown", max_length=50),
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ecommerce_app', '0035_productreturnrequest'),
+        ("ecommerce_app", "0035_productreturnrequest"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='productreturnrequest',
-            name='message',
+            model_name="productreturnrequest",
+            name="message",
             field=models.TextField(blank=True, null=True),
         ),
     ]
