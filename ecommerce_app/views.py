@@ -27,6 +27,10 @@ from .otp_utils import send_otp_to_email
 
 @never_cache
 def user_signup(request):
+    """
+    Handles user signup. If the form is valid, creates a user and sends an OTP to their email.
+    The user is disabled until the OTP is verified.
+    """
     if request.method == "POST":
         form = UserSignUpForm(request.POST)
         if form.is_valid():
@@ -46,6 +50,11 @@ def user_signup(request):
 
 
 def verify_otp(request):
+    """
+    Handles OTP verification for user sign up. If the OTP is valid, enables the user account and redirects to login.
+    If the OTP is invalid or expired, shows an error message. If the user clicks the resend OTP button, sends a new OTP to
+    their email and shows a success message.
+    """
     if request.method == "POST":
         if "resend_otp" in request.POST:
             user_id = request.session.get("user_id")
@@ -142,6 +151,20 @@ def terms_of_service(request):
 
 @never_cache
 def products(request):
+    """
+    Lists all products with filtering and sorting options.
+
+    Parameters:
+        request.GET: query string parameters, including
+            query: search query
+            category: category name
+            brand: brand id
+            sort: sorting option, one of "id", "A-Z", "Z-A", "newest", "low-high", "high-low", "rating", "featured"
+            tags: list of tag names
+
+    Returns:
+        rendered HTML page with products list
+    """
     query = request.GET.get("query")
     category_name = request.GET.get("category")
     brand_id = request.GET.get("brand")
@@ -214,6 +237,15 @@ def products(request):
 
 @never_cache
 def product_detail(request, product_id):
+    """
+    Product detail page.
+
+    This view renders the product detail page with all its reviews, specifications, and related products.
+
+    :param request: The request object
+    :param product_id: The ID of the product to be displayed
+    :return: The rendered HTML page
+    """
     product = get_object_or_404(Product, id=product_id)
 
     reviews = Review.objects.filter(product=product)
@@ -261,6 +293,19 @@ def product_detail(request, product_id):
 
 
 def get_variant_details(request, variant_id):
+    """
+    Returns a JSON response containing details about a specific product variant.
+
+    The response contains the variant's price, sale price, whether it is on sale,
+    the stock available, and a list of image URLs.
+
+    Args:
+        request (django.http.HttpRequest): The request object.
+        variant_id (int): The ID of the product variant to get details about.
+
+    Returns:
+        django.http.JsonResponse: A JSON response containing the variant details.
+    """
     variant = ProductVariant.objects.get(id=variant_id)
     images = [{"image_url": img.image.url} for img in variant.images.all()]
 
@@ -493,6 +538,25 @@ def change_password(request):
 
 @login_required
 def checkout(request):
+    """
+    Handles the checkout process for a user.
+
+    Retrieves the user's cart and available shipping addresses. Processes the
+    checkout form submission, applying a coupon if provided, and determining the
+    total price after discounts and wallet deductions. Supports payment methods
+    including online payments via PayPal and Cash on Delivery. Creates an order
+    upon successful payment or checkout, and redirects to the order confirmation
+    page. If the request method is GET, renders the checkout page with the current
+    cart and address information.
+
+    Args:
+        request (HttpRequest): The HTTP request object containing user data and
+        form submission details.
+
+    Returns:
+        HttpResponse: Redirects to order confirmation on success, or re-renders
+        the checkout template with error messages on failure.
+    """
     user = request.user
     cart = get_object_or_404(Cart, user=user)
     addresses = Address.objects.filter(user=user, address_type="shipping")
@@ -672,6 +736,24 @@ def checkout(request):
 
 @login_required
 def payment_complete(request):
+    """
+    Handles the completion of an online payment through PayPal.
+
+    This function is called when the payment is successfully executed via PayPal. 
+    It verifies the payment, creates an order and order items if the payment is 
+    successful, and updates the wallet and cart accordingly. It also manages 
+    session data related to the payment process and displays appropriate messages 
+    to the user based on the payment outcome.
+
+    Args:
+        request (HttpRequest): The HTTP request object containing GET parameters 
+                               `paymentId` and `PayerID` for payment verification.
+
+    Returns:
+        HttpResponse: Redirects to the order confirmation page if payment is 
+                      successful, otherwise redirects back to the checkout page 
+                      with an error message.
+    """
     payment_id = request.GET.get("paymentId")
     payer_id = request.GET.get("PayerID")
 
@@ -745,6 +827,23 @@ def payment_complete(request):
 
 @login_required
 def apply_coupon(request):
+    """
+    View to apply a coupon to the current cart.
+
+    If the coupon is valid and within its validity period, it will be applied to the cart and the new total will be returned as a JSON response.
+    If the coupon is invalid or expired, an error message will be returned as a JSON response.
+    If the user has already used the coupon, an error message will be returned as a JSON response.
+    If the request method is not POST, an error message will be returned as a JSON response.
+
+    Required parameters in the POST request:
+        coupon_code: The code of the coupon to be applied
+
+    Returns a JSON response with the following keys:
+        status: A string indicating the status of the request ("success" or "error")
+        message: An error message if the request was unsuccessful
+        new_total: The new total of the cart if the request was successful
+        discount: The discount amount if the request was successful
+    """
     if request.method == "POST":
         coupon_code = request.POST.get("coupon_code")
         cart = get_object_or_404(Cart, user=request.user)
