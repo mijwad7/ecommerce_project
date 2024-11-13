@@ -114,6 +114,10 @@ def add_category(request):
     if request.method == "POST":
         category_name = request.POST.get("category_name")
         if category_name:
+            category_name = category_name.strip()
+            if Category.objects.filter(name__iexact=category_name).exists():
+                messages.error(request, "Category already exists")
+                return redirect("add_category")
             Category.objects.create(name=category_name)
             messages.success(request, "Category added successfully!")
             return redirect("categories_list")
@@ -165,6 +169,10 @@ def add_brand(request):
     if request.method == "POST":
         brand_name = request.POST.get("brand_name")
         if brand_name:
+            brand_name = brand_name.strip()
+            if Brand.objects.filter(name__iexact=brand_name).exists():
+                messages.error(request, "Brand already exists")
+                return redirect("add_brand")
             Brand.objects.create(name=brand_name)
             messages.success(request, "Brand added successfully!")
             return redirect("brands_list")
@@ -580,6 +588,10 @@ def add_tag(request):
         category = Category.objects.filter(id=category_id).first()
 
         if tag_name and category:
+            tag_name = tag_name.strip()
+            if Tag.objects.filter(name__iexact=tag_name).exists():
+                messages.error(request, "Tag already exists")
+                return redirect("add_tag")
             Tag.objects.create(name=tag_name, category=category)
             messages.success(request, "Tag added successfully!")
             return redirect("tags_list")

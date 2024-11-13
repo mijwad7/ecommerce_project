@@ -72,7 +72,7 @@ class CategoryManager(models.Manager):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=20, unique=True)
     is_deleted = models.BooleanField(default=False)
 
     objects = CategoryManager()
@@ -157,7 +157,7 @@ class BrandManager(models.Manager):
 
 
 class Brand(models.Model):
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=20, unique=True)
     is_deleted = models.BooleanField(default=False)
 
     objects = BrandManager()
@@ -175,7 +175,7 @@ class Brand(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=20, unique=True)
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, related_name="tags"
     )
@@ -201,7 +201,7 @@ class ProductManager(models.Manager):
 
 
 class Coupon(models.Model):
-    code = models.CharField(max_length=20)
+    code = models.CharField(max_length=20, unique=True)
     discount_percent = models.DecimalField(max_digits=5, decimal_places=2)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()

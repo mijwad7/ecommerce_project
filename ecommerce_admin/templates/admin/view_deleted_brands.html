@@ -1,43 +1,40 @@
-{% extends "./base.html" %}
+{% extends './base.html' %}
 
 {% block content %}
-<h2>Deleted Product List</h2>
-<a href="{% url 'products_list' %}" class="btn btn-black mb-2">Back to Products</a>
+<h2>Deleted Brands</h2>
+<a href="{% url 'brands_list' %}" class="btn btn-black mb-2">Back to Brands</a>
+
 <table class="table table-bordered">
     <thead>
         <tr>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Price</th>
+            <th>Brand</th>
             <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-        {% for product in products %}
+        {% for brand in brands %}
         <tr>
-            <td><a class="text-dark font-weight-bold" href="{% url 'product_detail' product.id %}">{{ product.name }}</a></td>
-            <td>{{ product.category }}</td>
-            <td>₹{{ product.price }}</td>
+            <td>{{ brand.name }}</td>
             <td>
-                <!-- Button to trigger modal -->
-                <button type="button" class="btn btn-black" data-bs-toggle="modal" data-bs-target="#restoreModal{{ product.id }}">
+                <!-- Trigger Restore Modal -->
+                <button type="button" class="btn btn-black" data-bs-toggle="modal" data-bs-target="#restoreModal{{ brand.id }}">
                     Restore
                 </button>
             </td>
         </tr>
 
-        <!-- Modal -->
-        <div class="modal fade" id="restoreModal{{ product.id }}" tabindex="-1" aria-labelledby="restoreModalLabel" aria-hidden="true">
+        <!-- Restore Confirmation Modal -->
+        <div class="modal fade" id="restoreModal{{ brand.id }}" tabindex="-1" aria-labelledby="restoreModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="restoreModalLabel">Confirm Restore</h5>
                     </div>
                     <div class="modal-body">
-                        Are you sure you want to restore {{ product.name }}?
+                        Are you sure you want to restore the brand "{{ brand.name }}"?
                     </div>
                     <div class="modal-footer">
-                        <form method="post" action="{% url 'restore_product' product.id %}">
+                        <form method="post" action="{% url 'restore_brand' brand.id %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-success">Yes, Restore</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -49,5 +46,4 @@
         {% endfor %}
     </tbody>
 </table>
-
 {% endblock %}

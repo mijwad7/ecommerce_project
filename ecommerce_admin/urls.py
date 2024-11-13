@@ -53,6 +53,11 @@ urlpatterns = [
         name="restore_category",
     ),
     path(
+        "restore_brand/<int:brand_id>/",
+        views.restore_brand,
+        name="restore_brand",
+    ),
+    path(
         "add_product_variant/<int:product_id>/",
         views.add_product_variant,
         name="add_product_variant",
