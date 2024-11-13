@@ -1,50 +1,30 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from decimal import Decimal
+
+import paypalrestsdk
+from currency_converter import CurrencyConverter
+from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-from .models import (
-    Product,
-    UserProfile,
-    EmailOTPDevice,
-    Review,
-    ProductSpec,
-    Category,
-    ProductVariant,
-    Cart,
-    CartProduct,
-    Notification,
-    Address,
-    Brand,
-    Order,
-    OrderItem,
-    Tag,
-    Wishlist,
-    Coupon,
-    Wallet,
-    CategoryOffer,
-    ProductReturnRequest,
-)
+from django.contrib.auth import (authenticate, login, logout,
+                                 update_session_auth_hash)
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
-from .forms import (
-    UserSignUpForm,
-    AddressForm,
-    UserEditForm,
-    CustomPasswordChangeForm,
-    ReviewForm,
-)
-from .otp_utils import send_otp_to_email
-from django.db.models import Avg, Count, Q
-from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
 from django.core.paginator import Paginator
-import paypalrestsdk
-from django.conf import settings
+from django.db.models import Avg, Count, Q
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from currency_converter import CurrencyConverter
-from decimal import Decimal
+from django.utils import timezone
 from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt
+
+from .forms import (AddressForm, CustomPasswordChangeForm, ReviewForm,
+                    UserEditForm, UserSignUpForm)
+from .models import (Address, Brand, Cart, CartProduct, Category,
+                     CategoryOffer, Coupon, EmailOTPDevice, Notification,
+                     Order, OrderItem, Product, ProductReturnRequest,
+                     ProductSpec, ProductVariant, Review, Tag, UserProfile,
+                     Wallet, Wishlist)
+from .otp_utils import send_otp_to_email
 
 
 @never_cache

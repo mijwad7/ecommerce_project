@@ -1,46 +1,29 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
-from ecommerce_app.models import (
-    UserProfile,
-    Category,
-    Product,
-    ProductImage,
-    ProductSpec,
-    Brand,
-    ProductVariantImage,
-    ProductVariant,
-    Order,
-    Tag,
-    Coupon,
-    CategoryOffer,
-    ProductReturnRequest,
-    Notification,
-    OrderItem,
-)
-from .forms import (
-    UserProfileForm,
-    LoginForm,
-    ProductForm,
-    ProductSpecFormSet,
-    ProductVariantForm,
-    CouponForm,
-    CategoryOfferForm,
-)
-from django.contrib.auth.decorators import login_required
+import io
+import json
+from datetime import datetime, timedelta
+
+import plotly
+import plotly.express as px
 from django.contrib import messages
-from django.http import HttpResponseForbidden
-from django.db.models import Q, Sum, Count, F, Value, DecimalField, Case, When
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Case, Count, DecimalField, F, Q, Sum, Value, When
+from django.http import HttpResponse, HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from datetime import timedelta, datetime
-from django.http import HttpResponse
+from openpyxl import Workbook
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-import io
-from openpyxl import Workbook
-import plotly.express as px
-import json
-import plotly
-from django.core.paginator import Paginator
+
+from ecommerce_app.models import (Brand, Category, CategoryOffer, Coupon,
+                                  Notification, Order, OrderItem, Product,
+                                  ProductImage, ProductReturnRequest,
+                                  ProductSpec, ProductVariant,
+                                  ProductVariantImage, Tag, UserProfile)
+
+from .forms import (CategoryOfferForm, CouponForm, LoginForm, ProductForm,
+                    ProductSpecFormSet, ProductVariantForm, UserProfileForm)
 
 
 def superuser_required(view_func):

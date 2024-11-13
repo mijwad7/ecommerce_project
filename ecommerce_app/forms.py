@@ -1,6 +1,7 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
-from .models import UserProfile, Address, Order, Review
+from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
+
+from .models import Address, Order, Review, UserProfile
 
 
 class UserSignUpForm(UserCreationForm):

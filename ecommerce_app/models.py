@@ -1,17 +1,17 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator, MaxValueValidator
-from django.utils import timezone
-from datetime import timedelta
-from PIL import Image as PilImage
-from django_otp.models import Device
-from django.contrib.auth.models import User
-import random
 import os
+import random
+from datetime import timedelta
+from decimal import ROUND_DOWN, Decimal
+
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser, User
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.utils import timezone
+from django_otp.models import Device
 from phonenumber_field.modelfields import PhoneNumberField
-from decimal import Decimal, ROUND_DOWN
+from PIL import Image as PilImage
 
 
 class UserProfile(AbstractUser):

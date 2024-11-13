@@ -1,14 +1,8 @@
 from django import forms
-from ecommerce_app.models import (
-    UserProfile,
-    Product,
-    ProductImage,
-    ProductSpec,
-    ProductVariant,
-    Coupon,
-    CategoryOffer,
-)
 from django.forms import inlineformset_factory
+
+from ecommerce_app.models import (CategoryOffer, Coupon, Product, ProductImage,
+                                  ProductSpec, ProductVariant, UserProfile)
 
 
 class UserProfileForm(forms.ModelForm):
