@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Case, Count, DecimalField, F, Q, Sum, Value, When
+from django.db.models import Case, DecimalField, F, Q, Sum, Value, When
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -17,7 +17,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 from ecommerce_app.models import (Brand, Category, CategoryOffer, Coupon,
-                                  Notification, Order, OrderItem, Product,
+                                  Notification, Order, Product,
                                   ProductImage, ProductReturnRequest,
                                   ProductSpec, ProductVariant,
                                   ProductVariantImage, Tag, UserProfile)

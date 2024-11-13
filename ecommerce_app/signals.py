@@ -1,7 +1,7 @@
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
-from .models import (CartProduct, Order, OrderItem, Product,
+from .models import (Order, OrderItem,
                      ProductReturnRequest)
 
 

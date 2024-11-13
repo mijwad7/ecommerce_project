@@ -1,4 +1,3 @@
-import os
 import random
 from datetime import timedelta
 from decimal import ROUND_DOWN, Decimal

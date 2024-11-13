@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 
-from ecommerce_app.models import (CategoryOffer, Coupon, Product, ProductImage,
+from ecommerce_app.models import (CategoryOffer, Coupon, Product,
                                   ProductSpec, ProductVariant, UserProfile)
 
 
