@@ -38,8 +38,9 @@ from django.conf import settings
 from django.urls import reverse
 from currency_converter import CurrencyConverter
 from decimal import Decimal
+from django.views.decorators.cache import never_cache
 
-
+@never_cache
 def user_signup(request):
     if request.method == "POST":
         form = UserSignUpForm(request.POST)
@@ -93,7 +94,7 @@ def verify_otp(request):
 
     return render(request, "app/verify_otp.html")
 
-
+@never_cache
 def user_login(request):
     if request.user.is_authenticated:
         return redirect("app:index")
@@ -112,7 +113,7 @@ def user_login(request):
             messages.error(request, "Invalid username or password.")
     return render(request, "app/login.html")
 
-
+@never_cache
 def user_logout(request):
     logout(request)
     return redirect("app:user_login")
@@ -126,7 +127,7 @@ def demo_login(request):
     else:
         return redirect("login")
 
-
+@never_cache
 def index(request):
     featured_products = Product.objects.filter(is_featured=True)[:3]
     on_sale_products = Product.objects.filter(is_on_sale=True)[:3]
@@ -148,7 +149,7 @@ def privacy_policy(request):
 def terms_of_service(request):
     return render(request, "app/terms.html")
 
-
+@never_cache
 def products(request):
     query = request.GET.get("query")
     category_name = request.GET.get("category")
@@ -219,7 +220,7 @@ def products(request):
         },
     )
 
-
+@never_cache
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
@@ -377,8 +378,8 @@ def add_to_cart(request, product_id):
         {"success": True, "message": f"Added {product.name} to your cart."}
     )
 
-
 @login_required
+@never_cache
 def view_cart(request):
     user = request.user
 
@@ -448,7 +449,7 @@ def delete_address(request, address_id):
     messages.success(request, "Address deleted successfully!")
     return redirect("app:view_profile")
 
-
+@never_cache
 @login_required
 def view_profile(request):
     username = request.user.username
@@ -780,7 +781,7 @@ def order_confirmation(request, order_id):
 
     return render(request, "app/order_confirmation.html", {"order": order})
 
-
+@never_cache
 @login_required
 def view_orders(request):
     orders = Order.objects.filter(user=request.user).order_by('-id')
@@ -898,7 +899,7 @@ def remove_from_wishlist(request, product_id):
 
     return redirect('app:wishlist')
 
-
+@never_cache
 @login_required
 def wishlist(request):
     wishlist = Wishlist.objects.get(user=request.user)

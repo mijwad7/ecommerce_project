@@ -34,7 +34,7 @@ ALLOWED_HOSTS = []
 # Application definition
 AUTH_USER_MODEL = 'ecommerce_app.UserProfile'
 
-LOGIN_URL = '/admin/login/'
+LOGIN_URL = '/login/'
 
 SITE_ID = 1
 
