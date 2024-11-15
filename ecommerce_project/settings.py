@@ -132,10 +132,10 @@ WSGI_APPLICATION = "ecommerce_project.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "ecommerce_database",
+        "NAME": "shophivedb",
         "USER": "postgres",
-        "PASSWORD": "9248",
-        "HOST": "localhost",
+        "PASSWORD": "AlifLamMeem",
+        "HOST": "shophivedb.cfiuoyaq6wbq.us-west-2.rds.amazonaws.com",
         "PORT": "5432",
     }
 }
