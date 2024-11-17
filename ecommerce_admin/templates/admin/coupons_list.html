@@ -12,8 +12,8 @@
         <tr>
             <th>Code</th>
             <th>Discount (%)</th>
-            <th>Start Date</th>
-            <th>End Date</th>
+            <th class="d-none d-md-block">Start Date</th>
+            <th class="d-none d-md-block">End Date</th>
             <th>Active</th>
             <th>Actions</th>
         </tr>
@@ -23,8 +23,8 @@
         <tr>
             <td>{{ coupon.code }}</td>
             <td>{{ coupon.discount_percent }}</td>
-            <td>{{ coupon.start_date }}</td>
-            <td>{{ coupon.end_date }}</td>
+            <td class="d-none d-md-block">{{ coupon.start_date }}</td>
+            <td class="d-none d-md-block">{{ coupon.end_date }}</td>
             <td>{% if coupon.is_active %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-x-circle-fill text-danger"></i>
                 {% endif %}</td>
             <td>
