@@ -28,17 +28,16 @@ SECRET_KEY = "django-insecure-x3rmf3f_*&92^rmvusayo*81n5obt9x5xw&zeb02rpnpyj71yw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['shophive.net.in', 'www.shophive.net.in', '127.0.0.1']
+ALLOWED_HOSTS = ['shophive.net.in', 'www.shophive.net.in', '*']
 
 CSRF_TRUSTED_ORIGINS = [
     'https://shophive.net.in',
-    'https://www.shophive.net.in',  # Add this if using www
+    'https://www.shophive.net.in',
 ]
 
 
 # Application definition
 AUTH_USER_MODEL = "ecommerce_app.UserProfile"
-
 LOGIN_URL = "/login/"
 
 SITE_ID = 1
