@@ -1112,3 +1112,22 @@ def mark_notification_as_read(request, notification_id):
     notification.is_read = True
     notification.save()
     return JsonResponse({"success": True})
+
+def wishlist_toggle(request):
+    if request.method == "POST":
+        product_id = request.POST.get("product_id")
+        product = get_object_or_404(Product, id=product_id)
+        user = request.user
+
+        wishlist, created = Wishlist.objects.get_or_create(user=user)
+
+        if product in wishlist.products.all():
+            # If already in wishlist, remove it
+            wishlist.products.remove(product)
+            return JsonResponse({"status": "success", "action": "remove"})
+        else:
+            # Add to wishlist
+            wishlist.products.add(product)
+            return JsonResponse({"status": "success", "action": "add"})
+
+    return JsonResponse({"status": "error", "message": "Invalid request"})
