@@ -50,15 +50,18 @@
       <p><i class="bi bi-building"></i> From {{ product.brand }}</p>
       {% endif %}
       {% if request.user.is_authenticated %}
-      <form method="post" class="form-inline mb-3" id="add-to-wishlist-form" data-url="{% url 'app:add_to_wishlist' %}">
+      <form method="post" class="wishlist-form" data-url="{% url 'app:wishlist_toggle' %}" 
+          data-action="{% if product in wishlist.products.all %}remove{% else %}add{% endif %}">
         {% csrf_token %}
         <input type="hidden" name="product_id" value="{{ product.id }}">
-        <button type="submit" class="btn btn-black">
-            <i class="bi bi-heart"></i> Add to Wishlist
+        <button type="submit" class="btn {% if product in wishlist.products.all %}btn-outline-dark{% else %}btn-black{% endif %}">
+            <i class="bi {% if product in wishlist.products.all %}bi-heart-fill{% else %}bi-heart{% endif %}"></i> 
+            {% if product in wishlist.products.all %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}
         </button>
       </form>
       {% endif %}
-      
+      <br>
+
       {% if variants %}
       <p class="h5"><i class="bi bi-card-list"></i> Variants:</p>
       <div id="variant-list" class="d-flex flex-wrap">
@@ -78,21 +81,26 @@
       {% endif %}
   
       <!-- Price and Rating Section -->
-      <div class="d-flex mb-2">
-          <span
-              class="h4"
-              {% if product.is_on_sale %}
-              style="text-decoration: line-through"
-              {% endif %}
-              id="product-price"
-          >₹{{ product.price|intcomma }} </span>
-          
-          {% if product.is_on_sale %}
-          <span class="h4 text-danger"> ₹{{ product.sale_price|intcomma }}</span>
-          {% endif %}
-          
-            <!-- Dynamic Stars -->
-            <span class="text-warning ml-2">
+      <div class="d-flex flex-column flex-md-row align-items-md-center mb-2">
+        <!-- Product Price -->
+        <div>
+            <span
+                class="h4"
+                {% if product.is_on_sale %}
+                style="text-decoration: line-through"
+                {% endif %}
+                id="product-price"
+            >
+                ₹{{ product.price|intcomma }}
+            </span>
+            {% if product.is_on_sale %}
+            <span class="h4 text-danger"> ₹{{ product.sale_price|intcomma }}</span>
+            {% endif %}
+        </div>
+    
+        <!-- Ratings Section -->
+        <div class="mt-2 mt-md-0 ml-md-3">
+            <span class="text-warning">
                 {% for i in "12345" %}
                     {% if review_score >= i %}
                         <i class="bi bi-star-fill"></i> <!-- Full Star -->
@@ -103,11 +111,12 @@
                     {% endif %}
                 {% endfor %}
             </span>
-            
+    
             <!-- Review Count -->
             <span class="text-muted ms-2">({{ num_reviews }} Reviews)</span>
-        
-      </div>
+        </div>
+    </div>
+    
   
       <!-- Stock Availability -->
       {% if product.stock > 0 %}
@@ -405,46 +414,41 @@
   });
 </script>
 <script>
-  $(document).on('submit', '#add-to-wishlist-form', function (e) {
+  $(document).on('submit', '.wishlist-form', function (e) {
       e.preventDefault();
-      
-      const url = $(this).data('url');
-      const formData = $(this).serialize();
-
+  
+      const form = $(this);
+      const url = form.data('url');
+      const formData = form.serialize();
+      const action = form.data('action'); // Current action: 'add' or 'remove'
+      const button = form.find('button');
+  
       $.ajax({
           type: 'POST',
           url: url,
           data: formData,
           success: function (response) {
-              let messageContainer = $("#message-container");
-
-                messageContainer.html("");
-
-                if (response.status === 'success') {
-                    messageContainer.append(`
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            ${response.message}
-                            <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-                              <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    `);
-                } else {
-                    messageContainer.append(`
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            ${response.message}
-                            <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-                              <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    `);
-                }
+              if (response.status === 'success') {
+                  // Toggle action between 'add' and 'remove'
+                  if (action === 'add') {
+                      form.data('action', 'remove');
+                      button.html('<i class="bi bi-heart-fill"></i> Remove from Wishlist');
+                      button.removeClass('btn-black').addClass('btn-outline-dark');
+                  } else {
+                      form.data('action', 'add');
+                      button.html('<i class="bi bi-heart"></i> Add to Wishlist');
+                      button.removeClass('btn-outline-dark').addClass('btn-black');
+                  }
+              } else {
+                  alert(response.message); // Show error message from server
+              }
           },
           error: function () {
-              alert('An error occurred while adding to wishlist.');
+              alert('An error occurred while toggling wishlist status.');
           }
       });
   });
+  
 </script>
 
 {% endblock %}

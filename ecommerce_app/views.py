@@ -130,6 +130,8 @@ def index(request):
     on_sale_products = Product.objects.filter(is_on_sale=True)[:3]
     recently_added_products = Product.objects.filter().order_by("-id")[:3]
 
+    wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+
     return render(
         request,
         "app/index.html",
@@ -137,6 +139,7 @@ def index(request):
             "featured_products": featured_products,
             "on_sale_products": on_sale_products,
             "recently_added_products": recently_added_products,
+            "wishlist": wishlist,
         },
     )
 
