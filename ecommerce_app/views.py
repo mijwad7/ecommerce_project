@@ -282,6 +282,8 @@ def product_detail(request, product_id):
 
     variants = ProductVariant.objects.filter(product=product)
 
+    wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+
     return render(
         request,
         "app/product_detail.html",
@@ -294,6 +296,7 @@ def product_detail(request, product_id):
             "coupons": coupons,
             "related_products": related_products,
             "variants": variants,
+            "wishlist": wishlist,
         },
     )
 
