@@ -130,7 +130,10 @@ def index(request):
     on_sale_products = Product.objects.filter(is_on_sale=True)[:3]
     recently_added_products = Product.objects.filter().order_by("-id")[:3]
 
-    wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+    if request.user.is_authenticated:
+        wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+    else:
+        wishlist = None
 
     return render(
         request,
@@ -224,8 +227,10 @@ def products(request):
     page_number = request.GET.get("page")
     paginated_products = paginator.get_page(page_number)
 
-    wishlist, created = Wishlist.objects.get_or_create(user=request.user)
-
+    if request.user.is_authenticated:
+        wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+    else:
+        wishlist = None
     return render(
         request,
         "app/products.html",
