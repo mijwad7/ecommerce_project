@@ -256,6 +256,9 @@ class Product(models.Model):
             raise ValidationError("Sale price must be set if the product is on sale.")
         if self.is_on_sale and self.sale_price >= self.price:
             raise ValidationError("Sale price must be less than the regular price.")
+        
+        if not self.is_on_sale and self.sale_price:
+            raise ValidationError("Sale price must be blank if the product is not on sale.")
 
         # if not self.images.exists() or self.images.count() < 3:
         #     raise ValidationError("Product must have at least 3 images.")
