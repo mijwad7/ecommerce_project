@@ -17,12 +17,14 @@
             <td>{{ tag.name }}</td>
             <td>{{ tag.category.name }}</td>
             <td>
-                <a href="{% url 'edit_tag' tag.id %}" class="btn btn-outline-dark">Edit</a>
-                
-                <!-- Trigger Modal -->
-                <button type="button" class="btn btn-black" data-bs-toggle="modal" data-bs-target="#deleteModal{{ tag.id }}">
-                    Delete
-                </button>
+                <div class="d-flex flex-wrap justify-content-center justify-content-md-start">
+                    <a class="btn btn-outline-dark mr-2 mb-2 mb-md-0" href="{% url 'edit_tag' tag.id %}">Edit</a>
+                    
+                    <!-- Trigger Modal -->
+                    <button type="button" class="btn btn-black mb-2 mb-md-0" data-bs-toggle="modal" data-bs-target="#deleteModal{{ tag.id }}">
+                        Delete
+                    </button>
+                </div>
             </td>
         </tr>
 
