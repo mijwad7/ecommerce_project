@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-x3rmf3f_*&92^rmvusayo*81n5obt9x5xw&zeb02rpnpyj71yw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['shophive.net.in', 'www.shophive.net.in', '*']
+ALLOWED_HOSTS = []
 
 CSRF_TRUSTED_ORIGINS = [
     'https://shophive.net.in',

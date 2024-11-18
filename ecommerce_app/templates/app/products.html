@@ -107,14 +107,16 @@
                                     <span class="h5">₹{{ product.price|floatformat:2|intcomma }}</span>
                                     {% endif %}
                                 </p>
-                                <form method="post" class="wishlist-form" data-url="{% url 'app:wishlist_toggle' %}" data-action="add">
+                                <form method="post" class="wishlist-form" data-url="{% url 'app:wishlist_toggle' %}" 
+                                    data-action="{% if product in wishlist.products.all %}remove{% else %}add{% endif %}">
                                     {% csrf_token %}
                                     <input type="hidden" name="product_id" value="{{ product.id }}">
-                                    <button type="submit" class="btn btn-black">
-                                        <i class="bi bi-heart"></i> Add to Wishlist
+                                    <button type="submit" class="btn {% if product in wishlist.products.all %}btn-outline-dark{% else %}btn-black{% endif %}">
+                                        <i class="bi {% if product in wishlist.products.all %}bi-heart-fill{% else %}bi-heart{% endif %}"></i> 
+                                        {% if product in wishlist.products.all %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}
                                     </button>
                                 </form>
-                                
+
                             </div>
                         </div>
                     </div>
@@ -208,11 +210,11 @@
                     if (action === 'add') {
                         form.data('action', 'remove');
                         button.html('<i class="bi bi-heart-fill"></i> Remove from Wishlist');
-                        button.removeClass('btn-black').addClass('btn-danger');
+                        button.removeClass('btn-black').addClass('btn-outline-dark');
                     } else {
                         form.data('action', 'add');
                         button.html('<i class="bi bi-heart"></i> Add to Wishlist');
-                        button.removeClass('btn-danger').addClass('btn-black');
+                        button.removeClass('btn-outline-dark').addClass('btn-black');
                     }
                 } else {
                     alert(response.message); // Show error message from server

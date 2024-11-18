@@ -221,6 +221,8 @@ def products(request):
     page_number = request.GET.get("page")
     paginated_products = paginator.get_page(page_number)
 
+    wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+
     return render(
         request,
         "app/products.html",
@@ -231,6 +233,7 @@ def products(request):
             "tags": tags,
             "selected_tags": selected_tags,
             "offer": offer,
+            "wishlist": wishlist,
         },
     )
 
