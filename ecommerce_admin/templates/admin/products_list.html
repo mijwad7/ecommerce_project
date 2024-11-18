@@ -38,9 +38,9 @@
     <thead>
         <tr>
             <th>Name</th>
-            <th class="d-none d-md-block">Category</th>
+            <th class="d-none d-md-table-cell">Category</th>
             <th>Price</th>
-            <th class="d-none d-md-block">Stock</th> <!-- New Column for Stock Levels -->
+            <th class="d-none d-md-table-cell">Stock</th> <!-- New Column for Stock Levels -->
             <th>Actions</th>
         </tr>
     </thead>
@@ -48,11 +48,11 @@
         {% for product in products %}
         <tr>
             <td><a class="text-dark font-weight-bold" href="{% url 'product_detail' product.id %}">{{ product.name }}</a></td>
-            <td class="d-none d-md-block">{{ product.category }}</td>
+            <td class="d-none d-md-table-cell">{{ product.category }}</td>
             <td>₹{{ product.price|intcomma }}</td>
             
             <!-- Stock Level Column -->
-            <td class="d-none d-md-block">
+            <td class="d-none d-md-table-cell">
                 {% if product.stock > 10 %}
                     <span class="badge bg-success">In Stock: {{ product.stock }}</span>
                 {% elif product.stock > 0 and product.stock <= 10 %}

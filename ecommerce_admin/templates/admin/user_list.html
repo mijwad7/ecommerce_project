@@ -6,7 +6,7 @@
     <thead>
         <tr>
             <th>Username</th>
-            <th>Email</th>
+            <th class="d-none d-md-table-cell">Email</th>
             <th>Blocked</th>
             <th>Actions</th>
         </tr>
@@ -15,7 +15,7 @@
         {% for user in users %}
         <tr>
             <td>{{ user.username }}</td>
-            <td>{{ user.email }}</td>
+            <td class="d-none d-md-table-cell">{{ user.email }}</td>
             <td>{% if user.is_blocked %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-x-circle-fill text-danger"></i>{% endif %}</td>
             <td>
                 <a href="{% url 'edit_user' user.id %}" class="btn btn-black">Manage</a>
