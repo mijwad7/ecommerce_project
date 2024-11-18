@@ -287,7 +287,10 @@ def product_detail(request, product_id):
 
     variants = ProductVariant.objects.filter(product=product)
 
-    wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+    if request.user.is_authenticated:
+        wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+    else:
+        wishlist = None
 
     return render(
         request,
