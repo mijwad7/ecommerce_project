@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = "django-insecure-x3rmf3f_*&92^rmvusayo*81n5obt9x5xw&zeb02rpnpyj71yw"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -138,13 +138,14 @@ WSGI_APPLICATION = "ecommerce_project.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),
+        "NAME": "shophivedb",
+        "USER": "postgres",
+        "PASSWORD": "AlifLamMeem",
+        "HOST": "shophivedb.cfiuoyaq6wbq.us-west-2.rds.amazonaws.com",
+        "PORT": "5432",
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -194,6 +195,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Set sensitive settings using .env variables
-PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID")
-PAYPAL_CLIENT_SECRET = os.getenv("PAYPAL_CLIENT_SECRET")
+PAYPAL_CLIENT_ID = env("PAYPAL_CLIENT_ID")
+PAYPAL_CLIENT_SECRET = env("PAYPAL_CLIENT_SECRET")
+
 PAYPAL_MODE = "sandbox"  # Change to 'live' when going live
