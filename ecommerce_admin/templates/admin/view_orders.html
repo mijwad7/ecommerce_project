@@ -34,6 +34,10 @@
                         <div>
                             <p class="text-muted">Cancelled on: {{ order.updated_at }}</p>
                         </div>
+                    {% elif order.order_status == "DELIVERED" %}
+                        <div>
+                            <p class="text-muted">Delivered on: {{ order.updated_at }}</p>
+                        </div>
                     {% else %}
                     <div>
                         <form method="post" action="{% url 'change_order_status' order.id %}" class="d-inline">
