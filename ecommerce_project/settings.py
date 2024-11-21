@@ -195,7 +195,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Set sensitive settings using .env variables
-PAYPAL_CLIENT_ID = env("PAYPAL_CLIENT_ID")
-PAYPAL_CLIENT_SECRET = env("PAYPAL_CLIENT_SECRET")
+PAYPAL_CLIENT_ID='AQDYwXKdgrtJ4wL0C0Xs7t5Z4POyaauohgjzC2SKy87M9jKTs3q3qNE_pOE4c96RJxDH3bxEquH2uMzL'
+PAYPAL_CLIENT_SECRET='EP4SYngfjL0kcccIMU_t21gFkgaF7eSqeiB4-h4ZDHPDrpZ2wj6l3NEm8XDkXWd6MGdV_t5haIU9u3lc'
 
 PAYPAL_MODE = "sandbox"  # Change to 'live' when going live
