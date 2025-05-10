@@ -752,7 +752,7 @@ def generate_sales_report(request):
     total_refunds = ProductReturnRequest.objects.filter(status="APPROVED").aggregate(
         Sum("refund_amount")
     )["refund_amount__sum"]
-    net_sales = total_sales - total_discount - total_refunds
+    net_sales = total_sales - (total_discount or 0) - (total_refunds or 0)
 
     fig = px.line(
         x=dates,

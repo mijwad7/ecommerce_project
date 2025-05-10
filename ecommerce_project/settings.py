@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-x3rmf3f_*&92^rmvusayo*81n5obt9x5xw&zeb02rpnpyj71yw"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['shophive.net.in', 'www.shophive.net.in', '127.0.0.1']
 
@@ -101,7 +101,7 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "mijuzzuae@gmail.com"
-EMAIL_HOST_PASSWORD = "jcsq fbiy pwno ldrz"
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 DOMAIN = "127.0.0.1:8000"
 
 ROOT_URLCONF = "ecommerce_project.urls"
@@ -138,10 +138,10 @@ WSGI_APPLICATION = "ecommerce_project.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "shophivedb",
-        "USER": "postgres",
-        "PASSWORD": "AlifLamMeem",
-        "HOST": "shophivedb.cfiuoyaq6wbq.us-west-2.rds.amazonaws.com",
+        "NAME": "shophive",
+        "USER": "mijwad",
+        "PASSWORD": env("DB_PASSWORD", default=""),
+        "HOST": "shophive.cfiuoyaq6wbq.us-west-2.rds.amazonaws.com",
         "PORT": "5432",
     }
 }

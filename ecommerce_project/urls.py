@@ -24,6 +24,7 @@ urlpatterns = [
     path("admin/", include("ecommerce_admin.urls")),
     path("", include("ecommerce_app.urls")),
     path("accounts/", include("allauth.urls")),
+    path("django/", admin.site.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
