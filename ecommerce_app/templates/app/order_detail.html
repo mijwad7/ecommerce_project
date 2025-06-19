@@ -72,6 +72,12 @@
 
       {% if order.original_total_price %}
       <div class="d-flex justify-content-between align-items-center mt-2">
+        <span class="text-primary">Discount:</span>
+        <span class="text-primary">
+          -₹{{ discount }}
+        </span>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mt-2">
         <span class="text-success fw-bold">Total Price (after discount):</span>
         <span class="text-success fw-bold">
           ₹{{ order.total_price|floatformat:2|intcomma }}
