@@ -100,16 +100,35 @@ class Category(models.Model):
         return self.name
 
 
+
 class CategoryOffer(models.Model):
     category = models.ForeignKey(
-        Category, on_delete=models.CASCADE, related_name="offers"
+        'Category', on_delete=models.CASCADE, related_name="offers"
     )
     discount_percent = models.DecimalField(max_digits=5, decimal_places=2)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     is_active = models.BooleanField(default=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['category'],
+                condition=models.Q(is_active=True),
+                name='unique_active_category_offer'
+            )
+        ]
+
+    def clean(self):
+        if self.discount_percent <= 0 or self.discount_percent > 100:
+            raise ValidationError("Discount percent must be between 0 and 100.")
+        if self.start_date >= self.end_date:
+            raise ValidationError("Start date must be before end date.")
+        if self.end_date < timezone.now() or self.start_date > timezone.now():
+            self.is_active = False
+
     def save(self, *args, **kwargs):
+        self.full_clean()
         now = timezone.now()
         if self.start_date > now or self.end_date < now:
             self.is_active = False
@@ -118,26 +137,25 @@ class CategoryOffer(models.Model):
 
     def apply_discount_to_products(self):
         if self.is_active:
-            for product in self.category.products.all():
+            for product in self.category.products.filter(is_deleted=False):
                 product.is_on_sale = True
                 discount_multiplier = Decimal(1) - (
                     Decimal(self.discount_percent) / Decimal(100)
                 )
                 sale_price = product.price * discount_multiplier
-
-                # Round sale_price to two decimal places
                 product.sale_price = sale_price.quantize(
                     Decimal("0.01"), rounding=ROUND_DOWN
                 )
                 product.save()
         else:
-            for product in self.category.products.all():
+            for product in self.category.products.filter(is_deleted=False):
                 product.is_on_sale = False
                 product.sale_price = None
                 product.save()
 
     def __str__(self):
         return f"{self.category} - {self.discount_percent}%"
+
 
 
 class BrandQuerySet(models.QuerySet):
@@ -206,8 +224,18 @@ class Coupon(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     is_active = models.BooleanField(default=True)
+    max_uses_per_user = models.PositiveIntegerField(default=1)
+
+    def clean(self):
+        if self.discount_percent <= 0 or self.discount_percent > 100:
+            raise ValidationError("Discount percent must be between 0 and 100.")
+        if self.start_date >= self.end_date:
+            raise ValidationError("Start date must be before end date.")
+        if self.max_uses_per_user < 1:
+            raise ValidationError("Maximum uses per user must be at least 1.")
 
     def save(self, *args, **kwargs):
+        self.full_clean()
         now = timezone.now()
         if self.start_date > now or self.end_date < now:
             self.is_active = False
@@ -215,7 +243,6 @@ class Coupon(models.Model):
 
     def __str__(self):
         return f"{self.code} - {self.discount_percent}%"
-
 
 class Product(models.Model):
     name = models.CharField(max_length=30)
