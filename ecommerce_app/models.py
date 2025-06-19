@@ -10,7 +10,7 @@ from django.db import models
 from django.utils import timezone
 from django_otp.models import Device
 from phonenumber_field.modelfields import PhoneNumberField
-from PIL import Image as PilImage
+from PIL import Image as PilImagez
 
 
 class UserProfile(AbstractUser):

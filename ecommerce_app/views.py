@@ -114,16 +114,6 @@ def user_logout(request):
     logout(request)
     return redirect("app:user_login")
 
-
-def demo_login(request):
-    user = authenticate(username="mijwad", password="AlifLamMeem")
-    if user is not None:
-        login(request, user)
-        return redirect("app:index")
-    else:
-        return redirect("login")
-
-
 @never_cache
 def index(request):
     featured_products = Product.objects.filter(is_featured=True)[:3]
@@ -336,6 +326,34 @@ def get_variant_details(request, variant_id):
     return JsonResponse(data)
 
 
+def validate_cart(cart):
+    """
+    Validates all items in the cart.
+    Returns a list of tuples: (invalid CartProduct, reason for invalidity).
+    """
+    invalid_items = []
+    for cart_product in cart.cart_products.all():
+        product = cart_product.product
+        variant = cart_product.variant
+
+        # Check if product is deleted
+        if product.is_deleted:
+            invalid_items.append((cart_product, f"Product {product.name} is no longer available."))
+            continue
+
+        # Check if category is deleted
+        if product.category.is_deleted:
+            invalid_items.append((cart_product, f"Category for {product.name} is no longer available."))
+            continue
+
+        # Check stock for product or variant
+        available_stock = variant.stock if variant else product.stock
+        if cart_product.quantity > available_stock:
+            invalid_items.append((cart_product, f"Not enough stock for {product.name}. Available: {available_stock}."))
+            continue
+
+    return invalid_items
+
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     user = request.user
@@ -441,6 +459,13 @@ def view_cart(request):
         cart = user.cart
         cart_products = cart.cart_products.all()
         total_price = cart.total_price
+        # Validate cart and notify user of issues
+        invalid_items = validate_cart(cart)
+        if invalid_items:
+            messages.warning(
+                request,
+                "Some items in your cart are no longer available. Please review and update your cart.",
+            )
     except Cart.DoesNotExist:
         cart_products = []
         total_price = 0
@@ -579,6 +604,16 @@ def checkout(request):
     addresses = Address.objects.filter(user=user, address_type="shipping")
     c = CurrencyConverter()
     wallet, created = Wallet.objects.get_or_create(user=user)
+
+    # Validate cart before proceeding
+    invalid_items = validate_cart(cart)
+    if invalid_items:
+        # Remove invalid items
+        for cart_product, _ in invalid_items:
+            cart_product.delete()
+        # Notify user
+        messages.error(request, "Some items in your cart are no longer available and have been removed. Please review your cart.")
+        return redirect("app:view_cart")
 
     if request.method == "POST":
         coupon_code = request.POST.get("coupon_code")
@@ -782,6 +817,15 @@ def payment_complete(request):
         # Payment success, create the order and items
         user = request.user
         cart = get_object_or_404(Cart, user=user)
+
+        # Validate cart before creating order
+        invalid_items = validate_cart(cart)
+        if invalid_items:
+            for cart_product, _ in invalid_items:
+                cart_product.delete()
+            messages.error(request, "Some items in your cart are no longer available. Please review your cart.")
+            return redirect("app:view_cart")
+
         address_id = request.session.get("selected_address_id")
         address = get_object_or_404(Address, id=address_id)
         coupon_code = request.session.get("coupon_code")
