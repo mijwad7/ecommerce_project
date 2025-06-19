@@ -250,7 +250,7 @@
 
           // Update coupon discount display
           if (discount > 0) {
-              $('#discount-amount').text(discount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+              $('#discount-amount').text(discount.toLocaleString());
               $('#coupon-discount').removeClass('d-none');
           } else {
               $('#coupon-discount').addClass('d-none');
