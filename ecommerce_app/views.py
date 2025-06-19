@@ -950,6 +950,7 @@ def remove_coupon(request):
                 {
                     "status": "success",
                     "new_total": new_total,
+                    "discount": 0,
                     "message": "Coupon removed successfully.",
                 }
             )

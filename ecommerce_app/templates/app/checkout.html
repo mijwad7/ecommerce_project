@@ -120,6 +120,9 @@
         <!-- Total Price -->
         <p class="h5">Total Price: <strong id="total-price">₹{{ cart.total_price|intcomma }}</strong></p>
         
+        <!-- Coupon Discount -->
+        <p id="coupon-discount" class="text-primary d-none">Coupon Discount: <strong>-₹<span id="discount-amount">0</span></strong></p>
+
         <!-- Place Order Button -->
         <button type="submit" {% if not addresses %} disabled {% endif %} class="btn btn-black btn-lg btn-block mt-3">
           <i class="bi bi-cart-check"></i> Place Order
@@ -244,6 +247,14 @@
           // Update displayed values for total and wallet balance
           $('#total-price').text('₹' + totalPrice.toLocaleString());
           $('#wallet-balance').text('₹' + updatedWalletBalance.toLocaleString());
+
+          // Update coupon discount display
+          if (discount > 0) {
+              $('#discount-amount').text(discount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+              $('#coupon-discount').removeClass('d-none');
+          } else {
+              $('#coupon-discount').addClass('d-none');
+          }
       }
   });
 </script>
