@@ -224,15 +224,12 @@ class Coupon(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     is_active = models.BooleanField(default=True)
-    max_uses_per_user = models.PositiveIntegerField(default=1)
 
     def clean(self):
         if self.discount_percent <= 0 or self.discount_percent > 100:
             raise ValidationError("Discount percent must be between 0 and 100.")
         if self.start_date >= self.end_date:
             raise ValidationError("Start date must be before end date.")
-        if self.max_uses_per_user < 1:
-            raise ValidationError("Maximum uses per user must be at least 1.")
 
     def save(self, *args, **kwargs):
         self.full_clean()
