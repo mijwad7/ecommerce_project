@@ -23,6 +23,7 @@ from .models import (Address, Brand, Cart, CartProduct, Category,
                      ProductSpec, ProductVariant, Review, Tag, UserProfile,
                      Wallet, Wishlist)
 from .otp_utils import send_otp_to_email
+from django.db import transaction
 
 
 @never_cache
@@ -579,17 +580,18 @@ def change_password(request):
 
 
 @login_required
+@transaction.atomic
 def checkout(request):
     """
     Handles the checkout process for a user.
 
     Retrieves the user's cart and available shipping addresses. Processes the
     checkout form submission, applying a coupon if provided, and determining the
-    total price after discounts and wallet deductions. Supports payment methods
-    including online payments via PayPal and Cash on Delivery. Creates an order
-    upon successful payment or checkout, and redirects to the order confirmation
-    page. If the request method is GET, renders the checkout page with the current
-    cart and address information.
+    total price after discounts and wallet deductions. If the wallet covers the
+    full amount, sets payment method to 'WALLET'. Otherwise, supports 'ONLINE'
+    payments via PayPal or 'COD'. Creates an order upon successful checkout and
+    redirects to the order confirmation page. If the request method is GET, renders
+    the checkout page with the current cart and address information.
 
     Args:
         request (HttpRequest): The HTTP request object containing user data and
@@ -608,10 +610,8 @@ def checkout(request):
     # Validate cart before proceeding
     invalid_items = validate_cart(cart)
     if invalid_items:
-        # Remove invalid items
         for cart_product, _ in invalid_items:
             cart_product.delete()
-        # Notify user
         messages.error(request, "Some items in your cart are no longer available and have been removed. Please review your cart.")
         return redirect("app:view_cart")
 
@@ -621,31 +621,30 @@ def checkout(request):
         use_wallet = request.POST.get("use_wallet", "off") == "on"
         wallet_deduction = 0
         discount = 0
-
         coupon = None
 
         if coupon_code:
             coupon = Coupon.objects.filter(code=coupon_code, is_active=True).first()
-            if (
-                not coupon
-                or coupon.start_date > timezone.now()
-                or coupon.end_date < timezone.now()
-            ):
+            if not coupon:
                 messages.error(request, "Invalid or expired coupon.")
                 coupon = None
-            elif coupon in Order.objects.filter(user=user).values_list(
-                "applied_coupon", flat=True
-            ):
+            elif coupon.start_date > timezone.now() or coupon.end_date < timezone.now():
+                messages.error(request, "Coupon is not currently valid.")
+                coupon = None
+            elif coupon in Order.objects.filter(user=user).values_list("applied_coupon", flat=True):
                 messages.error(request, "You have already used this coupon.")
                 coupon = None
             else:
-                discount = cart.total_price * (coupon.discount_percent / 100)
+                discount = min(cart.total_price * (coupon.discount_percent / 100), cart.total_price)
 
         # Calculate the discounted total after applying the coupon
         discounted_total = cart.total_price - discount
 
         if use_wallet:
             wallet_balance = wallet.balance
+            if wallet_balance < 0:
+                messages.error(request, "Invalid wallet balance.")
+                return redirect("app:checkout")
             if wallet_balance >= discounted_total:
                 wallet_deduction = discounted_total
                 discounted_total = 0
@@ -656,118 +655,113 @@ def checkout(request):
                 wallet.balance = 0
 
         total_price = discounted_total
+        if total_price < 0:
+            messages.error(request, "Order total cannot be negative. Please review your cart or contact support.")
+            return redirect("app:view_cart")
 
-        usd_amount = round(c.convert(total_price, "INR", "USD"), 2)
         address_id = request.POST.get("address")
         address = get_object_or_404(Address, id=address_id)
         request.session["selected_address_id"] = address_id
         request.session["wallet_deduction"] = float(wallet_deduction)
-        payment_method = request.POST.get("payment_method")
 
+        # If wallet covers the full amount, use WALLET payment method
+        if use_wallet and total_price == 0:
+            order = Order.objects.create(
+                user=user,
+                payment_method="WALLET",
+                total_price=total_price,
+                original_total_price=cart.total_price if coupon else None,
+                wallet_deduction=wallet_deduction,
+                applied_coupon=coupon,
+                address_line_1=address.line_1,
+                address_line_2=address.line_2,
+                city=address.city,
+                state=address.state,
+                post_code=address.post_code,
+            )
+            for item in cart.cart_products.all():
+                item.is_checked_out = True
+                item.save()
+                OrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    price=item.total_price,
+                    quantity=item.quantity,
+                )
+            wallet.save()
+            cart.cart_products.all().delete()
+            messages.success(request, "Order placed successfully using wallet balance!")
+            return redirect("app:order_confirmation", order_id=order.id)
+
+        # Otherwise, require a payment method for remaining balance
+        payment_method = request.POST.get("payment_method")
         if not payment_method:
             messages.error(request, "Please select a payment method.")
             return redirect("app:checkout")
 
-        if not address:
-            messages.error(request, "Please select an address.")
+        if payment_method not in ["ONLINE", "COD"]:
+            messages.error(request, "Invalid payment method.")
             return redirect("app:checkout")
 
         if payment_method == "ONLINE":
-            if total_price == 0:
-                order = Order.objects.create(
-                    user=user,
-                    payment_method="WALLET",
-                    total_price=total_price,
-                    original_total_price=cart.total_price,
-                    wallet_deduction=wallet_deduction,
-                    address_line_1=address.line_1,
-                    address_line_2=address.line_2,
-                    city=address.city,
-                    state=address.state,
-                    post_code=address.post_code,
-                    applied_coupon=coupon if coupon else None,
-                )
-                for item in cart.cart_products.all():
-                    item.is_checked_out = True
-                    item.save()
-                    OrderItem.objects.create(
-                        order=order,
-                        product=item.product,
-                        price=item.total_price,
-                        quantity=item.quantity,
-                    )
-
-                wallet.save()
-                cart.cart_products.all().delete()
-                messages.success(
-                    request, "Order placed successfully using wallet balance!"
-                )
-                return redirect("app:order_confirmation", order_id=order.id)
+            usd_amount = round(c.convert(total_price, "INR", "USD"), 2)
+            paypalrestsdk.configure(
+                {
+                    "mode": settings.PAYPAL_MODE,
+                    "client_id": settings.PAYPAL_CLIENT_ID,
+                    "client_secret": settings.PAYPAL_CLIENT_SECRET,
+                }
+            )
+            payment = paypalrestsdk.Payment(
+                {
+                    "intent": "sale",
+                    "payer": {"payment_method": "paypal"},
+                    "redirect_urls": {
+                        "return_url": request.build_absolute_uri(reverse("app:payment_complete")),
+                        "cancel_url": request.build_absolute_uri(reverse("app:checkout")),
+                    },
+                    "transactions": [
+                        {
+                            "item_list": {
+                                "items": [
+                                    {
+                                        "name": "Cart Purchase",
+                                        "sku": "001",
+                                        "price": str(usd_amount),
+                                        "currency": "USD",
+                                        "quantity": 1,
+                                    }
+                                ]
+                            },
+                            "amount": {"total": str(usd_amount), "currency": "USD"},
+                            "description": "Purchase from My Django Store",
+                        }
+                    ],
+                }
+            )
+            if payment.create():
+                for link in payment.links:
+                    if link.rel == "approval_url":
+                        approval_url = link.href
+                        return redirect(approval_url)
             else:
-                paypalrestsdk.configure(
-                    {
-                        "mode": settings.PAYPAL_MODE,
-                        "client_id": settings.PAYPAL_CLIENT_ID,
-                        "client_secret": settings.PAYPAL_CLIENT_SECRET,
-                    }
-                )
+                messages.error(request, "Error with PayPal payment.")
+                return redirect("app:checkout")
 
-                payment = paypalrestsdk.Payment(
-                    {
-                        "intent": "sale",
-                        "payer": {"payment_method": "paypal"},
-                        "redirect_urls": {
-                            "return_url": request.build_absolute_uri(
-                                reverse("app:payment_complete")
-                            ),
-                            "cancel_url": request.build_absolute_uri(
-                                reverse("app:checkout")
-                            ),
-                        },
-                        "transactions": [
-                            {
-                                "item_list": {
-                                    "items": [
-                                        {
-                                            "name": "Cart Purchase",
-                                            "sku": "001",
-                                            "price": str(usd_amount),
-                                            "currency": "USD",
-                                            "quantity": 1,
-                                        }
-                                    ]
-                                },
-                                "amount": {"total": str(usd_amount), "currency": "USD"},
-                                "description": "Purchase from My Django Store",
-                            }
-                        ],
-                    }
-                )
-
-                if payment.create():
-                    for link in payment.links:
-                        if link.rel == "approval_url":
-                            approval_url = link.href
-                            return redirect(approval_url)
-                else:
-                    messages.error(request, "Error with PayPal payment.")
-                    return redirect("app:checkout")
-
-        # Proceed with Cash on Delivery payment method
+        # Create order for COD or after PayPal redirect (handled in payment_complete)
         order = Order.objects.create(
             user=user,
             payment_method=payment_method,
             total_price=total_price,
             original_total_price=cart.total_price if coupon else None,
-            applied_coupon=coupon if coupon else None,
+            wallet_deduction=wallet_deduction,
+            applied_coupon=coupon,
             address_line_1=address.line_1,
             address_line_2=address.line_2,
             city=address.city,
             state=address.state,
             post_code=address.post_code,
-            wallet_deduction=wallet_deduction,
         )
-
         for item in cart.cart_products.all():
             item.is_checked_out = True
             item.save()
@@ -777,7 +771,6 @@ def checkout(request):
                 price=item.total_price,
                 quantity=item.quantity,
             )
-
         wallet.save()
         cart.cart_products.all().delete()
         messages.success(request, "Order placed successfully!")

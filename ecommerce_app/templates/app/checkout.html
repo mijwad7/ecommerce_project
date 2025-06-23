@@ -255,6 +255,8 @@
           } else {
               $('#coupon-discount').addClass('d-none');
           }
+
+          $('input[name="payment_method"]').prop('disabled', totalPrice === 0);
       }
   });
 </script>
