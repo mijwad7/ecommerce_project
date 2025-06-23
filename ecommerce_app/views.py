@@ -979,12 +979,18 @@ def order_detail(request, order_id):
 
     discount = None
     if order.original_total_price:
-        discount = order.original_total_price - order.total_price
+        wallet_deduction = order.wallet_deduction or 0
+        discount = order.original_total_price - (order.total_price + wallet_deduction)
 
     return render(
         request,
         "app/order_detail.html",
-        {"order": order, "items": items, "existing_requests": existing_requests, "discount": discount},
+        {
+            "order": order,
+            "items": items,
+            "existing_requests": existing_requests,
+            "discount": discount,
+        },
     )
 
 
