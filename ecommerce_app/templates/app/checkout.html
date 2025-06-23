@@ -256,7 +256,11 @@
               $('#coupon-discount').addClass('d-none');
           }
 
-          $('input[name="payment_method"]').prop('disabled', totalPrice === 0);
+          const isDisabled = totalPrice === 0;
+          $('input[name="payment_method"]').prop('disabled', isDisabled);
+          $('#coupon_code').prop('disabled', isDisabled);
+          $('#apply_coupon').prop('disabled', isDisabled);
+          $('#remove_coupon').prop('disabled', isDisabled);
       }
   });
 </script>
