@@ -717,8 +717,8 @@ def checkout(request):
                     "intent": "sale",
                     "payer": {"payment_method": "paypal"},
                     "redirect_urls": {
-                        "return_url": request.build_absolute_uri(reverse("app:payment_complete")),
-                        "cancel_url": request.build_absolute_uri(reverse("app:checkout")),
+                        "return_url": f"https://{request.get_host()}{reverse('app:payment_complete')}",
+                        "cancel_url": f"https://{request.get_host()}{reverse('app:checkout')}",
                     },
                     "transactions": [
                         {
