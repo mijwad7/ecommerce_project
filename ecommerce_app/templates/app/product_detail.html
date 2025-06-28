@@ -296,7 +296,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 productPrice.innerHTML = {% if product.is_on_sale %}`<span style="text-decoration:line-through;">₹${defaultPrice}</span> <span class="text-danger">₹${defaultSalePrice}</span>`{% else %}`₹${defaultPrice}`{% endif %};
                 productStock.textContent = `${defaultStock} left in stock`;
-                cartBtn.innerHTML = `Add to Cart - ₹${{% if product.is_on_sale %}defaultSalePrice{% else %}defaultPrice{% endif %}`;
+                cartBtn.innerHTML = `Add to Cart - ₹${{% if product.is_on_sale %}defaultSalePrice{% else %}defaultPrice{% endif %}}`;
                 mainImage.src = defaultImage;
 
                 // Reset thumbnails to default product images
