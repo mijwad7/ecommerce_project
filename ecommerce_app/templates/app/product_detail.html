@@ -271,82 +271,62 @@
   crossorigin="anonymous"
 ></script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const variantButtons = document.querySelectorAll(".variant-btn");
-    const defaultPrice = "{{ product.price|intcomma }}";
-    const defaultSalePrice = "{{ product.sale_price|default:product.price|intcomma }}";
-    const defaultStock = "{{ product.stock }}";
-    const defaultImage = "{{ product.images.first.image.url }}";
-
-    variantButtons.forEach(button => {
-        button.addEventListener("click", function() {
-            const variantId = this.getAttribute("data-variant-id");
-            const isSelected = this.classList.contains("btn-black");
-
-            // Deselect all buttons and clear variant-id
-            variantButtons.forEach(btn => btn.classList.remove("btn-black"));
-            document.getElementById("variant-id").value = "";
-
-            if (isSelected) {
-                // Reset to default product details
-                const productPrice = document.getElementById("product-price");
-                const productStock = document.getElementById("product-stock");
-                const cartBtn = document.getElementById("cart-btn");
-                const mainImage = document.getElementById("mainProductImage");
-
-                productPrice.innerHTML = {% if product.is_on_sale %}`<span style="text-decoration:line-through;">₹${defaultPrice}</span> <span class="text-danger">₹${defaultSalePrice}</span>`{% else %}`₹${defaultPrice}`{% endif %};
-                productStock.textContent = `${defaultStock} left in stock`;
-                cartBtn.innerHTML = `Add to Cart - ₹${{% if product.is_on_sale %}defaultSalePrice{% else %}defaultPrice{% endif %}}`;
-                mainImage.src = defaultImage;
-
-                // Reset thumbnails to default product images
-                const thumbnails = document.querySelectorAll('.thumbnail');
-                thumbnails.forEach((thumbnail, index) => {
-                    const defaultImages = [
-                        {% for image in product.images.all %}"{{ image.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}
-                    ];
-                    if (defaultImages[index]) {
-                        thumbnail.src = defaultImages[index];
-                        thumbnail.setAttribute('onclick', `changeMainImage('${defaultImages[index]}')`);
-                    }
-                });
+  
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".variant-btn").forEach(function (button) {
+      button.addEventListener("click", function () {
+        const variantId = this.getAttribute("data-variant-id");
+  
+        fetch(`/get-variant-details/${variantId}/`)
+          .then((response) => response.json())
+          .then((data) => {
+            const productPrice = document.getElementById("product-price");
+            const productStock = document.getElementById("product-stock");
+            const cartBtn = document.getElementById("cart-btn");
+  
+            if (data.is_on_sale) {
+              productPrice.innerHTML = `<span style="text-decoration:line-through;">₹${data.price}</span> ₹${data.sale_price}`;
+              cartBtn.innerHTML = `Add to Cart - ₹${data.sale_price}`;
             } else {
-                // Select new variant
-                this.classList.add("btn-black");
-                document.getElementById("variant-id").value = variantId;
-
-                fetch(`/get-variant-details/${variantId}/`)
-                    .then((response) => response.json())
-                    .then((data) => {
-                        const productPrice = document.getElementById("product-price");
-                        const productStock = document.getElementById("product-stock");
-                        const cartBtn = document.getElementById("cart-btn");
-
-                        if (data.is_on_sale) {
-                            productPrice.innerHTML = `<span style="text-decoration:line-through;">₹${data.price}</span> ₹${data.sale_price}`;
-                            cartBtn.innerHTML = `Add to Cart - ₹${data.sale_price}`;
-                        } else {
-                            productPrice.textContent = `₹${data.price}`;
-                            cartBtn.textContent = `Add to Cart - ₹${data.price}`;
-                        }
-
-                        productStock.textContent = `${data.stock} left in stock`;
-
-                        const mainImage = document.getElementById("mainProductImage");
-                        mainImage.src = data.images[0].image_url;
-
-                        const thumbnails = document.querySelectorAll('.thumbnail');
-                        thumbnails.forEach((thumbnail, index) => {
-                            if (data.images[index]) {
-                                thumbnail.src = data.images[index].image_url;
-                                thumbnail.setAttribute('onclick', `changeMainImage('${data.images[index].image_url}')`);
-                            }
-                        });
-                    });
+              productPrice.textContent = `₹${data.price}`;
+              cartBtn.textContent = `Add to Cart - ₹${data.price}`;
             }
-        });
+  
+            productStock.textContent = `${data.stock} left in stock`;
+  
+            const mainImage = document.getElementById("mainProductImage");
+            mainImage.src = data.images[0].image_url;
+  
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            thumbnails.forEach((thumbnail, index) => {
+              if (data.images[index]) {
+                thumbnail.src = data.images[index].image_url;
+                thumbnail.setAttribute('onclick', `changeMainImage('${data.images[index].image_url}')`);
+              }
+            });
+          });
+      });
     });
-});
+  });
+  
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const variantButtons = document.querySelectorAll(".variant-btn");
+
+      variantButtons.forEach(button => {
+          button.addEventListener("click", function() {
+              variantButtons.forEach(btn => btn.classList.remove("btn-black"));
+              
+              this.classList.add("btn-black");
+
+              const variantId = this.getAttribute("data-variant-id");
+              document.getElementById("variant-id").value = variantId;
+              console.log(variantId);
+          });
+      });
+  });
 </script>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
