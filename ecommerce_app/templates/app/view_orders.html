@@ -23,9 +23,15 @@
                                 {{ order.order_status }}
                             </span>
                         </p>
-                        <p class="mb-1"><strong>Payment:</strong> <i class="bi bi-cash-coin"></i> {{ order.payment_method }}</p>
-                        <p class="mb-1"><strong>Total:</strong> ₹{{ order.total_price|intcomma }}</p>
-                        {% if order.wallet_deduction > 0 %}<p class="mb-1"><strong>Wallet Deduction:</strong> ₹{{ order.wallet_deduction|intcomma }}</p>{% endif %}
+                        <p class="mb-1"><strong>Payment Method:</strong> <i class="bi bi-cash-coin"></i> {{ order.payment_method }}</p>
+                        <p class="mb-1"><strong>Order Total:</strong> ₹{{ order.original_total_price|intcomma }}</p>
+                        {% if order.applied_coupon %}
+                        <p class="mb-1"><strong>Coupon Discount:</strong> -₹{{ order.applied_coupon.discount|intcomma }}</p>
+                        {% endif %}
+                        {% if order.wallet_deduction > 0 %}
+                        <p class="mb-1"><strong>Wallet Deduction:</strong> -₹{{ order.wallet_deduction|intcomma }}</p>
+                        {% endif %}
+                        <p class="mb-1"><strong>Amount Paid:</strong> ₹{{ order.total_price|intcomma }}</p>
                         <p class="mb-1"><strong>Address:</strong> <i class="bi bi-house"></i> {{ order.address_line_1 }}, {% if order.address_line_2 %} {{ order.address_line_2 }}, {% endif %} {{ order.city }}, {{ order.post_code }}</p>
                         <p class="text-muted">Placed on: {{ order.created_at }}</p>
                     </div>
