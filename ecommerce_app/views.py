@@ -24,6 +24,7 @@ from .models import (Address, Brand, Cart, CartProduct, Category,
                      Wallet, Wishlist)
 from .otp_utils import send_otp_to_email
 from django.db import transaction
+import requests
 
 
 @never_cache
@@ -507,6 +508,35 @@ def add_address(request):
 
     return render(request, "app/add_address.html", {"form": form})
 
+@login_required
+def add_address_ajax(request):
+    if request.method == "POST":
+        form = AddressForm(request.POST)
+        if form.is_valid():
+            address = form.save(commit=False)
+            address.user = request.user
+            # Ensure address_type is set to 'shipping' if not provided
+            if not address.address_type:
+                address.address_type = "shipping"
+            # If is_primary is checked, unset other primary addresses
+            if address.is_primary:
+                Address.objects.filter(user=request.user, is_primary=True).update(is_primary=False)
+            address.save()
+            return JsonResponse({
+                "status": "success",
+                "address": {
+                    "id": address.id,
+                    "line_1": address.line_1,
+                    "line_2": address.line_2 or "",
+                    "city": address.city,
+                    "post_code": address.post_code,
+                    "is_primary": address.is_primary,
+                    "address_type": address.address_type
+                }
+            })
+        return JsonResponse({"status": "error", "errors": form.errors}, status=400)
+    return JsonResponse({"status": "error", "message": "Invalid request method"}, status=405)
+
 
 @login_required
 def edit_address(request, address_id):
@@ -578,33 +608,12 @@ def change_password(request):
 
     return render(request, "app/change_password.html", {"form": form})
 
-
 @login_required
 @transaction.atomic
 def checkout(request):
-    """
-    Handles the checkout process for a user.
-
-    Retrieves the user's cart and available shipping addresses. Processes the
-    checkout form submission, applying a coupon if provided, and determining the
-    total price after discounts and wallet deductions. If the wallet covers the
-    full amount, sets payment method to 'WALLET'. Otherwise, supports 'ONLINE'
-    payments via PayPal or 'COD'. Creates an order upon successful checkout and
-    redirects to the order confirmation page. If the request method is GET, renders
-    the checkout page with the current cart and address information.
-
-    Args:
-        request (HttpRequest): The HTTP request object containing user data and
-        form submission details.
-
-    Returns:
-        HttpResponse: Redirects to order confirmation on success, or re-renders
-        the checkout template with error messages on failure.
-    """
     user = request.user
     cart = get_object_or_404(Cart, user=user)
     addresses = Address.objects.filter(user=user, address_type="shipping")
-    c = CurrencyConverter()
     wallet, created = Wallet.objects.get_or_create(user=user)
 
     # Validate cart before proceeding
@@ -663,6 +672,7 @@ def checkout(request):
         address = get_object_or_404(Address, id=address_id)
         request.session["selected_address_id"] = address_id
         request.session["wallet_deduction"] = float(wallet_deduction)
+        request.session["total_price"] = float(total_price)  # Store INR total_price for consistency
 
         # If wallet covers the full amount, use WALLET payment method
         if use_wallet and total_price == 0:
@@ -670,7 +680,7 @@ def checkout(request):
                 user=user,
                 payment_method="WALLET",
                 total_price=total_price,
-                original_total_price=cart.total_price if coupon else None,
+                original_total_price=cart.total_price,
                 wallet_deduction=wallet_deduction,
                 applied_coupon=coupon,
                 address_line_1=address.line_1,
@@ -704,7 +714,21 @@ def checkout(request):
             return redirect("app:checkout")
 
         if payment_method == "ONLINE":
-            usd_amount = round(c.convert(total_price, "INR", "USD"), 2)
+            # Fetch real-time INR to USD exchange rate
+            try:
+                response = requests.get(
+                    f"https://v6.exchangerate-api.com/v6/{settings.EXCHANGE_RATE_API_KEY}/latest/INR"
+                )
+                response.raise_for_status()
+                rate_data = response.json()
+                if rate_data["result"] != "success":
+                    raise ValueError("API error")
+                exchange_rate = rate_data["conversion_rates"]["USD"]
+                usd_amount = round(float(total_price) * exchange_rate * 0.97, 2)  # Add 2% buffer for PayPal spread
+            except (requests.RequestException, ValueError, KeyError):
+                messages.error(request, "Error fetching exchange rate. Please try again later.")
+                return redirect("app:checkout")
+
             paypalrestsdk.configure(
                 {
                     "mode": settings.PAYPAL_MODE,
@@ -734,7 +758,7 @@ def checkout(request):
                                 ]
                             },
                             "amount": {"total": str(usd_amount), "currency": "USD"},
-                            "description": "Purchase from My Django Store",
+                            "description": "Purchase from Shophive",
                         }
                     ],
                 }
@@ -753,7 +777,7 @@ def checkout(request):
             user=user,
             payment_method=payment_method,
             total_price=total_price,
-            original_total_price=cart.total_price if coupon else None,
+            original_total_price=cart.total_price,
             wallet_deduction=wallet_deduction,
             applied_coupon=coupon,
             address_line_1=address.line_1,
@@ -777,7 +801,6 @@ def checkout(request):
         return redirect("app:order_confirmation", order_id=order.id)
 
     return render(request, "app/checkout.html", {"cart": cart, "addresses": addresses})
-
 
 @login_required
 def payment_complete(request):
@@ -1196,3 +1219,4 @@ def wishlist_toggle(request):
             return JsonResponse({"status": "success", "action": "add"})
 
     return JsonResponse({"status": "error", "message": "Invalid request"})
+
